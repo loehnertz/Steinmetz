@@ -1,0 +1,28 @@
+version: "3"
+services:
+  frontend:
+    build: frontend/
+    ports:
+      - 8080:8080
+    volumes:
+      - "data:/app"
+#  backend:
+#    build: backend/
+#    ports:
+#      - 5656:5656
+#    environment:
+#      NEO4J_HOST: "neo4j"
+#      REDIS_HOST: "redis"
+  neo4j:
+    image: neo4j:latest
+    ports:
+      - 7474
+      - 7687
+    environment:
+      NEO4J_AUTH: "none"
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379
+volumes:
+  data:
