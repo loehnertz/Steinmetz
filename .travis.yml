@@ -1,4 +1,15 @@
-language: node_js
-node_js:
-  - "node"
-  - "10"
+matrix:
+  include:
+    - language: node_js
+      before_script:
+        - cd frontend
+        - npm install
+      script:
+        - npm test
+    - language: java
+      jdk: openjdk11
+      before_script:
+        - cd backend
+        - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+      script:
+        - mvn test -B
