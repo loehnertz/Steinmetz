@@ -4,6 +4,7 @@ import model.neo4j.Model
 import org.neo4j.ogm.config.Configuration
 import org.neo4j.ogm.session.SessionFactory
 
+
 const val Neo4jBoltConnectionUri = "bolt://localhost"
 const val ModelPackageIdentifier = "model"
 

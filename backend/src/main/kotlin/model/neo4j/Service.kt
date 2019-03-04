@@ -7,6 +7,7 @@ import org.neo4j.ogm.annotation.NodeEntity
 import org.neo4j.ogm.annotation.Relationship
 import org.neo4j.ogm.annotation.Relationship.INCOMING
 
+
 @NodeEntity
 class Service(var name: String) : Model {
     @Id
