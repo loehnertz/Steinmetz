@@ -1,8 +1,9 @@
 package model.graph.node
 
 import model.graph.GraphModel
-import model.graph.relation.BelongsTo
-import model.graph.relation.Calls
+import model.graph.relationship.BelongsToRelation
+import model.graph.relationship.CallsRelation
+import model.graph.relationship.CallsRelationship
 import org.neo4j.ogm.annotation.GeneratedValue
 import org.neo4j.ogm.annotation.Id
 import org.neo4j.ogm.annotation.NodeEntity
@@ -17,18 +18,20 @@ class Unit(var identifier: String, var packageIdentifier: String) : GraphModel {
     @GeneratedValue
     override var id: Long? = null
 
-    @Relationship(type = Calls, direction = INCOMING)
-    var calledByUnits: MutableSet<Unit> = mutableSetOf()
+    @Relationship(type = CallsRelation, direction = INCOMING)
+    var calleeRelationships: MutableSet<CallsRelationship> = mutableSetOf()
 
-    @Relationship(type = Calls, direction = OUTGOING)
-    var callsUnits: MutableSet<Unit> = mutableSetOf()
+    @Relationship(type = CallsRelation, direction = OUTGOING)
+    var callerRelationships: MutableSet<CallsRelationship> = mutableSetOf()
 
-    @Relationship(type = BelongsTo, direction = OUTGOING)
+    @Relationship(type = BelongsToRelation, direction = OUTGOING)
     var service: Service? = null
 
-    fun calls(unit: Unit) {
-        this.callsUnits.add(unit)
-        unit.calledByUnits.add(this)
+    fun calls(callee: Unit, couplingScore: Int?) {
+        val relationship = CallsRelationship(caller = this, callee = callee, couplingScore = couplingScore)
+
+        this.callerRelationships.add(relationship)
+        callee.calleeRelationships.add(relationship)
     }
 
     fun belongsTo(service: Service) {

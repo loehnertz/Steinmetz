@@ -1,7 +1,7 @@
 package model.graph.node
 
 import model.graph.GraphModel
-import model.graph.relation.BelongsTo
+import model.graph.relationship.BelongsToRelation
 import org.neo4j.ogm.annotation.GeneratedValue
 import org.neo4j.ogm.annotation.Id
 import org.neo4j.ogm.annotation.NodeEntity
@@ -15,6 +15,6 @@ class Service(var name: String) : GraphModel {
     @GeneratedValue
     override var id: Long? = null
 
-    @Relationship(type = BelongsTo, direction = INCOMING)
+    @Relationship(type = BelongsToRelation, direction = INCOMING)
     var units: MutableSet<Unit> = mutableSetOf()
 }
