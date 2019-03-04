@@ -1,7 +1,8 @@
-package model.neo4j
+package model.graph.node
 
-import model.relation.BelongsTo
-import model.relation.Calls
+import model.graph.GraphModel
+import model.graph.relation.BelongsTo
+import model.graph.relation.Calls
 import org.neo4j.ogm.annotation.GeneratedValue
 import org.neo4j.ogm.annotation.Id
 import org.neo4j.ogm.annotation.NodeEntity
@@ -11,7 +12,7 @@ import org.neo4j.ogm.annotation.Relationship.OUTGOING
 
 
 @NodeEntity
-class Unit(var identifier: String, var packageIdentifier: String) : Model {
+class Unit(var identifier: String, var packageIdentifier: String) : GraphModel {
     @Id
     @GeneratedValue
     override var id: Long? = null

@@ -1,4 +1,4 @@
-package model.relation
+package model.graph.relation
 
 
 const val Calls = "CALLS"
