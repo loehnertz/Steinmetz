@@ -11,6 +11,8 @@ services:
     build: frontend/
     ports:
       - 8080:8080
+    volumes:
+      - data:/app
   neo4j:
     image: neo4j:latest
     ports:
@@ -18,7 +20,12 @@ services:
       - 7687
     environment:
       NEO4J_AUTH: "none"
+    volumes:
+      - data:/data
+      - data:/logs
   redis:
     image: redis:alpine
     ports:
       - 6379
+volumes:
+  data:
