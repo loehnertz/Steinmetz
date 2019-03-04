@@ -7,8 +7,6 @@ assignees: loehnertz
 
 ---
 
-## Title
-
 ### What is the enhancement about?
 
 ### How important is the enhancement?

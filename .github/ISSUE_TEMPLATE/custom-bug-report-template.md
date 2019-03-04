@@ -7,8 +7,6 @@ assignees: loehnertz
 
 ---
 
-## Title
-
 ### What is the bug about?
 
 ### How to reproduce the bug?
