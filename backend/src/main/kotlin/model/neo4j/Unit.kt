@@ -2,7 +2,7 @@ package model.neo4j
 
 import model.relation.BelongsTo
 import model.relation.Calls
-import model.xml.Method
+import model.skeleton.Method
 import org.neo4j.ogm.annotation.GeneratedValue
 import org.neo4j.ogm.annotation.Id
 import org.neo4j.ogm.annotation.NodeEntity
@@ -12,7 +12,7 @@ import org.neo4j.ogm.annotation.Relationship.OUTGOING
 
 
 @NodeEntity
-class Unit(var identifier: String, var packageIdentifier: String, var methods: Method) : Model {
+class Unit(var identifier: String, var packageIdentifier: String, var methods: List<Method>) : Model {
     @Id
     @GeneratedValue
     override var id: Long? = null
