@@ -1,6 +1,6 @@
 package utility
 
-import model.Model
+import model.neo4j.Model
 import org.neo4j.ogm.config.Configuration
 import org.neo4j.ogm.session.SessionFactory
 
