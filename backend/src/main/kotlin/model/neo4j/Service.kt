@@ -8,7 +8,7 @@ import org.neo4j.ogm.annotation.Relationship
 import org.neo4j.ogm.annotation.Relationship.INCOMING
 
 @NodeEntity
-class Service(var identifier: String) : Model {
+class Service(var name: String) : Model {
     @Id
     @GeneratedValue
     override var id: Long? = null
