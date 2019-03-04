@@ -34,6 +34,14 @@ class Unit(var identifier: String, var packageIdentifier: String) : GraphModel {
         callee.calleeRelationships.add(relationship)
     }
 
+    fun updateCouplingScore(callee: Unit, newCouplingScore: Int) {
+        val oldRelationship = this.callerRelationships.find { it.caller == this && it.callee == callee }
+        this.callerRelationships.remove(oldRelationship)
+
+        val newRelationship = CallsRelationship(caller = this, callee = callee, couplingScore = newCouplingScore)
+        this.callerRelationships.add(newRelationship)
+    }
+
     fun belongsTo(service: Service) {
         this.service = service
         service.units.add(this)
