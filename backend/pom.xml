@@ -20,6 +20,7 @@
     </properties>
 
     <dependencies>
+        <!-- Core -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
@@ -55,6 +56,7 @@
             <version>1.7.21</version>
         </dependency>
 
+        <!-- Ktor -->
         <dependency>
             <groupId>io.ktor</groupId>
             <artifactId>ktor-server-netty</artifactId>
@@ -64,6 +66,25 @@
             <groupId>io.ktor</groupId>
             <artifactId>ktor-jackson</artifactId>
             <version>${ktor.version}</version>
+        </dependency>
+
+        <!-- Miscellaneous -->
+        <dependency>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+            <version>1.7.2</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-ogm-core</artifactId>
+            <version>3.1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-ogm-bolt-driver</artifactId>
+            <version>3.1.7</version>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
