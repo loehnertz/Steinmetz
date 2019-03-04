@@ -8,9 +8,9 @@ import org.neo4j.ogm.annotation.*
 class CallsRelationship(
         @StartNode var caller: Unit,
         @EndNode var callee: Unit,
-        @Property val couplingScore: Int? = null
+        @Property var couplingScore: Int? = null
 ) {
     @Id
     @GeneratedValue
-    private val relationshipId: Long? = null
+    private var relationshipId: Long? = null
 }

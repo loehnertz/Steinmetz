@@ -28,6 +28,8 @@ class Unit(var identifier: String, var packageIdentifier: String) : GraphModel {
     var service: Service? = null
 
     fun calls(callee: Unit, couplingScore: Int?) {
+        // TODO: Check if relationship already exists and update the score accordingly
+
         val relationship = CallsRelationship(caller = this, callee = callee, couplingScore = couplingScore)
 
         this.callerRelationships.add(relationship)
@@ -35,11 +37,8 @@ class Unit(var identifier: String, var packageIdentifier: String) : GraphModel {
     }
 
     fun updateCouplingScore(callee: Unit, newCouplingScore: Int) {
-        val oldRelationship = this.callerRelationships.find { it.caller == this && it.callee == callee }
-        this.callerRelationships.remove(oldRelationship)
-
-        val newRelationship = CallsRelationship(caller = this, callee = callee, couplingScore = newCouplingScore)
-        this.callerRelationships.add(newRelationship)
+        val relationship = this.callerRelationships.find { it.caller == this && it.callee == callee }
+        if (relationship != null) relationship.couplingScore = newCouplingScore
     }
 
     fun belongsTo(service: Service) {
