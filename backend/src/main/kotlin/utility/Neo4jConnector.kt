@@ -6,7 +6,7 @@ import org.neo4j.ogm.session.SessionFactory
 
 
 const val Neo4jBoltConnectionUri = "bolt://localhost"
-const val ModelPackageIdentifier = "model"
+const val ModelPackageIdentifier = "model.neo4j"
 
 object Neo4jConnector {
     private val configuration: Configuration = Configuration.Builder().uri(Neo4jBoltConnectionUri).build()!!
