@@ -21,10 +21,15 @@ class Unit(var identifier: String, var packageIdentifier: String, var methods: M
     var calledByUnits: MutableSet<Unit> = mutableSetOf()
 
     @Relationship(type = Calls, direction = OUTGOING)
-    var callingUnits: MutableSet<Unit> = mutableSetOf()
+    var callsUnits: MutableSet<Unit> = mutableSetOf()
 
     @Relationship(type = BelongsTo, direction = OUTGOING)
     var service: Service? = null
+
+    fun calls(unit: Unit) {
+        this.callsUnits.add(unit)
+        unit.calledByUnits.add(this)
+    }
 
     fun belongsTo(service: Service) {
         this.service = service
