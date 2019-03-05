@@ -32,18 +32,44 @@ class Unit(var identifier: String, var packageIdentifier: String) : GraphEntity 
     @Relationship(type = BelongsToRelation, direction = OUTGOING)
     var service: Service? = null
 
-    fun calls(callee: Unit, couplingScore: Int?) {
-        // TODO: Check if relationship already exists and update the score accordingly
+    fun calls(callee: Unit, couplingScore: Int = 1) {
+        val existingRelationship = retrieveExistingRelationship(callee)
+        if (existingRelationship != null) {
+            val newCouplingScore = existingRelationship.couplingScore + couplingScore
+            return updateCouplingScore(existingRelationship, newCouplingScore)
+        }
 
-        val relationship = CallsRelationship(caller = this, callee = callee, couplingScore = couplingScore)
-
-        this.callerRelationships.add(relationship)
-        callee.calleeRelationships.add(relationship)
+        val relationship = buildRelationship(callee, couplingScore)
+        insertRelationship(relationship)
     }
 
-    fun updateCouplingScore(callee: Unit, newCouplingScore: Int) {
-        val relationship = this.callerRelationships.find { it.caller == this && it.callee == callee }
-        if (relationship != null) relationship.couplingScore = newCouplingScore
+    private fun updateCouplingScore(existingRelationship: CallsRelationship, newCouplingScore: Int) {
+        removeRelationship(existingRelationship)
+        insertRelationship(buildRelationship(existingRelationship.callee, newCouplingScore))
+    }
+
+    private fun buildRelationship(callee: Unit, couplingScore: Int): CallsRelationship {
+        return CallsRelationship(caller = this, callee = callee, couplingScore = couplingScore)
+    }
+
+    private fun retrieveExistingRelationship(callee: Unit): CallsRelationship? {
+        try {
+            return this.callerRelationships.find {
+                it.callee.identifier == callee.identifier && it.callee.packageIdentifier == callee.packageIdentifier
+            }
+        } catch (e: Exception) {
+            println(e.localizedMessage).also { throw e }
+        }
+    }
+
+    private fun insertRelationship(relationship: CallsRelationship) {
+        this.callerRelationships.add(relationship)
+        relationship.callee.calleeRelationships.add(relationship)
+    }
+
+    private fun removeRelationship(existingRelationship: CallsRelationship) {
+        this.callerRelationships.remove(existingRelationship)
+        existingRelationship.callee.calleeRelationships.remove(existingRelationship)
     }
 
     fun belongsTo(service: Service) {
