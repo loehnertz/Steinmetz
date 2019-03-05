@@ -13,6 +13,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import resource.user
 
+
 fun Application.module() {
     install(DefaultHeaders)
     install(CallLogging)
