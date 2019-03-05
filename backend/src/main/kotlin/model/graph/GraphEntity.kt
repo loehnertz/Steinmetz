@@ -1,6 +1,6 @@
 package model.graph
 
 
-interface GraphModel {
+interface GraphEntity {
     var id: Long?
 }
