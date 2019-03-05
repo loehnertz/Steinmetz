@@ -2,6 +2,7 @@ package utility
 
 import model.graph.GraphEntity
 import org.neo4j.ogm.config.Configuration
+import org.neo4j.ogm.cypher.Filter
 import org.neo4j.ogm.cypher.Filters
 import org.neo4j.ogm.session.Session
 import org.neo4j.ogm.session.SessionFactory
@@ -27,11 +28,26 @@ object Neo4jConnector {
         session.clear()
     }
 
+    fun retrieveEntity(entityClass: Class<out GraphEntity>, filter: Filter): GraphEntity? {
+        return retrieveEntities(entityClass, filter).firstOrNull()
+    }
+
     fun retrieveEntity(entityClass: Class<out GraphEntity>, filters: Filters): GraphEntity? {
+        return retrieveEntities(entityClass, filters).firstOrNull()
+    }
+
+    fun retrieveEntities(entityClass: Class<out GraphEntity>, filter: Filter): Collection<GraphEntity> {
         val session = createSession()
-        val entity = session.loadAll(entityClass, filters).firstOrNull()
+        val entities = session.loadAll(entityClass, filter)
         session.clear()
-        return entity
+        return entities
+    }
+
+    fun retrieveEntities(entityClass: Class<out GraphEntity>, filters: Filters): Collection<GraphEntity> {
+        val session = createSession()
+        val entities = session.loadAll(entityClass, filters)
+        session.clear()
+        return entities
     }
 
     private fun createSession(): Session {

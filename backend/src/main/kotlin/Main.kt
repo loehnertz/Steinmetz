@@ -1,7 +1,7 @@
 package main
 
 import com.fasterxml.jackson.databind.SerializationFeature
-import controller.user.UserController
+import controller.data.DataController
 import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.features.CallLogging
@@ -11,7 +11,7 @@ import io.ktor.jackson.jackson
 import io.ktor.routing.Routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import resource.user
+import resource.data
 
 
 fun Application.module() {
@@ -24,7 +24,7 @@ fun Application.module() {
     }
 
     install(Routing) {
-        user(UserController())
+        data(DataController())
     }
 }
 
