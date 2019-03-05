@@ -12,8 +12,14 @@ import io.ktor.routing.route
 
 fun Route.data(controller: DataController) {
     route("/data") {
-        get("/") {
-            call.respond(controller.getGraph("org.jpeek"))
+        get("/{basePackageIdentifier}") {
+            val basePackageIdentifier = call.parameters["basePackageIdentifier"]
+
+            if (basePackageIdentifier != null) {
+                call.respond(controller.getGraph(basePackageIdentifier))
+            } else {
+                call.respond("A base package identifier as the resource is mandatory")
+            }
         }
     }
 
