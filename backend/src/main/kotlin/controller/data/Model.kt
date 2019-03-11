@@ -15,3 +15,7 @@ data class Node(
 data class Attributes(
         val couplingScore: Int
 )
+
+data class Graph(
+        val relationships: List<Edge>
+)

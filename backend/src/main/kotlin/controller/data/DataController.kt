@@ -7,9 +7,10 @@ import utility.Neo4jConnector
 
 
 class DataController {
-    fun getGraph(basePackageIdentifier: String): ArrayList<Edge> {
+    fun getGraph(basePackageIdentifier: String): Graph {
         val filter = Filter("packageIdentifier", ComparisonOperator.STARTING_WITH, basePackageIdentifier)
         val units = Neo4jConnector.retrieveEntities(Unit::class.java, filter).map { it as Unit }
-        return GraphExtractor.convertUnitListToSerializable(units)
+        val relationships = GraphExtractor.convertUnitListToRelationships(units)
+        return Graph(relationships = relationships)
     }
 }

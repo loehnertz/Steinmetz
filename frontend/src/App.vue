@@ -1,27 +1,58 @@
 <template>
     <div id="app">
-        <HelloWorld msg="Welcome to Your Vue.js App"/>
+        <input type="text" placeholder="Project Identifier" v-model="selectedProjectId">
+        <button @click="fetchGraph()">Retrieve</button>
+        <Graph id="graph" :graph-data="graphData"/>
     </div>
 </template>
 
 <script>
-    import HelloWorld from './components/HelloWorld.vue'
+    import Graph from './components/Graph.vue';
+    import axios from 'axios';
 
     export default {
         name: 'app',
         components: {
-            HelloWorld
-        }
+            Graph,
+        },
+        data() {
+            return {
+                selectedProjectId: '',
+                graphData: {},
+            }
+        },
+        methods: {
+            fetchGraph() {
+                axios
+                    .get(`http://localhost:5656/data/${this.selectedProjectId}`)
+                    .then((response) => {
+                        this.graphData = response.data;
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                    });
+            },
+        },
     }
 </script>
 
 <style>
+    html, body {
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+    }
+
     #app {
+        height: 100vh;
+        width: 100vw;
         font-family: 'Avenir', Helvetica, Arial, sans-serif;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        text-align: center;
         color: #2c3e50;
-        margin-top: 60px;
+        text-align: center;
+    }
+
+    #graph {
+        height: 100vh;
+        width: 100vw;
     }
 </style>
