@@ -18,10 +18,10 @@ class ArchiveExtractor(private val sourceCodeFileExtension: String, private val 
                     File(newFile.parent).mkdirs()
                     val output = FileOutputStream(newFile)
 
-                    var len = input.read(buffer)
-                    while (len > 0) {
-                        output.write(buffer, 0, len)
-                        len = input.read(buffer)
+                    var length = input.read(buffer)
+                    while (length > 0) {
+                        output.write(buffer, 0, length)
+                        length = input.read(buffer)
                     }
                     output.close()
                 }
