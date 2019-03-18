@@ -1,6 +1,6 @@
 package utility
 
-import model.graph.GraphEntity
+import model.neo4j.GraphEntity
 import org.neo4j.ogm.config.Configuration
 import org.neo4j.ogm.cypher.Filter
 import org.neo4j.ogm.cypher.Filters
@@ -9,8 +9,8 @@ import org.neo4j.ogm.session.SessionFactory
 
 
 const val Neo4jBoltConnectionUri = "bolt://localhost"
-const val NodeModelPackageIdentifier = "model.graph.node"
-const val RelationshipModelPackageIdentifier = "model.graph.relationship"
+const val NodeModelPackageIdentifier = "model.neo4j.node"
+const val RelationshipModelPackageIdentifier = "model.neo4j.relationship"
 
 object Neo4jConnector {
     private val configuration: Configuration = Configuration.Builder().uri(Neo4jBoltConnectionUri).build()!!

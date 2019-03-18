@@ -1,9 +1,9 @@
-package model.graph.node
+package model.neo4j.node
 
-import model.graph.GraphEntity
-import model.graph.relationship.BelongsToRelation
-import model.graph.relationship.CallsRelation
-import model.graph.relationship.CallsRelationship
+import model.neo4j.GraphEntity
+import model.neo4j.relationship.BelongsToRelation
+import model.neo4j.relationship.CallsRelation
+import model.neo4j.relationship.CallsRelationship
 import org.neo4j.ogm.annotation.GeneratedValue
 import org.neo4j.ogm.annotation.Id
 import org.neo4j.ogm.annotation.NodeEntity
@@ -18,7 +18,7 @@ import utility.Neo4jConnector
 
 
 @NodeEntity
-class Unit(var identifier: String, var packageIdentifier: String) : GraphEntity {
+class Unit(var identifier: String, var packageIdentifier: String, var projectName: String) : GraphEntity {
     @Id
     @GeneratedValue
     override var id: Long? = null
@@ -55,7 +55,7 @@ class Unit(var identifier: String, var packageIdentifier: String) : GraphEntity 
     private fun retrieveExistingRelationship(callee: Unit): CallsRelationship? {
         try {
             return this.callerRelationships.find {
-                it.callee.identifier == callee.identifier && it.callee.packageIdentifier == callee.packageIdentifier
+                it.callee.identifier == callee.identifier && it.callee.packageIdentifier == callee.packageIdentifier && it.callee.projectName == callee.projectName
             }
         } catch (e: Exception) {
             println(e.localizedMessage).also { throw e }
@@ -79,13 +79,13 @@ class Unit(var identifier: String, var packageIdentifier: String) : GraphEntity 
 
     fun doesNotBelongTo(service: Service) {
         this.service = null
-        service.units.removeIf { it.identifier == this.identifier && it.packageIdentifier == this.packageIdentifier }
+        service.units.removeIf { it.identifier == this.identifier && it.packageIdentifier == this.packageIdentifier && it.projectName == this.projectName }
     }
 
     companion object Factory {
         @Suppress("SENSELESS_COMPARISON")
-        fun create(identifier: String, packageIdentifier: String): Unit {
-            val filters = buildFilters(identifier, packageIdentifier)
+        fun create(identifier: String, packageIdentifier: String, projectName: String): Unit {
+            val filters = buildFilters(identifier, packageIdentifier, projectName)
             val existingEntity = Neo4jConnector.retrieveEntity(Unit::class.java, filters)
 
             return if (existingEntity != null) {
@@ -94,19 +94,23 @@ class Unit(var identifier: String, var packageIdentifier: String) : GraphEntity 
                 if (unit.callerRelationships == null) unit.callerRelationships = mutableSetOf()
                 unit
             } else {
-                Unit(identifier, packageIdentifier)
+                Unit(identifier, packageIdentifier, projectName)
             }
         }
 
-        private fun buildFilters(identifier: String, packageIdentifier: String): Filters {
+        private fun buildFilters(identifier: String, packageIdentifier: String, projectName: String): Filters {
             val filters = Filters()
 
-            val identifierFilter = Filter("identifier", ComparisonOperator.EQUALS, identifier)
+            val identifierFilter = Filter(Unit::identifier.name, ComparisonOperator.EQUALS, identifier)
             filters.add(identifierFilter)
 
-            val packageIdentifierFilter = Filter("packageIdentifier", ComparisonOperator.EQUALS, packageIdentifier)
+            val packageIdentifierFilter = Filter(Unit::packageIdentifier.name, ComparisonOperator.EQUALS, packageIdentifier)
             packageIdentifierFilter.booleanOperator = BooleanOperator.AND
             filters.add(packageIdentifierFilter)
+
+            val projectNameFilter = Filter(Unit::projectName.name, ComparisonOperator.EQUALS, projectName)
+            projectNameFilter.booleanOperator = BooleanOperator.AND
+            filters.add(projectNameFilter)
 
             return filters
         }

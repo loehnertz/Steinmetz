@@ -1,4 +1,4 @@
-package model.graph
+package model.neo4j
 
 
 interface GraphEntity {

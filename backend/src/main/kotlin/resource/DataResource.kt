@@ -12,9 +12,9 @@ import io.ktor.routing.route
 
 fun Route.data(controller: DataController) {
     route("/data") {
-        get("/{basePackageIdentifier}") {
-            val basePackageIdentifier = call.parameters["basePackageIdentifier"].toString()
-            call.respond(controller.getGraph(basePackageIdentifier))
+        get("/{projectName}") {
+            val projectName = call.parameters["projectName"].toString()
+            call.respond(controller.getGraph(projectName))
         }
     }
 
