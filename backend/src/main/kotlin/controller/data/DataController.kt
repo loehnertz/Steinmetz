@@ -16,8 +16,8 @@ class DataController {
         return getGraph(newProjectRequest.projectIdentifier)
     }
 
-    fun getGraph(basePackageIdentifier: String): Graph {
-        val filter = Filter("packageIdentifier", ComparisonOperator.STARTING_WITH, basePackageIdentifier)
+    fun getGraph(projectName: String): Graph {
+        val filter = Filter(Unit::projectName.name, ComparisonOperator.EQUALS, projectName)
         val units = Neo4jConnector.retrieveEntities(Unit::class.java, filter).map { it as Unit }
         val relationships = GraphConverter.convertUnitListToRelationships(units)
         return Graph(relationships = relationships)
