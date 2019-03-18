@@ -22,6 +22,9 @@
                 graphNodes: [],
                 graphEdges: [],
                 graphOptions: {
+                    manipulation: {
+                        enabled: true,
+                    },
                     physics: {
                         barnesHut: {
                             gravitationalConstant: 0,
