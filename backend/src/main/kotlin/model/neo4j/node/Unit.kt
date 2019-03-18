@@ -1,9 +1,9 @@
-package model.graph.node
+package model.neo4j.node
 
-import model.graph.GraphEntity
-import model.graph.relationship.BelongsToRelation
-import model.graph.relationship.CallsRelation
-import model.graph.relationship.CallsRelationship
+import model.neo4j.GraphEntity
+import model.neo4j.relationship.BelongsToRelation
+import model.neo4j.relationship.CallsRelation
+import model.neo4j.relationship.CallsRelationship
 import org.neo4j.ogm.annotation.GeneratedValue
 import org.neo4j.ogm.annotation.Id
 import org.neo4j.ogm.annotation.NodeEntity

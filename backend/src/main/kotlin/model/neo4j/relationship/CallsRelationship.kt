@@ -1,7 +1,7 @@
-package model.graph.relationship
+package model.neo4j.relationship
 
-import model.graph.GraphEntity
-import model.graph.node.Unit
+import model.neo4j.GraphEntity
+import model.neo4j.node.Unit
 import org.neo4j.ogm.annotation.*
 
 

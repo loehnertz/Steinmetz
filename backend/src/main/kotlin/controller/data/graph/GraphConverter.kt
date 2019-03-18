@@ -1,10 +1,13 @@
-package controller.data
+package controller.data.graph
 
-import model.graph.node.Unit
-import model.graph.relationship.CallsRelationship
+import model.graph.Attributes
+import model.graph.Edge
+import model.graph.Node
+import model.neo4j.node.Unit
+import model.neo4j.relationship.CallsRelationship
 
 
-object GraphExtractor {
+object GraphConverter {
     fun convertUnitListToRelationships(units: List<Unit>): ArrayList<Edge> {
         val relationships: MutableSet<CallsRelationship> = retrieveRelationships(units)
         return retrieveEdges(relationships)
