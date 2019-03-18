@@ -12,8 +12,13 @@ import utility.Neo4jConnector
 
 class DataController {
     fun insertProject(newProjectRequest: NewProjectRequest): Graph {
-        GraphInserter(newProjectRequest.projectIdentifier, newProjectRequest.projectPlatform, newProjectRequest.staticAnalysisArchive).insert()
-        return getGraph(newProjectRequest.projectIdentifier)
+        GraphInserter(
+                projectName = newProjectRequest.projectName,
+                projectPlatform = newProjectRequest.projectPlatform,
+                basePackageIdentifier = newProjectRequest.basePackageIdentifier,
+                staticAnalysisArchive = newProjectRequest.staticAnalysisArchive
+        ).insert()
+        return getGraph(newProjectRequest.projectName)
     }
 
     fun getGraph(projectName: String): Graph {

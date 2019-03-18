@@ -2,21 +2,27 @@ package controller.data.graph
 
 import controller.data.skeleton.jvm.JvmBytecodeExtractor
 import model.skeleton.Unit
+import org.neo4j.ogm.cypher.ComparisonOperator
+import org.neo4j.ogm.cypher.Filter
 import utility.Neo4jConnector
 import java.io.File
 
 
-class GraphInserter(private val projectName: String, private val projectPlatform: String, private val staticAnalysisArchive: File) {
+class GraphInserter(private val projectName: String, private val projectPlatform: String, private val basePackageIdentifier: String, private val staticAnalysisArchive: File) {
+    init {
+        if (projectAlreadyExists()) throw ProjectAlreadyExistsException()
+    }
+
     fun insert(): Boolean {
-        val staticAnalysisSkeletonFile = processStaticAnalysisData()
-        val unitContainer = UnitContainerExtractor.extract(staticAnalysisSkeletonFile.absolutePath)
+        val staticAnalysisSkeletonXml = processStaticAnalysisData()
+        val unitContainer = UnitContainerExtractor.extract(staticAnalysisSkeletonXml)
         return insertUnitsIntoDatabase(unitContainer.units)
     }
 
     @Throws(IllegalArgumentException::class)
-    private fun processStaticAnalysisData(): File {
+    private fun processStaticAnalysisData(): String {
         when (projectPlatform) {
-            JvmProjectKey -> return JvmBytecodeExtractor(projectName, staticAnalysisArchive).extract()
+            JvmProjectKey -> return JvmBytecodeExtractor(projectName, basePackageIdentifier, staticAnalysisArchive).extract()
             else -> throw IllegalArgumentException()
         }
     }
@@ -26,7 +32,7 @@ class GraphInserter(private val projectName: String, private val projectPlatform
 
         for (unit in units) {
             if (unit.identifier.contains("Test")) continue
-            val startUnit = model.neo4j.node.Unit.create(unit.identifier, unit.packageIdentifier)
+            val startUnit = model.neo4j.node.Unit.create(unit.identifier, unit.packageIdentifier, projectName)
 
             if (unit.methods == null) continue
             for (method in unit.methods) {
@@ -40,10 +46,10 @@ class GraphInserter(private val projectName: String, private val projectPlatform
                     targetComponents = targetComponents.dropLast(1)
                     val packageIdentifier = targetComponents.joinToString(".")
 
-                    if (identifier.contains("Test")) continue
-                    if (!packageIdentifier.startsWith(projectName)) continue
+                    if (identifier.endsWith("Test")) continue
+                    if (!packageIdentifier.startsWith(basePackageIdentifier)) continue
 
-                    val endUnit = model.neo4j.node.Unit.create(identifier, packageIdentifier)
+                    val endUnit = model.neo4j.node.Unit.create(identifier, packageIdentifier, projectName)
 
                     startUnit.calls(endUnit)
                 }
@@ -55,7 +61,14 @@ class GraphInserter(private val projectName: String, private val projectPlatform
         return true
     }
 
+    private fun projectAlreadyExists(): Boolean {
+        val filter = Filter(model.neo4j.node.Unit::projectName.name, ComparisonOperator.EQUALS, projectName)
+        return Neo4jConnector.retrieveEntities(model.neo4j.node.Unit::class.java, filter).isNotEmpty()
+    }
+
     companion object {
-        private const val JvmProjectKey = "jvm"
+        const val JvmProjectKey = "jvm"
     }
 }
+
+class ProjectAlreadyExistsException(override val message: String = "A project with that name already exists") : Exception()

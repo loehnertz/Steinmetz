@@ -10,9 +10,7 @@ import model.skeleton.UnitContainer
 
 
 object UnitContainerExtractor {
-    fun extract(processedSkeletonPath: String): UnitContainer = parseAs(getResourceAsText(processedSkeletonPath))
-
-    private fun getResourceAsText(path: String): String = object {}.javaClass.getResource(path).readText()
+    fun extract(processedSkeletonXml: String): UnitContainer = parseAs(processedSkeletonXml)
 
     private inline fun <reified T : Any> parseAs(xml: String): T = kotlinXmlMapper.readValue(xml)
 
