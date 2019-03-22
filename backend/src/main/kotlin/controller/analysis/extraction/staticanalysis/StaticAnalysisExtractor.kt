@@ -1,7 +1,7 @@
-package controller.data.extraction.staticanalysis
+package controller.analysis.extraction.staticanalysis
 
-import controller.data.extraction.Extractor
-import controller.data.extraction.Extractor.Companion.ExtractionBasePath
+import controller.analysis.extraction.Extractor
+import controller.analysis.extraction.Extractor.Companion.ExtractionBasePath
 import java.io.File
 
 
@@ -12,7 +12,7 @@ abstract class StaticAnalysisExtractor {
 
     abstract fun extract(): String
 
-    companion object: Extractor {
+    companion object : Extractor {
         const val StaticAnalysisDirectory = "static"
         const val SkeletonDirectoryName = "skeleton"
         const val UnarchiverBasePath = ExtractionBasePath

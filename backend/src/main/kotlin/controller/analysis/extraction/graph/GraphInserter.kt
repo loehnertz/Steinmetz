@@ -1,6 +1,6 @@
-package controller.data.extraction.graph
+package controller.analysis.extraction.graph
 
-import controller.data.extraction.staticanalysis.jvm.JvmBytecodeExtractor
+import controller.analysis.extraction.staticanalysis.jvm.JvmBytecodeExtractor
 import model.skeleton.Unit
 import org.neo4j.ogm.cypher.ComparisonOperator
 import org.neo4j.ogm.cypher.Filter

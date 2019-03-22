@@ -1,4 +1,4 @@
-package controller.data.extraction.graph
+package controller.analysis.extraction.graph
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.MapperFeature

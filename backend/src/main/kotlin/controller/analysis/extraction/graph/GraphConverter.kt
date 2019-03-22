@@ -1,4 +1,4 @@
-package controller.data.extraction.graph
+package controller.analysis.extraction.graph
 
 import model.graph.Attributes
 import model.graph.Edge

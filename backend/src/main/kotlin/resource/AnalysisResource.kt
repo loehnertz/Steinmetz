@@ -2,7 +2,7 @@ package resource
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import controller.data.DataController
+import controller.analysis.AnalysisController
 import io.ktor.application.call
 import io.ktor.request.receiveMultipart
 import io.ktor.response.respond
@@ -12,8 +12,8 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 
 
-fun Route.data(controller: DataController) {
-    route("/data") {
+fun Route.analysis(controller: AnalysisController) {
+    route("/analysis") {
         post("/") {
             val request = controller.handleNewProjectUploads(call.receiveMultipart())
             call.respond(controller.insertProject(request))

@@ -1,8 +1,8 @@
-package controller.data
+package controller.analysis
 
-import controller.data.extraction.graph.GraphConverter
-import controller.data.extraction.graph.GraphInserter
-import controller.data.extraction.staticanalysis.StaticAnalysisExtractor
+import controller.analysis.extraction.graph.GraphConverter
+import controller.analysis.extraction.graph.GraphInserter
+import controller.analysis.extraction.staticanalysis.StaticAnalysisExtractor
 import io.ktor.features.BadRequestException
 import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
@@ -17,7 +17,7 @@ import utility.Neo4jConnector
 import java.io.File
 
 
-class DataController {
+class AnalysisController {
     fun insertProject(newProjectRequest: NewProjectRequest): Graph {
         GraphInserter(
                 projectName = newProjectRequest.projectName,

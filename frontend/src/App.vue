@@ -24,7 +24,7 @@
         methods: {
             fetchGraph() {
                 axios
-                    .get(`http://localhost:5656/data/${this.selectedProjectId}`)
+                    .get(`http://localhost:5656/analysis/${this.selectedProjectId}`)
                     .then((response) => {
                         this.graphData = response.data;
                     })

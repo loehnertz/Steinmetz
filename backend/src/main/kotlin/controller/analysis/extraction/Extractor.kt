@@ -1,4 +1,4 @@
-package controller.data.extraction
+package controller.analysis.extraction
 
 
 interface Extractor {

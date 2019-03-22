@@ -1,7 +1,7 @@
 package main
 
 import com.fasterxml.jackson.databind.SerializationFeature
-import controller.data.DataController
+import controller.analysis.AnalysisController
 import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.features.CORS
@@ -14,7 +14,7 @@ import io.ktor.jackson.jackson
 import io.ktor.routing.Routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import resource.data
+import resource.analysis
 
 
 fun Application.module() {
@@ -35,7 +35,7 @@ fun Application.module() {
     }
 
     install(Routing) {
-        data(DataController())
+        analysis(AnalysisController())
     }
 }
 

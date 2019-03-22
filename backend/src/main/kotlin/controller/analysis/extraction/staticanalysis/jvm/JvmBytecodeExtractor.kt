@@ -1,8 +1,8 @@
-package controller.data.extraction.staticanalysis.jvm
+package controller.analysis.extraction.staticanalysis.jvm
 
-import controller.data.extraction.graph.GraphInserter
-import controller.data.extraction.staticanalysis.StaticAnalysisExtractor
-import controller.data.extraction.staticanalysis.utility.ArchiveExtractor
+import controller.analysis.extraction.graph.GraphInserter
+import controller.analysis.extraction.staticanalysis.StaticAnalysisExtractor
+import controller.analysis.extraction.staticanalysis.utility.ArchiveExtractor
 import java.io.File
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.stream.StreamResult
