@@ -13,12 +13,12 @@ import javax.xml.transform.stream.StreamSource
 class JvmBytecodeExtractor(private val projectName: String, private val basePackageIdentifier: String, private val archive: File) : StaticAnalysisExtractor() {
     private val basePath = buildBasePath(platformIdentifier, projectName)
     private val staticAnalysisBasePath = "$basePath/$StaticAnalysisDirectory"
-    private val unarchiver = ArchiveExtractor(".class", staticAnalysisBasePath)
+    private val unarchiver = ArchiveExtractor(".class", "$staticAnalysisBasePath/$unarchiverPath")
 
     override fun extract(): String {
         unarchiver.unpackAnalysisArchive(archive)
 
-        Runtime.getRuntime().exec("java -jar backend/src/main/resources/jpeek.jar --sources $staticAnalysisBasePath/${buildBasePackagePath()} --target $staticAnalysisBasePath/$SkeletonDirectoryName/jpeek --overwrite").waitFor()
+        Runtime.getRuntime().exec("java -jar backend/src/main/resources/jpeek.jar --sources $staticAnalysisBasePath/$unarchiverPath/${buildBasePackagePath()} --target $staticAnalysisBasePath/$SkeletonDirectoryName/jpeek --overwrite").waitFor()
 
         val convertedSkeletonXml = convertSkeletonXml(File("$staticAnalysisBasePath/$SkeletonDirectoryName/jpeek/skeleton.xml")).readText()
         cleanup(staticAnalysisBasePath)
@@ -29,6 +29,7 @@ class JvmBytecodeExtractor(private val projectName: String, private val basePack
         val xmlInput = StreamSource(skeletonFile)
         val xsl = StreamSource(File("backend/src/main/resources/jpeek-skeleton.xsl"))
         val outputFile = File("$staticAnalysisBasePath/$SkeletonDirectoryName/$projectName-processed.xml")
+        outputFile.parentFile.mkdirs()
         outputFile.createNewFile()
         val xmlOutput = StreamResult(outputFile)
 
@@ -44,5 +45,6 @@ class JvmBytecodeExtractor(private val projectName: String, private val basePack
 
     companion object {
         private const val platformIdentifier = GraphInserter.JvmProjectKey
+        private const val unarchiverPath = "jar"
     }
 }
