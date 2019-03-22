@@ -4,14 +4,21 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import controller.data.DataController
 import io.ktor.application.call
+import io.ktor.request.receiveMultipart
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
+import io.ktor.routing.post
 import io.ktor.routing.route
 
 
 fun Route.data(controller: DataController) {
     route("/data") {
+        post("/") {
+            val request = controller.handleNewProjectUploads(call.receiveMultipart())
+            call.respond(controller.insertProject(request))
+        }
+
         get("/{projectName}") {
             val projectName = call.parameters["projectName"].toString()
             call.respond(controller.getGraph(projectName))
