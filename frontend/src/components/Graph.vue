@@ -1,6 +1,5 @@
 <template>
     <Network
-            ref="timeline"
             :nodes="graphNodes"
             :edges="graphEdges"
             :options="graphOptions"
@@ -22,9 +21,6 @@
                 graphNodes: [],
                 graphEdges: [],
                 graphOptions: {
-                    manipulation: {
-                        enabled: true,
-                    },
                     physics: {
                         barnesHut: {
                             gravitationalConstant: 0,

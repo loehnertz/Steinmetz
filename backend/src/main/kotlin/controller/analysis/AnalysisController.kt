@@ -45,17 +45,23 @@ class AnalysisController {
         multipart.forEachPart { part ->
             // if part is a file (could be form item)
             when (part) {
+                is PartData.FormItem -> {
+                    when (part.name) {
+                        NewProjectRequest::projectName.name -> projectName = part.value
+                        NewProjectRequest::projectPlatform.name -> projectPlatform = part.value
+                        NewProjectRequest::basePackageIdentifier.name -> basePackageIdentifier = part.value
+                    }
+                }
                 is PartData.FileItem -> {
                     val file: File
                     when (part.name) {
-                        StaticAnalysisKey -> {
-                            val path = StaticAnalysisExtractor.getArchiveUploadPath()
-                            file = File("$path/${part.originalFileName!!}")
+                        NewProjectRequest::staticAnalysisArchive.name -> {
+                            file = File("${StaticAnalysisExtractor.getArchiveUploadPath()}/$projectName")
                             file.parentFile.mkdirs()
                             file.createNewFile()
                             staticAnalysisArchive = file
                         }
-                        else -> throw BadRequestException("File keys must be in ${listOf(StaticAnalysisKey, DynamicAnalysisKey)}")
+                        else -> throw BadRequestException("File keys must be in ${listOf(NewProjectRequest::staticAnalysisArchive.name, NewProjectRequest::dynamicAnalysisArchive.name)}")
                     }
 
                     // use InputStream from part to save file
@@ -65,13 +71,6 @@ class AnalysisController {
                             // note that this is blocking
                             upload.copyTo(it)
                         }
-                    }
-                }
-                is PartData.FormItem -> {
-                    when (part.name) {
-                        NewProjectRequest::projectName.name -> projectName = part.value
-                        NewProjectRequest::projectPlatform.name -> projectPlatform = part.value
-                        NewProjectRequest::basePackageIdentifier.name -> basePackageIdentifier = part.value
                     }
                 }
             }
@@ -84,12 +83,7 @@ class AnalysisController {
                 projectPlatform = projectPlatform!!,
                 basePackageIdentifier = basePackageIdentifier!!,
                 staticAnalysisArchive = staticAnalysisArchive!!,
-                dynamicAnalysisArchive = dynamicAnalysisArchive
+                dynamicAnalysisArchive = dynamicAnalysisArchive  // TODO: Change this to a non-null asserted call as well after it's implemented
         )
-    }
-
-    companion object {
-        const val StaticAnalysisKey = "static"
-        const val DynamicAnalysisKey = "dynamic"
     }
 }
