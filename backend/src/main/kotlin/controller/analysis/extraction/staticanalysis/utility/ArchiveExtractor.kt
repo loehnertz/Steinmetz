@@ -1,4 +1,4 @@
-package controller.data.skeleton.utility
+package controller.analysis.extraction.staticanalysis.utility
 
 import java.io.File
 import java.io.FileInputStream

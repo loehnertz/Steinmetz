@@ -1,6 +1,5 @@
 <template>
     <Network
-            ref="timeline"
             :nodes="graphNodes"
             :edges="graphEdges"
             :options="graphOptions"
@@ -22,8 +21,10 @@
                 graphNodes: [],
                 graphEdges: [],
                 graphOptions: {
-                    manipulation: {
-                        enabled: true,
+                    edges: {
+                        scaling: {
+                            customScalingFunction: this.getEdgeScalingFunction(),
+                        },
                     },
                     physics: {
                         barnesHut: {
@@ -111,6 +112,16 @@
                         },
                     },
                     arrowStrikethrough: false,
+                }
+            },
+            getEdgeScalingFunction() {
+                return function (min, max, total, value) {
+                    if (max === min) {
+                        return 0.5;
+                    } else {
+                        let scale = 1 / (max - min);
+                        return Math.max(0, (value - min) * scale);
+                    }
                 }
             },
         },

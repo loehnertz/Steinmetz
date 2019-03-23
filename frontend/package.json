@@ -10,6 +10,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "vue": "^2.5.22",
+    "vue-spinner": "^1.0.3",
     "vue2vis": "0.0.16"
   },
   "devDependencies": {
@@ -31,7 +32,15 @@
       "eslint:recommended"
     ],
     "rules": {
-      "no-console": ["error", {"allow": ["warn", "error"]}]
+      "no-console": [
+        "error",
+        {
+          "allow": [
+            "warn",
+            "error"
+          ]
+        }
+      ]
     },
     "parserOptions": {
       "parser": "babel-eslint"
