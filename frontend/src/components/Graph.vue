@@ -21,6 +21,11 @@
                 graphNodes: [],
                 graphEdges: [],
                 graphOptions: {
+                    edges: {
+                        scaling: {
+                            customScalingFunction: this.getEdgeScalingFunction(),
+                        },
+                    },
                     physics: {
                         barnesHut: {
                             gravitationalConstant: 0,
@@ -107,6 +112,16 @@
                         },
                     },
                     arrowStrikethrough: false,
+                }
+            },
+            getEdgeScalingFunction() {
+                return function (min, max, total, value) {
+                    if (max === min) {
+                        return 0.5;
+                    } else {
+                        let scale = 1 / (max - min);
+                        return Math.max(0, (value - min) * scale);
+                    }
                 }
             },
         },

@@ -69,6 +69,7 @@
                     })
                     .catch((error) => {
                         console.error(error);
+                        this.isLoading = false;
                     });
             },
             fetchAnalysis() {
@@ -80,6 +81,7 @@
                     })
                     .catch((error) => {
                         console.error(error);
+                        this.isLoading = false;
                     });
             },
             onUploadFileChange(e) {
