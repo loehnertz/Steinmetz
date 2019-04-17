@@ -3,8 +3,8 @@ package controller.analysis.extraction.staticanalysis.jvm
 import controller.analysis.extraction.graph.GraphInserter
 import controller.analysis.extraction.graph.UnitContainerExtractor
 import controller.analysis.extraction.staticanalysis.StaticAnalysisExtractor
-import controller.analysis.extraction.staticanalysis.utility.ArchiveExtractor
 import model.graph.Edge
+import utility.ArchiveExtractor
 import java.io.File
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.stream.StreamResult
