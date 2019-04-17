@@ -13,7 +13,8 @@
                     </select>
                 </label>
                 <input type="text" placeholder="Base Package Identifier" v-model="uploadBasePackageIdentifier">
-                <input type="file" placeholder="Static Analysis Archive" @change="onUploadFileChange">
+                <input type="file" placeholder="Static Analysis Archive" @change="onStaticAnalysisUploadFileChange">
+                <input type="file" placeholder="Dynamic Analysis Archive" @change="onDynamicAnalysisUploadFileChange">
                 <button @click="uploadNewProjectData">Upload</button>
             </div>
             <br>
@@ -46,6 +47,7 @@
                 uploadProjectPlatform: 'jvm',
                 uploadBasePackageIdentifier: '',
                 uploadStaticAnalysisArchive: null,
+                uploadDynamicAnalysisArchive: null,
                 selectedProjectId: '',
                 graphData: {},
             }
@@ -60,6 +62,7 @@
                 data.append('projectPlatform', this.uploadProjectPlatform);
                 data.append('basePackageIdentifier', this.uploadBasePackageIdentifier);
                 data.append('staticAnalysisArchive', this.uploadStaticAnalysisArchive);
+                data.append('dynamicAnalysisArchive', this.uploadDynamicAnalysisArchive);
 
                 axios
                     .post(`http://localhost:5656/analysis/`, data)
@@ -84,9 +87,13 @@
                         this.isLoading = false;
                     });
             },
-            onUploadFileChange(e) {
+            onStaticAnalysisUploadFileChange(e) {
                 const files = e.target.files || e.dataTransfer.files;
                 if (files.length > 0) this.uploadStaticAnalysisArchive = files[0]
+            },
+            onDynamicAnalysisUploadFileChange(e) {
+                const files = e.target.files || e.dataTransfer.files;
+                if (files.length > 0) this.uploadDynamicAnalysisArchive = files[0]
             },
         },
     }
