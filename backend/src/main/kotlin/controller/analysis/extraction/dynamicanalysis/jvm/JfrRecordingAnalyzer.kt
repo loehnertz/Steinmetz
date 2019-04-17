@@ -22,7 +22,7 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
     }
 
     private fun analyzeRecording(): List<Edge> {
-        val histogram = mutableMapOf<Pair<Node, Node>, Int>()
+        val edges = arrayListOf<Edge>()
 
         RecordingFile(Paths.get(jfrRecording.absolutePath)).use { f ->
             while (f.hasMoreEvents()) {
@@ -46,9 +46,7 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
                             val calleeUnit = Node(identifier = calleeIdentifier, packageIdentifier = calleePackageIdentifier)
 
                             if (callerUnit != calleeUnit) {
-                                val relationship = Pair(callerUnit, calleeUnit)
-                                histogram.putIfAbsent(relationship, 0)
-                                histogram[relationship] = histogram[relationship]!! + 1
+                                edges.add(Edge(start = callerUnit, end = calleeUnit, attributes = Attributes(couplingScore = 1)))
                             }
                         }
                     }
@@ -56,7 +54,7 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
             }
         }
 
-        return histogram.map { (edge, weight) -> Edge(start = edge.first, end = edge.second, attributes = Attributes(couplingScore = weight)) }
+        return edges
     }
 
     companion object {
