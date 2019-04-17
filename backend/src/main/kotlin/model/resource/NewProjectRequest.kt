@@ -8,5 +8,5 @@ data class NewProjectRequest(
         val projectPlatform: String,
         val basePackageIdentifier: String,
         val staticAnalysisArchive: File,
-        val dynamicAnalysisArchive: File?
+        val dynamicAnalysisArchive: File
 )

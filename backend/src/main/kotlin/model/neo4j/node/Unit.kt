@@ -32,15 +32,23 @@ class Unit(var identifier: String, var packageIdentifier: String, var projectNam
     @Relationship(type = BelongsToRelation, direction = OUTGOING)
     var service: Service? = null
 
-    fun calls(callee: Unit, couplingScore: Int = 1) {
+    fun calls(callee: Unit, couplingScore: Int = 1): CallsRelationship {
         val existingRelationship = retrieveExistingRelationship(callee)
         if (existingRelationship != null) {
             val newCouplingScore = existingRelationship.couplingScore + couplingScore
-            return updateCouplingScore(existingRelationship, newCouplingScore)
+            updateCouplingScore(existingRelationship, newCouplingScore)
+            return existingRelationship
         }
 
         val relationship = buildRelationship(callee, couplingScore)
         insertRelationship(relationship)
+
+        return relationship
+    }
+
+    fun increaseCouplingScore(existingRelationship: CallsRelationship, addedCouplingScore: Int) {
+        removeRelationship(existingRelationship)
+        insertRelationship(buildRelationship(existingRelationship.callee, (existingRelationship.couplingScore + addedCouplingScore)))
     }
 
     private fun updateCouplingScore(existingRelationship: CallsRelationship, newCouplingScore: Int) {

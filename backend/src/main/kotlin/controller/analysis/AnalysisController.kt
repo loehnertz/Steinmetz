@@ -1,5 +1,6 @@
 package controller.analysis
 
+import controller.analysis.extraction.dynamicanalysis.DynamicAnalysisExtractor
 import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
 import controller.analysis.extraction.staticanalysis.StaticAnalysisExtractor
@@ -19,20 +20,20 @@ import java.io.File
 
 class AnalysisController {
     fun insertProject(newProjectRequest: NewProjectRequest): Graph {
-        GraphInserter(
+        return GraphInserter(
                 projectName = newProjectRequest.projectName,
                 projectPlatform = newProjectRequest.projectPlatform,
                 basePackageIdentifier = newProjectRequest.basePackageIdentifier,
-                staticAnalysisArchive = newProjectRequest.staticAnalysisArchive
+                staticAnalysisArchive = newProjectRequest.staticAnalysisArchive,
+                dynamicAnalysisArchive = newProjectRequest.dynamicAnalysisArchive
         ).insert()
-        return getGraph(newProjectRequest.projectName)
     }
 
     fun getGraph(projectName: String): Graph {
         val filter = Filter(Unit::projectName.name, ComparisonOperator.EQUALS, projectName)
         val units = Neo4jConnector.retrieveEntities(Unit::class.java, filter).map { it as Unit }
         val relationships = GraphConverter.convertUnitListToRelationships(units)
-        return Graph(relationships = relationships)
+        return Graph(relationships.toSet())
     }
 
     suspend fun handleNewProjectUploads(multipart: MultiPartData): NewProjectRequest {
@@ -43,7 +44,7 @@ class AnalysisController {
         var dynamicAnalysisArchive: File? = null
 
         multipart.forEachPart { part ->
-            // if part is a file (could be form item)
+            // Only continue if the part is a file (it could be form item)
             when (part) {
                 is PartData.FormItem -> {
                     when (part.name) {
@@ -61,20 +62,25 @@ class AnalysisController {
                             file.createNewFile()
                             staticAnalysisArchive = file
                         }
+                        NewProjectRequest::dynamicAnalysisArchive.name -> {
+                            file = File("${DynamicAnalysisExtractor.getArchiveUploadPath()}/$projectName")
+                            file.parentFile.mkdirs()
+                            file.createNewFile()
+                            dynamicAnalysisArchive = file
+                        }
                         else -> throw BadRequestException("File keys must be in ${listOf(NewProjectRequest::staticAnalysisArchive.name, NewProjectRequest::dynamicAnalysisArchive.name)}")
                     }
 
-                    // use InputStream from part to save file
                     part.streamProvider().use { upload ->
-                        // copy the stream to the file with buffering
+                        // Copy the stream to the file with buffering
                         file.outputStream().buffered().use {
-                            // note that this is blocking
                             upload.copyTo(it)
                         }
                     }
                 }
             }
-            // make sure to dispose of the part after use to prevent leaks
+
+            // Dispose of the part after use to prevent leaks
             part.dispose()
         }
 
@@ -83,7 +89,7 @@ class AnalysisController {
                 projectPlatform = projectPlatform!!,
                 basePackageIdentifier = basePackageIdentifier!!,
                 staticAnalysisArchive = staticAnalysisArchive!!,
-                dynamicAnalysisArchive = dynamicAnalysisArchive  // TODO: Change this to a non-null asserted call as well after it's implemented
+                dynamicAnalysisArchive = dynamicAnalysisArchive!!
         )
     }
 }

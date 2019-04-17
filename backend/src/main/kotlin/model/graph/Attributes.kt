@@ -2,5 +2,5 @@ package model.graph
 
 
 data class Attributes(
-        val couplingScore: Int
+        var couplingScore: Int
 )
