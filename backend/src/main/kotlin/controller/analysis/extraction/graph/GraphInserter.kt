@@ -1,64 +1,79 @@
 package controller.analysis.extraction.graph
 
+import controller.analysis.extraction.dynamicanalysis.jvm.JfrRecordingAnalyzer
 import controller.analysis.extraction.staticanalysis.jvm.JvmBytecodeExtractor
-import model.skeleton.Unit
+import model.graph.Edge
+import model.graph.Graph
 import org.neo4j.ogm.cypher.ComparisonOperator
 import org.neo4j.ogm.cypher.Filter
 import utility.Neo4jConnector
 import java.io.File
 
 
-class GraphInserter(private val projectName: String, private val projectPlatform: String, private val basePackageIdentifier: String, private val staticAnalysisArchive: File) {
+class GraphInserter(
+        private val projectName: String,
+        private val projectPlatform: String,
+        private val basePackageIdentifier: String,
+        private val staticAnalysisArchive: File,
+        private val dynamicAnalysisArchive: File
+) {
     init {
         if (projectAlreadyExists()) throw ProjectAlreadyExistsException()
     }
 
-    fun insert(): Boolean {
-        val staticAnalysisSkeletonXml = processStaticAnalysisData()
-        val unitContainer = UnitContainerExtractor.extract(staticAnalysisSkeletonXml)
-        return insertUnitsIntoDatabase(unitContainer.units)
+    fun insert(): Graph {
+        val staticAnalysisEdges = processStaticAnalysisData()
+        val dynamicAnalysisEdges = processDynamicAnalysisData()
+
+        val mergedGraph = mergeEdgeListsToGraph(staticAnalysisEdges, dynamicAnalysisEdges)
+
+        insertGraphIntoDatabase(mergedGraph)
+
+        return mergedGraph
     }
 
     @Throws(IllegalArgumentException::class)
-    private fun processStaticAnalysisData(): String {
+    private fun processStaticAnalysisData(): List<Edge> {
         when (projectPlatform) {
             JvmProjectKey -> return JvmBytecodeExtractor(projectName, basePackageIdentifier, staticAnalysisArchive).extract()
             else -> throw IllegalArgumentException()
         }
     }
 
-    private fun insertUnitsIntoDatabase(units: List<Unit>): Boolean {
-        if (units.isEmpty()) return false
+    @Throws(IllegalArgumentException::class)
+    private fun processDynamicAnalysisData(): List<Edge> {
+        when (projectPlatform) {
+            JvmProjectKey -> return JfrRecordingAnalyzer(projectName, basePackageIdentifier, dynamicAnalysisArchive).extract()
+            else -> throw IllegalArgumentException()
+        }
+    }
 
-        for (unit in units) {
-            if (unit.identifier.contains("Test")) continue
-            val startUnit = model.neo4j.node.Unit.create(unit.identifier, unit.packageIdentifier, projectName)
+    private fun mergeEdgeListsToGraph(vararg edgeLists: List<Edge>): Graph {
+        val edges = arrayListOf<Edge>()
 
-            if (unit.methods == null) continue
-            for (method in unit.methods) {
-                if (method.operations == null) continue
-                for (operation in method.operations) {
-                    if (operation.type != "call") continue
-
-                    var targetComponents = operation.target.split('.')
-                    targetComponents = targetComponents.dropLast(1)
-                    val identifier = targetComponents.last()
-                    targetComponents = targetComponents.dropLast(1)
-                    val packageIdentifier = targetComponents.joinToString(".")
-
-                    if (identifier.endsWith("Test")) continue
-                    if (!packageIdentifier.startsWith(basePackageIdentifier)) continue
-
-                    val endUnit = model.neo4j.node.Unit.create(identifier, packageIdentifier, projectName)
-
-                    startUnit.calls(endUnit)
+        for (edgeList in edgeLists) {
+            for (edge in edgeList) {
+                if (edges.contains(edge)) {
+                    val equalEdgeIndex = edges.indexOf(edge)
+                    edges[equalEdgeIndex].attributes.couplingScore += edge.attributes.couplingScore
+                } else {
+                    edges.add(edge)
                 }
             }
+        }
+
+        return Graph(edges.toSet())
+    }
+
+    private fun insertGraphIntoDatabase(graph: Graph) {
+        for (edge in graph.edges) {
+            val startUnit = model.neo4j.node.Unit.create(edge.start.identifier, edge.start.packageIdentifier, projectName)
+            val endUnit = model.neo4j.node.Unit.create(edge.end.identifier, edge.end.packageIdentifier, projectName)
+
+            startUnit.calls(endUnit)
 
             Neo4jConnector.saveEntity(startUnit)
         }
-
-        return true
     }
 
     private fun projectAlreadyExists(): Boolean {
