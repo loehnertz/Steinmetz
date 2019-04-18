@@ -1,4 +1,4 @@
-package controller.analysis.extraction.staticanalysis.utility
+package utility
 
 import java.io.File
 import java.io.FileInputStream

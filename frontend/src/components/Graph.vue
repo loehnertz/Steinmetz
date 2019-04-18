@@ -36,7 +36,7 @@
         },
         watch: {
             graphData: function (graphData) {
-                if (graphData) this.constructGraph(this.graphData["relationships"]);
+                if (graphData) this.constructGraph(this.graphData["edges"]);
             },
         },
         methods: {

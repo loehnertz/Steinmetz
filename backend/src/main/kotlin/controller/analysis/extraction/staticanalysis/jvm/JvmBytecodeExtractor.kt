@@ -1,8 +1,10 @@
 package controller.analysis.extraction.staticanalysis.jvm
 
 import controller.analysis.extraction.graph.GraphInserter
+import controller.analysis.extraction.graph.UnitContainerExtractor
 import controller.analysis.extraction.staticanalysis.StaticAnalysisExtractor
-import controller.analysis.extraction.staticanalysis.utility.ArchiveExtractor
+import model.graph.Edge
+import utility.ArchiveExtractor
 import java.io.File
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.stream.StreamResult
@@ -15,14 +17,16 @@ class JvmBytecodeExtractor(private val projectName: String, private val basePack
     private val staticAnalysisBasePath = "$basePath/$StaticAnalysisDirectory"
     private val unarchiver = ArchiveExtractor(".class", "$staticAnalysisBasePath/$unarchiverPath")
 
-    override fun extract(): String {
+    override fun extract(): List<Edge> {
         unarchiver.unpackAnalysisArchive(archive)
 
         Runtime.getRuntime().exec("java -jar backend/src/main/resources/jpeek.jar --sources $staticAnalysisBasePath/$unarchiverPath/${buildBasePackagePath()} --target $staticAnalysisBasePath/$SkeletonDirectoryName/jpeek --overwrite").waitFor()
 
         val convertedSkeletonXml = convertSkeletonXml(File("$staticAnalysisBasePath/$SkeletonDirectoryName/jpeek/skeleton.xml")).readText()
         cleanup(staticAnalysisBasePath)
-        return convertedSkeletonXml
+        val unitContainer = UnitContainerExtractor.extract(convertedSkeletonXml)
+
+        return convertUnitContainerToGraph(unitContainer, basePackageIdentifier)
     }
 
     private fun convertSkeletonXml(skeletonFile: File): File {

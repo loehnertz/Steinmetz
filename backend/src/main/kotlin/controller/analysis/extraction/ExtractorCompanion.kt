@@ -1,7 +1,7 @@
 package controller.analysis.extraction
 
 
-interface Extractor {
+interface ExtractorCompanion {
     fun getArchiveUploadPath(): String
 
     companion object {
