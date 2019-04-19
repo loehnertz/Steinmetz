@@ -1,7 +1,7 @@
 package controller.analysis.extraction.graph
 
-import model.graph.Attributes
 import model.graph.Edge
+import model.graph.EdgeAttributes
 import model.graph.Node
 import model.neo4j.node.Unit
 import model.neo4j.relationship.CallsRelationship
@@ -30,7 +30,7 @@ object GraphConverter {
         for (relationship in relationships) {
             val start = Node(identifier = relationship.caller.identifier, packageIdentifier = relationship.caller.packageIdentifier)
             val end = Node(identifier = relationship.callee.identifier, packageIdentifier = relationship.callee.packageIdentifier)
-            val attributes = Attributes(couplingScore = relationship.couplingScore)
+            val attributes = EdgeAttributes(couplingScore = relationship.couplingScore)
 
             edges.add(Edge(start = start, end = end, attributes = attributes))
         }

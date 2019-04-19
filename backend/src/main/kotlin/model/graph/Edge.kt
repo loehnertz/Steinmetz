@@ -4,7 +4,7 @@ package model.graph
 data class Edge(
         val start: Node,
         val end: Node,
-        val attributes: Attributes
+        val attributes: EdgeAttributes
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -22,3 +22,7 @@ data class Edge(
         return 31 * start.hashCode() + end.hashCode()
     }
 }
+
+data class EdgeAttributes(
+        var couplingScore: Int
+)

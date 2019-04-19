@@ -62,7 +62,7 @@ class GraphInserter(
             }
         }
 
-        return Graph(edges.toSet())
+        return Graph(edges = edges.toMutableSet())
     }
 
     private fun insertGraphIntoDatabase(graph: Graph) {

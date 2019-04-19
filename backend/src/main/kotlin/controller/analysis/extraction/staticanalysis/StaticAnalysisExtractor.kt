@@ -2,8 +2,8 @@ package controller.analysis.extraction.staticanalysis
 
 import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.ExtractorCompanion
-import model.graph.Attributes
 import model.graph.Edge
+import model.graph.EdgeAttributes
 import model.graph.Node
 import model.skeleton.UnitContainer
 
@@ -34,7 +34,7 @@ abstract class StaticAnalysisExtractor : AbstractExtractor() {
                     val endUnit = Node(identifier = identifier, packageIdentifier = packageIdentifier)
 
                     if (startUnit != endUnit) {
-                        edges.add(Edge(start = startUnit, end = endUnit, attributes = Attributes(couplingScore = 1)))
+                        edges.add(Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(couplingScore = 1)))
                     }
                 }
             }

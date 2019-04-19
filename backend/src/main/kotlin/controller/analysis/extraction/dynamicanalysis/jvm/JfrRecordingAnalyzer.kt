@@ -4,8 +4,8 @@ import controller.analysis.extraction.dynamicanalysis.DynamicAnalysisExtractor
 import controller.analysis.extraction.graph.GraphInserter
 import jdk.jfr.consumer.RecordedEvent
 import jdk.jfr.consumer.RecordingFile
-import model.graph.Attributes
 import model.graph.Edge
+import model.graph.EdgeAttributes
 import model.graph.Node
 import java.io.File
 import java.nio.file.Paths
@@ -46,7 +46,7 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
                             val calleeUnit = Node(identifier = calleeIdentifier, packageIdentifier = calleePackageIdentifier)
 
                             if (callerUnit != calleeUnit) {
-                                edges.add(Edge(start = callerUnit, end = calleeUnit, attributes = Attributes(couplingScore = 1)))
+                                edges.add(Edge(start = callerUnit, end = calleeUnit, attributes = EdgeAttributes(couplingScore = 1)))
                             }
                         }
                     }
