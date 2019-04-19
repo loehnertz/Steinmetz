@@ -125,22 +125,20 @@
 
     #app {
         width: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-evenly;
         font-family: 'Avenir', Helvetica, Arial, sans-serif;
         color: #2c3e50;
         text-align: center;
     }
 
     #controls__container {
-        flex-basis: 13%;
-        margin-bottom: 2%;
+        height: 10vh;
+        margin-bottom: 5vh;
     }
 
     #graph__container {
-        flex-basis: 85%;
+        height: 80vh;
         border: 2px solid gray;
+        margin: 0 1vw;
     }
 
     #graph {

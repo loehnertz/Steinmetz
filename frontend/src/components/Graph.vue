@@ -10,6 +10,10 @@
 <script>
     import {Network} from 'vue2vis';
 
+    const DefaultColor = 'orange';
+    const ClusterNodeKeyword = '$cluster';
+    const LayoutSeed = 55609697;
+
     export default {
         name: 'Graph',
         components: {
@@ -21,10 +25,31 @@
                 graphNodes: [],
                 graphEdges: [],
                 graphOptions: {
+                    nodes: {
+                        font: {
+                            face: 'Titillium Web',
+                            size: 21,
+                        },
+                        margin: 15,
+                        shape: 'box',
+                    },
                     edges: {
                         scaling: {
                             customScalingFunction: this.getEdgeScalingFunction(),
                         },
+                    },
+                    layout: {
+                        randomSeed: LayoutSeed,
+                    },
+                    interaction: {
+                        hideEdgesOnDrag: true,
+                    },
+                    manipulation: {
+                        enabled: true,
+                        addNode: false,
+                        addEdge: false,
+                        deleteNode: false,
+                        deleteEdge: false,
                     },
                     physics: {
                         barnesHut: {
@@ -88,10 +113,10 @@
                     id: this.constructNodeId(identifier, packageIdentifier),
                     title: identifier,
                     label: identifier,
-                    borderWidth: 2,
+                    borderWidth: 5,
                     color: {
                         background: 'whitesmoke',
-                        border: 'orange',
+                        border: this.getNodeBorderColor(clusterId, clusterAmount),
                     },
                 }
             },
@@ -99,8 +124,8 @@
                 return {
                     from: startNodeId,
                     to: endNodeId,
-                    label: label,
-                    value: weight,
+                    length: length,
+                    value: 1,
                     color: {
                         color: 'green',
                         highlight: 'fuchsia',
@@ -139,4 +164,5 @@
 </script>
 
 <style scoped>
+    @import "~vue2vis/dist/vue2vis.css";
 </style>
