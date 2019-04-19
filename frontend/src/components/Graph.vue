@@ -227,6 +227,17 @@
             generateNodePopup(title) {
                 return `<span style="font-family: 'Titillium Web', sans-serif;">${title}</span>`;
             },
+            // Adapted from: https://krazydad.com/tutorials/makecolors.php
+            getNodeBorderColor(coloringKey, maxColoringKey) {
+                if (!coloringKey || !maxColoringKey) return DefaultColor;
+
+                const i = (coloringKey * 255 / maxColoringKey);
+                const r = Math.round(Math.sin(0.024 * i) * 127 + 128);
+                const g = Math.round(Math.sin(0.024 * i + 2) * 127 + 128);
+                const b = Math.round(Math.sin(0.024 * i + 4) * 127 + 128);
+
+                return `rgb(${r}, ${g}, ${b})`;
+            },
             getEdgeScalingFunction() {
                 return function (min, max, total, value) {
                     if (max === min) {
