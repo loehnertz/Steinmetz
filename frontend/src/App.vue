@@ -22,9 +22,13 @@
                 <input type="text" placeholder="Project Identifier" v-model="selectedProjectId">
                 <button @click="fetchAnalysis">Retrieve</button>
             </div>
+            <br>
+            <div>
+                <button @click="fetchClusteredGraph">Cluster</button>
+            </div>
         </div>
         <div id="graph__container">
-            <Graph id="graph" :graph-data="graphData"/>
+            <Graph id="graph" :graph-data="graphData" :is-clustered="isClustered"/>
         </div>
     </div>
 </template>
@@ -50,6 +54,7 @@
                 uploadDynamicAnalysisArchive: null,
                 selectedProjectId: '',
                 graphData: {},
+                isClustered: true,
             }
         },
         methods: {
@@ -79,6 +84,20 @@
                 axios
                     .get(`http://localhost:5656/analysis/${this.selectedProjectId}`)
                     .then((response) => {
+                        this.isClustered = false;
+                        this.graphData = response.data;
+                        this.isLoading = false;
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        this.isLoading = false;
+                    });
+            },
+            fetchClusteredGraph() {
+                axios
+                    .get(`http://localhost:5656/analysis/${this.selectedProjectId}/cluster`)
+                    .then((response) => {
+                        this.isClustered = true;
                         this.graphData = response.data;
                         this.isLoading = false;
                     })

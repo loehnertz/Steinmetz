@@ -130,6 +130,10 @@
                 type: Object,
                 default: () => ({}),
             },
+            isClustered: {
+                type: Boolean,
+                default: () => (true),
+            },
         },
     }
 </script>
