@@ -23,6 +23,11 @@ fun Route.analysis(controller: AnalysisController) {
             val projectName = call.parameters["projectName"].toString()
             call.respond(controller.getGraph(projectName))
         }
+
+        get("/{projectName}/cluster") {
+            val projectName = call.parameters["projectName"].toString()
+            call.respond(controller.clusterGraph(projectName))
+        }
     }
 
     @Suppress("UNUSED_VARIABLE")

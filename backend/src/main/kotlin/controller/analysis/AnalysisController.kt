@@ -1,5 +1,6 @@
 package controller.analysis
 
+import controller.analysis.clustering.Clusterer
 import controller.analysis.extraction.dynamicanalysis.DynamicAnalysisExtractor
 import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
@@ -33,7 +34,12 @@ class AnalysisController {
         val filter = Filter(Unit::projectName.name, ComparisonOperator.EQUALS, projectName)
         val units = Neo4jConnector.retrieveEntities(Unit::class.java, filter).map { it as Unit }
         val relationships = GraphConverter.convertUnitListToRelationships(units)
-        return Graph(relationships.toSet())
+        return Graph(edges = relationships.toMutableSet())
+    }
+
+    fun clusterGraph(projectName: String): Graph {
+        val projectGraph = getGraph(projectName)
+        return Clusterer(projectGraph).applyMcl()
     }
 
     suspend fun handleNewProjectUploads(multipart: MultiPartData): NewProjectRequest {
