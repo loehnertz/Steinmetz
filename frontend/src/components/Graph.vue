@@ -106,13 +106,15 @@
             },
             setEdges(relationships, clusterIds) {
                 for (let relationship of relationships) {
-                    let startNode = relationship.start;
-                    let endNode = relationship.end;
+                    const startNode = relationship.start;
+                    const endNode = relationship.end;
+                    const attributes = relationship.attributes;
 
-                    let edge = this.buildUnitEdge(
+                    const edge = this.buildUnitEdge(
                         this.constructUnitNodeId(startNode["identifier"], startNode["packageIdentifier"]),
                         this.constructUnitNodeId(endNode["identifier"], endNode["packageIdentifier"]),
                         100,
+                        attributes["couplingScore"],
                     );
 
                     this.graphEdges.push(edge);
@@ -152,12 +154,12 @@
                     shape: 'hexagon',
                 }
             },
-            buildUnitEdge(startNodeId, endNodeId, length) {
+            buildUnitEdge(startNodeId, endNodeId, length, weight) {
                 return {
                     from: startNodeId,
                     to: endNodeId,
                     length: length,
-                    value: 1,
+                    value: weight,
                     color: {
                         color: 'green',
                         highlight: 'fuchsia',
@@ -206,15 +208,15 @@
                     const toClusterNode = this.constructClusterNodeId(this.findNodeById(unitEdge.to).cid);
 
                     if (fromClusterNode !== toClusterNode) {
-                        const clusterUnitEdge = this.buildUnitEdge(fromClusterNode, toClusterNode, 555);
+                        const clusterUnitEdge = this.buildUnitEdge(fromClusterNode, toClusterNode, 555, unitEdge.value);
                         const existingEdgeIndex = this.graphEdges.findIndex((edge) => {
-                            return edge.from === clusterUnitEdge.from && edge.to === clusterUnitEdge.to
+                            return edge.from === clusterUnitEdge.from && edge.to === clusterUnitEdge.to;
                         });
 
                         if (existingEdgeIndex === -1) {
                             this.graphEdges.push(clusterUnitEdge);
                         } else {
-                            this.graphEdges[existingEdgeIndex].value = this.graphEdges[existingEdgeIndex].value + 1;
+                            this.graphEdges[existingEdgeIndex].value += unitEdge.value;
                         }
                     }
                 }

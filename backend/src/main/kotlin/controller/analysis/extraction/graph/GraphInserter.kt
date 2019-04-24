@@ -70,7 +70,7 @@ class GraphInserter(
             val startUnit = model.neo4j.node.Unit.create(edge.start.identifier, edge.start.packageIdentifier, projectName)
             val endUnit = model.neo4j.node.Unit.create(edge.end.identifier, edge.end.packageIdentifier, projectName)
 
-            startUnit.calls(endUnit)
+            startUnit.calls(endUnit, edge.attributes.couplingScore)
 
             Neo4jConnector.saveEntity(startUnit)
         }
