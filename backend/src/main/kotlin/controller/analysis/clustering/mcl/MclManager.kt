@@ -10,8 +10,8 @@ import java.util.*
 
 
 class MclManager(private val graph: Graph) {
-    fun applyMcl(): Graph {
-        val process = Runtime.getRuntime().exec(MclCommand)
+    fun applyMcl(clusteringInflationValue: Double?): Graph {
+        val process = Runtime.getRuntime().exec(buildMclCommand(clusteringInflationValue))
         BufferedWriter(OutputStreamWriter(process.outputStream)).use { writer ->
             val input = convertGraphToMclInput()
             writer.write(input)
@@ -44,6 +44,12 @@ class MclManager(private val graph: Graph) {
         return graph
     }
 
+    private fun buildMclCommand(clusteringInflationValue: Double?): String {
+        var mclCommand = MclBaseCommand
+        if (clusteringInflationValue != null) mclCommand = mclCommand.plus(" -I $clusteringInflationValue")
+        return mclCommand
+    }
+
     private fun buildMclInputLine(startNode: Node, endNode: Node, weight: Int): String {
         return "${buildNodeIdentifier(startNode.identifier, startNode.packageIdentifier)}\t${buildNodeIdentifier(endNode.identifier, endNode.packageIdentifier)}\t$weight"
     }
@@ -53,6 +59,6 @@ class MclManager(private val graph: Graph) {
     }
 
     companion object {
-        private const val MclCommand = "mcl - --abc -o -"
+        private const val MclBaseCommand = "mcl - --abc -o -"
     }
 }

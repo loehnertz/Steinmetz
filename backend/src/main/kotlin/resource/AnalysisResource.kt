@@ -26,7 +26,8 @@ fun Route.analysis(controller: AnalysisController) {
 
         get("/{projectName}/cluster") {
             val projectName = call.parameters["projectName"].toString()
-            call.respond(controller.clusterGraph(projectName))
+            val clusteringInflationValue = call.request.queryParameters["clusteringInflationValue"]?.toDoubleOrNull()
+            call.respond(controller.clusterGraph(projectName, clusteringInflationValue))
         }
     }
 

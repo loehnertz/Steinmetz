@@ -27,6 +27,9 @@
                 <button @click="fetchClusteredGraph">Cluster</button>
             </div>
         </div>
+        <div>
+            <Slider :value="clusteringInflationValue" @value-change="handleClusteringInflationValueChange"/>
+        </div>
         <div id="graph__container">
             <Graph id="graph" :graph-data="graphData" :is-clustered="isClustered"/>
         </div>
@@ -35,14 +38,16 @@
 
 <script>
     import Graph from './components/Graph.vue';
+    import Slider from './components/Slider.vue';
     import ScaleLoader from 'vue-spinner/src/ScaleLoader.vue';
     import axios from 'axios';
 
     export default {
         name: 'app',
         components: {
-            ScaleLoader,
             Graph,
+            Slider,
+            ScaleLoader,
         },
         data() {
             return {
@@ -54,8 +59,14 @@
                 uploadDynamicAnalysisArchive: null,
                 selectedProjectId: '',
                 graphData: {},
-                isClustered: true,
+                clusteredViewEnabled: false,
+                clusteringInflationValue: 2.0,
             }
+        },
+        watch: {
+            clusteringInflationValue: function (clusteringInflationValue) {
+                if (clusteringInflationValue) this.fetchClusteredGraph(clusteringInflationValue);
+            },
         },
         methods: {
             uploadNewProjectData() {
@@ -84,7 +95,7 @@
                 axios
                     .get(`http://localhost:5656/analysis/${this.selectedProjectId}`)
                     .then((response) => {
-                        this.isClustered = false;
+                        this.clusteredViewEnabled = false;
                         this.graphData = response.data;
                         this.isLoading = false;
                     })
@@ -93,11 +104,18 @@
                         this.isLoading = false;
                     });
             },
-            fetchClusteredGraph() {
+            fetchClusteredGraph(clusteringInflationValue) {
                 axios
-                    .get(`http://localhost:5656/analysis/${this.selectedProjectId}/cluster`)
+                    .get(
+                        `http://localhost:5656/analysis/${this.selectedProjectId}/cluster`,
+                        {
+                            params: {
+                                'clusteringInflationValue': clusteringInflationValue,
+                            },
+                        },
+                    )
                     .then((response) => {
-                        this.isClustered = true;
+                        this.clusteredViewEnabled = true;
                         this.graphData = response.data;
                         this.isLoading = false;
                     })
@@ -105,6 +123,9 @@
                         console.error(error);
                         this.isLoading = false;
                     });
+            },
+            handleClusteringInflationValueChange(value) {
+                this.clusteringInflationValue = parseFloat(value);
             },
             onStaticAnalysisUploadFileChange(e) {
                 const files = e.target.files || e.dataTransfer.files;

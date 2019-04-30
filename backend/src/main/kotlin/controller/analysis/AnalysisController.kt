@@ -37,9 +37,9 @@ class AnalysisController {
         return Graph(edges = relationships.toMutableSet())
     }
 
-    fun clusterGraph(projectName: String): Graph {
+    fun clusterGraph(projectName: String, clusteringInflationValue: Double?): Graph {
         val projectGraph = getGraph(projectName)
-        return Clusterer(projectGraph).applyMcl()
+        return Clusterer(projectGraph).applyMcl(clusteringInflationValue)
     }
 
     suspend fun handleNewProjectUploads(multipart: MultiPartData): NewProjectRequest {

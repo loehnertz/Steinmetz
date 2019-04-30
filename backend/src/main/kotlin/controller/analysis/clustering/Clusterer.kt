@@ -7,7 +7,7 @@ import model.graph.Graph
 class Clusterer(graph: Graph) {
     private val mclManager = MclManager(graph)
 
-    fun applyMcl(): Graph {
-        return mclManager.applyMcl()
+    fun applyMcl(clusteringInflationValue: Double?): Graph {
+        return mclManager.applyMcl(clusteringInflationValue)
     }
 }
