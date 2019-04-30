@@ -25,13 +25,16 @@
             <br>
             <div>
                 <button @click="fetchClusteredGraph">Cluster</button>
+                <br>
+                <input id="enable-clustering" type="checkbox" v-model="clusteredViewEnabled">
+                <label for="enable-clustering">Clustered View</label>
             </div>
         </div>
         <div>
             <Slider :value="clusteringInflationValue" @value-change="handleClusteringInflationValueChange"/>
         </div>
         <div id="graph__container">
-            <Graph id="graph" :graph-data="graphData" :is-clustered="isClustered"/>
+            <Graph id="graph" :graph-data="graphData" :is-clustered="clusteredViewEnabled"/>
         </div>
     </div>
 </template>
@@ -164,5 +167,9 @@
 
     #graph {
         height: 100%;
+    }
+
+    #enable-clustering {
+        margin-top: 5px;
     }
 </style>

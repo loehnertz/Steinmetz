@@ -58,14 +58,15 @@
                         },
                     },
                 },
+                nodesInOpenClusters: [],
             }
         },
         watch: {
             graphData: function (graphData) {
-                if (graphData) {
-                    this.flushGraph();
-                    this.constructGraph(this.graphData["nodes"], this.graphData["edges"]);
-                }
+                if (graphData) this.rerenderGraph();
+            },
+            isClustered: function () {
+                this.rerenderGraph();
             },
         },
         methods: {
@@ -78,6 +79,10 @@
                 this.configureGravitation(relationships.length);
                 const clusterIds = this.setNodes(units);
                 this.setEdges(relationships, clusterIds);
+            },
+            rerenderGraph() {
+                this.flushGraph();
+                this.constructGraph(this.graphData["nodes"], this.graphData["edges"]);
             },
             configureGravitation(relationshipAmount) {
                 this.graphOptions.physics.barnesHut.gravitationalConstant = -(relationshipAmount * 100)
