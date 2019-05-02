@@ -231,7 +231,7 @@
                                             :disabled="!selectedProjectId || (!clusteredViewEnabled && !clusterAvailable)"
                                     >
                                     <label for="showClusterNodes">
-                                        Show Cluster Nodes &amp; Hide Inter-Cluster Edges
+                                        Hide Inter-Cluster Edges
                                     </label>
                                 </div>
                             </div>
