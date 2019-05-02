@@ -451,6 +451,10 @@
         color: #dbdbdb;
     }
 
+    .range-slider-fill {
+        background-color: #00d1b2;
+    }
+
     .tooltip.is-tooltip-multiline::before {
         text-align: center !important;
     }
