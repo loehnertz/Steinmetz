@@ -1,6 +1,7 @@
 package controller.analysis
 
 import controller.analysis.clustering.Clusterer
+import controller.analysis.clustering.ClusteringAlgorithm
 import controller.analysis.extraction.dynamicanalysis.DynamicAnalysisExtractor
 import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
@@ -37,10 +38,9 @@ class AnalysisController {
         return Graph(edges = relationships.toMutableSet())
     }
 
-    fun clusterGraph(projectName: String, clusteringInflationValue: Double?): Graph {
-        val projectGraph = getGraph(projectName)
-        return Clusterer(projectGraph).applyInfomap(null)
-        // return Clusterer(projectGraph).applyMcl(clusteringInflationValue)
+    fun clusterGraph(projectName: String, clusteringAlgorithm: ClusteringAlgorithm, tunableClusteringParameter: Double?): Graph {
+        val projectGraph: Graph = getGraph(projectName)
+        return Clusterer(projectGraph).applyClusteringAlgorithm(clusteringAlgorithm, tunableClusteringParameter)
     }
 
     suspend fun handleNewProjectUploads(multipart: MultiPartData): NewProjectRequest {

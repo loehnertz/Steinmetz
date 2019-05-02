@@ -24,7 +24,13 @@
             </div>
             <br>
             <div>
-                <button @click="fetchClusteredGraph">Cluster</button>
+                <button @click="fetchClusteredGraph(tunableClusteringParameter)">Cluster</button>
+                <label>
+                    <select v-model="chosenClusteringAlgorithm">
+                        <option value="mcl">MCL</option>
+                        <option value="infomap">Infomap</option>
+                    </select>
+                </label>
                 <br>
                 <input
                         id="enable-clustering"
@@ -42,7 +48,7 @@
             </div>
         </div>
         <div>
-            <Slider :value="clusteringInflationValue" @value-change="handleClusteringInflationValueChange"/>
+            <Slider :value="tunableClusteringParameter" @value-change="handleTunableClusteringParameterChange"/>
         </div>
         <div id="graph__container">
             <Graph
@@ -78,17 +84,21 @@
                 uploadDynamicAnalysisArchive: null,
                 selectedProjectId: '',
                 graphData: {},
+                chosenClusteringAlgorithm: 'mcl',
                 clusteredViewEnabled: false,
                 showClusterNodes: false,
-                clusteringInflationValue: 2.0,
+                tunableClusteringParameter: 2.0,
             }
         },
         watch: {
+            chosenClusteringAlgorithm: function (chosenClusteringAlgorithm) {
+                if (chosenClusteringAlgorithm) this.fetchClusteredGraph();
+            },
             clusteredViewEnabled: function (clusteredViewEnabled) {
                 if (!clusteredViewEnabled) this.showClusterNodes = false;
             },
-            clusteringInflationValue: function (clusteringInflationValue) {
-                if (clusteringInflationValue) this.fetchClusteredGraph(clusteringInflationValue);
+            tunableClusteringParameter: function (tunableClusteringParameter) {
+                if (tunableClusteringParameter) this.fetchClusteredGraph();
             },
         },
         methods: {
@@ -127,14 +137,17 @@
                         this.isLoading = false;
                     });
             },
-            fetchClusteredGraph(clusteringInflationValue) {
+            fetchClusteredGraph() {
+                const params = {
+                    'clusteringAlgorithm': this.chosenClusteringAlgorithm,
+                    'tunableClusteringParameter': this.tunableClusteringParameter,
+                };
+
                 axios
                     .get(
                         `http://localhost:5656/analysis/${this.selectedProjectId}/cluster`,
                         {
-                            params: {
-                                'clusteringInflationValue': clusteringInflationValue,
-                            },
+                            params: params,
                         },
                     )
                     .then((response) => {
@@ -147,8 +160,8 @@
                         this.isLoading = false;
                     });
             },
-            handleClusteringInflationValueChange(value) {
-                this.clusteringInflationValue = parseFloat(value);
+            handleTunableClusteringParameterChange(value) {
+                this.tunableClusteringParameter = parseFloat(value);
             },
             onStaticAnalysisUploadFileChange(e) {
                 const files = e.target.files || e.dataTransfer.files;

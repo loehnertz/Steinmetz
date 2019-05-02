@@ -9,6 +9,13 @@ class Clusterer(graph: Graph) {
     private val mclManager = MclManager(graph)
     private val infomapManager = InfomapManager(graph)
 
+    fun applyClusteringAlgorithm(clusteringAlgorithm: ClusteringAlgorithm, tunableClusteringParameter: Double?): Graph {
+        return when (clusteringAlgorithm) {
+            ClusteringAlgorithm.MCL -> applyMcl(tunableClusteringParameter)
+            ClusteringAlgorithm.INFOMAP -> applyInfomap(tunableClusteringParameter?.toInt())
+        }
+    }
+
     fun applyMcl(clusteringInflationValue: Double?): Graph {
         return mclManager.applyMcl(clusteringInflationValue)
     }
