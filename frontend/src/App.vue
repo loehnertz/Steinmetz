@@ -121,7 +121,7 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control tooltip"
+                                        class="control tooltip is-tooltip-multiline"
                                         data-tooltip="Uploads the selected analysis files and starts the server-sided analysis"
                                 >
                                     <button class="button is-primary" @click="uploadNewProjectData">Upload</button>
