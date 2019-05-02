@@ -39,7 +39,8 @@ class AnalysisController {
 
     fun clusterGraph(projectName: String, clusteringInflationValue: Double?): Graph {
         val projectGraph = getGraph(projectName)
-        return Clusterer(projectGraph).applyMcl(clusteringInflationValue)
+        return Clusterer(projectGraph).applyInfomap(null)
+        // return Clusterer(projectGraph).applyMcl(clusteringInflationValue)
     }
 
     suspend fun handleNewProjectUploads(multipart: MultiPartData): NewProjectRequest {
