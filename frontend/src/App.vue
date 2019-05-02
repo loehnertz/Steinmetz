@@ -396,9 +396,7 @@
 
     #app {
         width: 100%;
-        color: #2c3e50;
         text-align: center;
-        padding: 1em;
     }
 
     #throbber {
