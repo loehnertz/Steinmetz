@@ -1,70 +1,283 @@
 <template>
     <div id="app">
-        <div id="controls__container">
-            <div>
-                <ScaleLoader :loading="isLoading"></ScaleLoader>
-            </div>
-            <br>
-            <div>
-                <input type="text" placeholder="Project Name" v-model="uploadProjectName">
-                <label>
-                    <select v-model="uploadProjectPlatform">
-                        <option value="jvm">JVM</option>
-                    </select>
-                </label>
-                <input type="text" placeholder="Base Package Identifier" v-model="uploadBasePackageIdentifier">
-                <input type="file" placeholder="Static Analysis Archive" @change="onStaticAnalysisUploadFileChange">
-                <input type="file" placeholder="Dynamic Analysis Archive" @change="onDynamicAnalysisUploadFileChange">
-                <button @click="uploadNewProjectData">Upload</button>
-            </div>
-            <br>
-            <div>
-                <input type="text" placeholder="Project Identifier" v-model="selectedProjectId">
-                <button @click="fetchAnalysis">Retrieve</button>
-            </div>
-            <br>
-            <div>
-                <button @click="fetchClusteredGraph(tunableClusteringParameter)">Cluster</button>
-                <label>
-                    <select v-model="chosenClusteringAlgorithm">
-                        <option value="mcl">MCL</option>
-                        <option value="infomap">Infomap</option>
-                    </select>
-                </label>
-                <br>
-                <input
-                        id="enable-clustering"
-                        type="checkbox"
-                        v-model="clusteredViewEnabled"
-                >
-                <label for="enable-clustering">Clustered View</label>
-                <input
-                        id="show-cluster-nodes"
-                        type="checkbox"
-                        v-model="showClusterNodes"
-                        :disabled="!clusteredViewEnabled"
-                >
-                <label for="show-cluster-nodes">Show Cluster Nodes</label>
-            </div>
+        <div id="throbber" v-show="isLoading">
+            <Throbber :is-loading="isLoading"/>
         </div>
-        <div>
-            <Slider :value="tunableClusteringParameter" @value-change="handleTunableClusteringParameterChange"/>
-        </div>
-        <div id="graph__container">
-            <Graph
-                    id="graph"
-                    :graph-data="graphData"
-                    :is-clustered="clusteredViewEnabled"
-                    :show-cluster-nodes="showClusterNodes"
-            />
-        </div>
+        <section class="section">
+            <div class="container box" ref="uploading-controls">
+                <div class="level">
+                    <div class="level-left">
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control has-icons-left tooltip"
+                                        data-tooltip="A unique project identifier for the project to add"
+                                >
+                                    <input
+                                            class="input"
+                                            type="text"
+                                            placeholder="Project Name"
+                                            v-model="uploadProjectName"
+                                    >
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-tag"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control has-icons-left tooltip is-tooltip-multiline"
+                                        data-tooltip="The common package identifier of the project (utilized to exclude depencencies from the analysis)"
+                                >
+                                    <input
+                                            class="input"
+                                            type="text"
+                                            placeholder="Base Package Identifier"
+                                            v-model="uploadBasePackageIdentifier"
+                                    >
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-box"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control has-icons-left tooltip"
+                                        data-tooltip="Sets the project platform of project to be uploaded"
+                                >
+                                    <span class="select">
+                                        <label>
+                                            <select v-model="uploadProjectPlatform">
+                                                <option value="jvm">JVM</option>
+                                            </select>
+                                        </label>
+                                    </span>
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-hdd"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline"
+                                        data-tooltip="Sets the static program analysis file according to the selected platform for the upload"
+                                >
+                                    <div class="file">
+                                        <label class="file-label">
+                                            <input
+                                                    class="file-input"
+                                                    type="file"
+                                                    placeholder="Static Analysis Archive"
+                                                    @change="onStaticAnalysisUploadFileChange"
+                                            >
+                                            <span class="file-cta">
+                                                <span class="file-icon">
+                                                    <i class="fas fa-upload"></i>
+                                                </span>
+                                                <span class="file-label">
+                                                    {{ staticProgramAnalyisUploadLabel }}
+                                                </span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline"
+                                        data-tooltip="Sets the dynamic program analysis file according to the selected platform for the upload"
+                                >
+                                    <div class="file">
+                                        <label class="file-label">
+                                            <input
+                                                    class="file-input"
+                                                    type="file"
+                                                    placeholder="Dynamic Analysis Archive"
+                                                    @change="onDynamicAnalysisUploadFileChange"
+                                            >
+                                            <span class="file-cta">
+                                                <span class="file-icon">
+                                                    <i class="fas fa-upload"></i>
+                                                </span>
+                                                <span class="file-label">
+                                                    {{ dynamicProgramAnalyisUploadLabel }}
+                                                </span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline"
+                                        data-tooltip="Uploads the selected analysis files and starts the server-sided analysis"
+                                >
+                                    <button class="button is-primary" @click="uploadNewProjectData">Upload</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container box" ref="retrieval-controls">
+                <div class="level">
+                    <div class="level-left">
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control has-icons-left tooltip"
+                                        data-tooltip="The project identifier of a previously added project"
+                                >
+                                    <input
+                                            class="input"
+                                            type="text"
+                                            placeholder="Project Name"
+                                            v-model="selectedProjectId"
+                                    >
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-tag"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip"
+                                        data-tooltip="Retrieves the analysis data of a previously added project"
+                                >
+                                    <button class="button is-primary" @click="fetchAnalysis">Retrieve</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline"
+                                        data-tooltip="Runs the selected graph clustering algorithm on the analysis data of a previously added project"
+                                >
+                                    <button class="button is-primary" @click="fetchClusteredGraph">Cluster</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container box" ref="clustering-controls">
+                <div class="level">
+                    <div class="level-right">
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control has-icons-left tooltip is-tooltip-bottom"
+                                        data-tooltip="Selects the graph clustering algorithm that will be utilized"
+                                >
+                                    <span class="select">
+                                        <label>
+                                            <select v-model="selectedClusteringAlgorithm"
+                                                    :disabled="!selectedProjectId">
+                                                <option value="mcl">MCL</option>
+                                                <option value="infomap">Infomap</option>
+                                            </select>
+                                        </label>
+                                    </span>
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-receipt"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
+                                        data-tooltip="Sets the tunable parameter of the selected graph clustering algorithm"
+                                >
+                                    <Slider
+                                            :disabled="!selectedProjectId"
+                                            :value="tunableClusteringParameter"
+                                            @value-change="handleTunableClusteringParameterChange"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level-left">
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
+                                        data-tooltip="Toggles that the unit nodes are gravitally drawn towards their respective clusters"
+                                >
+                                    <input
+                                            class="switch"
+                                            id="clusteredViewEnabled"
+                                            type="checkbox"
+                                            v-model="clusteredViewEnabled"
+                                            :checked="clusteredViewEnabled"
+                                            :disabled="!selectedProjectId || !clusterAvailable"
+                                    >
+                                    <label for="clusteredViewEnabled">
+                                        Clustered View
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
+                                        data-tooltip="Toggles that the cluster nodes will be displayed while hiding the inter-cluster edges"
+                                >
+                                    <input
+                                            class="switch"
+                                            id="showClusterNodes"
+                                            type="checkbox"
+                                            v-model="showClusterNodes"
+                                            :checked="showClusterNodes"
+                                            :disabled="!selectedProjectId || (!clusteredViewEnabled && !clusterAvailable)"
+                                    >
+                                    <label for="showClusterNodes">
+                                        Hide Inter-Cluster Edges
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="section">
+            <div class="container box" id="graph-container">
+                <Graph
+                        id="graph"
+                        :graph-data="graphData"
+                        :is-clustered="clusteredViewEnabled"
+                        :show-cluster-nodes="showClusterNodes"
+                />
+            </div>
+        </section>
     </div>
 </template>
 
 <script>
     import Graph from './components/Graph.vue';
     import Slider from './components/Slider.vue';
-    import ScaleLoader from 'vue-spinner/src/ScaleLoader.vue';
+    import Throbber from './components/Throbber.vue';
     import axios from 'axios';
 
     export default {
@@ -72,11 +285,10 @@
         components: {
             Graph,
             Slider,
-            ScaleLoader,
+            Throbber,
         },
         data() {
             return {
-                isLoading: false,
                 uploadProjectName: '',
                 uploadProjectPlatform: 'jvm',
                 uploadBasePackageIdentifier: '',
@@ -84,15 +296,19 @@
                 uploadDynamicAnalysisArchive: null,
                 selectedProjectId: '',
                 graphData: {},
-                chosenClusteringAlgorithm: 'mcl',
+                staticProgramAnalyisUploadLabel: 'Static Analysis',
+                dynamicProgramAnalyisUploadLabel: 'Dynamic Analysis',
+                selectedClusteringAlgorithm: 'mcl',
+                clusterAvailable: false,
                 clusteredViewEnabled: false,
                 showClusterNodes: false,
                 tunableClusteringParameter: 2.0,
+                isLoading: false,
             }
         },
         watch: {
-            chosenClusteringAlgorithm: function (chosenClusteringAlgorithm) {
-                if (chosenClusteringAlgorithm) this.fetchClusteredGraph();
+            selectedClusteringAlgorithm: function (selectedClusteringAlgorithm) {
+                if (selectedClusteringAlgorithm) this.fetchClusteredGraph();
             },
             clusteredViewEnabled: function (clusteredViewEnabled) {
                 if (!clusteredViewEnabled) this.showClusterNodes = false;
@@ -139,7 +355,7 @@
             },
             fetchClusteredGraph() {
                 const params = {
-                    'clusteringAlgorithm': this.chosenClusteringAlgorithm,
+                    'clusteringAlgorithm': this.selectedClusteringAlgorithm,
                     'tunableClusteringParameter': this.tunableClusteringParameter,
                 };
 
@@ -151,9 +367,11 @@
                         },
                     )
                     .then((response) => {
+                        this.clusterAvailable = true;
                         this.clusteredViewEnabled = true;
                         this.graphData = response.data;
                         this.isLoading = false;
+                        this.scrollToRefAnchor('clustering-controls');
                     })
                     .catch((error) => {
                         console.error(error);
@@ -165,44 +383,89 @@
             },
             onStaticAnalysisUploadFileChange(e) {
                 const files = e.target.files || e.dataTransfer.files;
-                if (files.length > 0) this.uploadStaticAnalysisArchive = files[0]
+                if (files.length > 0) {
+                    this.uploadStaticAnalysisArchive = files[0];
+                    this.staticProgramAnalyisUploadLabel = this.shortenText(files[0].name, 15);
+                }
             },
             onDynamicAnalysisUploadFileChange(e) {
                 const files = e.target.files || e.dataTransfer.files;
-                if (files.length > 0) this.uploadDynamicAnalysisArchive = files[0]
+                if (files.length > 0) {
+                    this.uploadDynamicAnalysisArchive = files[0];
+                    this.dynamicProgramAnalyisUploadLabel = this.shortenText(files[0].name, 15);
+                }
+            },
+            scrollToRefAnchor(refAnchorName) {
+                const element = this.$refs[refAnchorName];
+                window.scrollTo(0, element.offsetTop - 11);
+            },
+            shortenText(input, maximumLength) {
+                if (input.length > maximumLength) {
+                    return `${input.substring(0, maximumLength - 1)}…`;
+                } else {
+                    return input;
+                }
             },
         },
     }
 </script>
 
 <style>
-    body {
-        display: flex;
-    }
+    @import '~bulma/css/bulma.min.css';
+    @import '~bulma-tooltip/dist/css/bulma-tooltip.min.css';
+    @import '~bulma-switch/dist/css/bulma-switch.min.css';
 
     #app {
         width: 100%;
-        font-family: 'Avenir', Helvetica, Arial, sans-serif;
-        color: #2c3e50;
         text-align: center;
     }
 
-    #controls__container {
-        height: 10vh;
-        margin-bottom: 5vh;
+    #throbber {
+        position: fixed;
+        height: 100vh;
+        width: 100vw;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 99;
+        background-color: rgba(0, 0, 0, 0.55);
+        padding: 0;
+        margin: 0;
     }
 
-    #graph__container {
+    #graph-container {
         height: 80vh;
-        border: 2px solid gray;
-        margin: 0 1vw;
+        padding: 0 !important;
     }
 
     #graph {
         height: 100%;
     }
 
-    #enable-clustering {
-        margin-top: 5px;
+    .file-cta {
+        background-color: #ffffff;
+    }
+
+    .file-icon {
+        color: #dbdbdb;
+    }
+
+    .range-slider-fill {
+        background-color: #00d1b2;
+    }
+
+    .tooltip.is-tooltip-multiline::before {
+        text-align: center !important;
+    }
+
+    .vis-button.vis-edit.vis-edit-mode {
+        border: none !important;
+    }
+
+    .vis-tooltip {
+        background-color: transparent !important;
+        border: none !important;
+        padding: 0 !important;
     }
 </style>
