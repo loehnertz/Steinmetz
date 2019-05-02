@@ -238,7 +238,9 @@
                 });
             },
             generateNodePopup(title) {
-                return `<span style="font-family: 'Titillium Web', sans-serif;">${title}</span>`;
+                return (
+                    `<span class="box" style="font-family: 'Titillium Web', sans-serif;">${title}</span>`
+                );
             },
             // Adapted from: https://krazydad.com/tutorials/makecolors.php
             getNodeBorderColor(coloringKey, maxColoringKey) {

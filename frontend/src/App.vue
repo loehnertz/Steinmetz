@@ -462,4 +462,10 @@
     .vis-button.vis-edit.vis-edit-mode {
         border: none !important;
     }
+
+    .vis-tooltip {
+        background-color: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+    }
 </style>
