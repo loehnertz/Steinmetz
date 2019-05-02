@@ -10,7 +10,7 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control tooltip"
+                                        class="control has-icons-left tooltip"
                                         data-tooltip="A unique project identifier for the project to add"
                                 >
                                     <input
@@ -19,13 +19,16 @@
                                             placeholder="Project Name"
                                             v-model="uploadProjectName"
                                     >
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-tag"></i>
+                                    </span>
                                 </div>
                             </div>
                         </div>
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control tooltip is-tooltip-multiline"
+                                        class="control has-icons-left tooltip is-tooltip-multiline"
                                         data-tooltip="The common package identifier of the project (utilized to exclude depencencies from the analysis)"
                                 >
                                     <input
@@ -34,22 +37,28 @@
                                             placeholder="Base Package Identifier"
                                             v-model="uploadBasePackageIdentifier"
                                     >
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-box"></i>
+                                    </span>
                                 </div>
                             </div>
                         </div>
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control tooltip"
+                                        class="control has-icons-left tooltip"
                                         data-tooltip="Sets the project platform of project to be uploaded"
                                 >
-                                    <div class="select">
+                                    <span class="select">
                                         <label>
                                             <select v-model="uploadProjectPlatform">
                                                 <option value="jvm">JVM</option>
                                             </select>
                                         </label>
-                                    </div>
+                                    </span>
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-hdd"></i>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -61,9 +70,12 @@
                                 >
                                     <div class="file">
                                         <label class="file-label">
-                                            <input class="file-input" type="file" name="resume"
-                                                   placeholder="Static Analysis Archive"
-                                                   @change="onStaticAnalysisUploadFileChange">
+                                            <input
+                                                    class="file-input"
+                                                    type="file"
+                                                    placeholder="Static Analysis Archive"
+                                                    @change="onStaticAnalysisUploadFileChange"
+                                            >
                                             <span class="file-cta">
                                                 <span class="file-icon">
                                                     <i class="fas fa-upload"></i>
@@ -85,9 +97,12 @@
                                 >
                                     <div class="file">
                                         <label class="file-label">
-                                            <input class="file-input" type="file" name="resume"
-                                                   placeholder="Dynamic Analysis Archive"
-                                                   @change="onDynamicAnalysisUploadFileChange">
+                                            <input
+                                                    class="file-input"
+                                                    type="file"
+                                                    placeholder="Dynamic Analysis Archive"
+                                                    @change="onDynamicAnalysisUploadFileChange"
+                                            >
                                             <span class="file-cta">
                                                 <span class="file-icon">
                                                     <i class="fas fa-upload"></i>
@@ -122,7 +137,7 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control tooltip"
+                                        class="control has-icons-left tooltip"
                                         data-tooltip="The project identifier of a previously added project"
                                 >
                                     <input
@@ -131,6 +146,9 @@
                                             placeholder="Project Name"
                                             v-model="selectedProjectId"
                                     >
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-tag"></i>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -165,10 +183,10 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control tooltip is-tooltip-bottom"
+                                        class="control has-icons-left tooltip is-tooltip-bottom"
                                         data-tooltip="Selects the graph clustering algorithm that will be utilized"
                                 >
-                                    <div class="select">
+                                    <span class="select">
                                         <label>
                                             <select v-model="selectedClusteringAlgorithm"
                                                     :disabled="!selectedProjectId">
@@ -176,7 +194,10 @@
                                                 <option value="infomap">Infomap</option>
                                             </select>
                                         </label>
-                                    </div>
+                                    </span>
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-receipt"></i>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -200,7 +221,7 @@
                             <div class="field">
                                 <div
                                         class="control tooltip is-tooltip-multiline is-tooltip-bottom"
-                                        data-tooltip="Enables that the unit nodes are gravitally drawn towards their respective clusters"
+                                        data-tooltip="Toggles that the unit nodes are gravitally drawn towards their respective clusters"
                                 >
                                     <input
                                             class="switch"
@@ -220,7 +241,7 @@
                             <div class="field">
                                 <div
                                         class="control tooltip is-tooltip-multiline is-tooltip-bottom"
-                                        data-tooltip="Enables that the cluster nodes will be displayed while hiding the inter-cluster edges"
+                                        data-tooltip="Toggles that the cluster nodes will be displayed while hiding the inter-cluster edges"
                                 >
                                     <input
                                             class="switch"
@@ -420,6 +441,14 @@
 
     #graph {
         height: 100%;
+    }
+
+    .file-cta {
+        background-color: #ffffff;
+    }
+
+    .file-icon {
+        color: #dbdbdb;
     }
 
     .tooltip.is-tooltip-multiline::before {
