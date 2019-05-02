@@ -280,5 +280,5 @@
 </script>
 
 <style scoped>
-    @import "~vue2vis/dist/vue2vis.css";
+    @import '~vue2vis/dist/vue2vis.css';
 </style>

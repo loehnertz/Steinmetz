@@ -10,7 +10,7 @@
                 @change="$emit('value-change', boundValue)"
         >
         </range-slider>
-        <p class="level-item">{{ boundValue }}</p>
+        <p class="level-item" v-show="!disabled">{{ boundValue }}</p>
     </div>
 </template>
 
@@ -44,7 +44,7 @@
 </script>
 
 <style scoped>
-    @import "~vue-range-slider/dist/vue-range-slider.css";
+    @import '~vue-range-slider/dist/vue-range-slider.css';
 
     .slider {
         width: 255px;
