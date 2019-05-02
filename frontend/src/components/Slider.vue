@@ -1,15 +1,16 @@
 <template>
-    <div>
+    <div class="level">
         <range-slider
-                class="slider"
+                class="level-item slider"
                 min="1"
                 max="10"
                 step="0.1"
                 v-model="boundValue"
+                :disabled="disabled"
                 @change="$emit('value-change', boundValue)"
         >
         </range-slider>
-        <p>{{ boundValue }}</p>
+        <p class="level-item">{{ boundValue }}</p>
     </div>
 </template>
 
@@ -36,15 +37,16 @@
             }
         },
         props: {
+            disabled: Boolean,
             value: Number,
         },
     }
 </script>
 
-<style>
+<style scoped>
     @import "~vue-range-slider/dist/vue-range-slider.css";
 
     .slider {
-        width: 200px;
+        width: 255px;
     }
 </style>
