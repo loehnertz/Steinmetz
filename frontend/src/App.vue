@@ -26,15 +26,31 @@
             <div>
                 <button @click="fetchClusteredGraph">Cluster</button>
                 <br>
-                <input id="enable-clustering" type="checkbox" v-model="clusteredViewEnabled">
+                <input
+                        id="enable-clustering"
+                        type="checkbox"
+                        v-model="clusteredViewEnabled"
+                >
                 <label for="enable-clustering">Clustered View</label>
+                <input
+                        id="show-cluster-nodes"
+                        type="checkbox"
+                        v-model="showClusterNodes"
+                        :disabled="!clusteredViewEnabled"
+                >
+                <label for="show-cluster-nodes">Show Cluster Nodes</label>
             </div>
         </div>
         <div>
             <Slider :value="clusteringInflationValue" @value-change="handleClusteringInflationValueChange"/>
         </div>
         <div id="graph__container">
-            <Graph id="graph" :graph-data="graphData" :is-clustered="clusteredViewEnabled"/>
+            <Graph
+                    id="graph"
+                    :graph-data="graphData"
+                    :is-clustered="clusteredViewEnabled"
+                    :show-cluster-nodes="showClusterNodes"
+            />
         </div>
     </div>
 </template>
@@ -63,10 +79,14 @@
                 selectedProjectId: '',
                 graphData: {},
                 clusteredViewEnabled: false,
+                showClusterNodes: false,
                 clusteringInflationValue: 2.0,
             }
         },
         watch: {
+            clusteredViewEnabled: function (clusteredViewEnabled) {
+                if (!clusteredViewEnabled) this.showClusterNodes = false;
+            },
             clusteringInflationValue: function (clusteringInflationValue) {
                 if (clusteringInflationValue) this.fetchClusteredGraph(clusteringInflationValue);
             },

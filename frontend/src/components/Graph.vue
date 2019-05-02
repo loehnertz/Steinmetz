@@ -38,6 +38,9 @@
                         scaling: {
                             customScalingFunction: this.getEdgeScalingFunction(),
                         },
+                        smooth: {
+                            type: 'dynamic',
+                        },
                     },
                     layout: {
                         randomSeed: LayoutSeed,
@@ -68,6 +71,9 @@
             isClustered: function () {
                 this.rerenderGraph();
             },
+            showClusterNodes: function () {
+                this.rerenderGraph();
+            },
         },
         methods: {
             flushGraph() {
@@ -85,7 +91,7 @@
                 this.constructGraph(this.graphData["nodes"], this.graphData["edges"]);
             },
             configureGravitation(relationshipAmount) {
-                this.graphOptions.physics.barnesHut.gravitationalConstant = -(relationshipAmount * 100)
+                this.graphOptions.physics.barnesHut.gravitationalConstant = -(relationshipAmount * 1000)
             },
             setNodes(units) {
                 const clusterIds = units.map((unit) => {
@@ -118,14 +124,13 @@
                     const edge = this.buildUnitEdge(
                         this.constructUnitNodeId(startNode["identifier"], startNode["packageIdentifier"]),
                         this.constructUnitNodeId(endNode["identifier"], endNode["packageIdentifier"]),
-                        100,
                         attributes["couplingScore"],
                     );
 
                     this.graphEdges.push(edge);
                 }
 
-                if (this.isClustered) this.clusterGraph(clusterIds);
+                if (this.isClustered) this.clusterGraph(clusterIds, this.showClusterNodes);
             },
             constructUnitNodeId(identifier, packageIdentifier) {
                 return `${packageIdentifier}.${identifier}`;
@@ -146,7 +151,7 @@
                     },
                 }
             },
-            buildServiceNode(clusterId) {
+            buildServiceNode(clusterId, hidden) {
                 return {
                     id: this.constructClusterNodeId(clusterId),
                     cid: clusterId,
@@ -157,13 +162,13 @@
                         border: DefaultColor,
                     },
                     shape: 'hexagon',
+                    hidden: hidden,
                 }
             },
-            buildUnitEdge(startNodeId, endNodeId, length, weight) {
+            buildUnitEdge(startNodeId, endNodeId, weight) {
                 return {
                     from: startNodeId,
                     to: endNodeId,
-                    length: length,
                     value: weight,
                     color: {
                         color: 'green',
@@ -188,41 +193,42 @@
                     },
                 }
             },
-            clusterGraph(clusterIds) {
-                const unit2unitEdges = this.graphEdges;
-                this.graphEdges = [];
+            clusterGraph(clusterIds, showClusterNodes) {
+                if (showClusterNodes) {
+                    const unit2unitEdges = this.graphEdges;
+                    this.graphEdges = [];
+
+                    for (let unitEdge of unit2unitEdges) {
+                        const fromClusterNode = this.constructClusterNodeId(this.findNodeById(unitEdge.from).cid);
+                        const toClusterNode = this.constructClusterNodeId(this.findNodeById(unitEdge.to).cid);
+
+                        if (fromClusterNode !== toClusterNode) {
+                            const clusterUnitEdge = this.buildUnitEdge(fromClusterNode, toClusterNode, 555, unitEdge.value);
+                            const existingEdgeIndex = this.graphEdges.findIndex((edge) => {
+                                return edge.from === clusterUnitEdge.from && edge.to === clusterUnitEdge.to;
+                            });
+
+                            if (existingEdgeIndex === -1) {
+                                this.graphEdges.push(clusterUnitEdge);
+                            } else {
+                                this.graphEdges[existingEdgeIndex].value += unitEdge.value;
+                            }
+                        }
+                    }
+                }
+
+                for (let unitNode of this.graphNodes) {
+                    const clusterEdge = this.buildServiceEdge(unitNode.id, this.constructClusterNodeId(unitNode.cid));
+
+                    this.graphEdges.push(clusterEdge);
+                }
 
                 for (let clusterId of clusterIds) {
-                    const clusterNode = this.buildServiceNode(clusterId);
+                    const clusterNode = this.buildServiceNode(clusterId, !showClusterNodes);
 
                     if (!this.graphNodeIds.has(clusterNode.id)) {
                         this.graphNodes.push(clusterNode);
                         this.graphNodeIds.add(clusterNode.id);
-                    }
-                }
-
-                for (let unitNode of this.graphNodes.filter((node) => {
-                    return !node.id.startsWith(ClusterNodeKeyword)
-                })) {
-                    const clusterEdge = this.buildServiceEdge(unitNode.id, this.constructClusterNodeId(unitNode.cid));
-                    this.graphEdges.push(clusterEdge);
-                }
-
-                for (let unitEdge of unit2unitEdges) {
-                    const fromClusterNode = this.constructClusterNodeId(this.findNodeById(unitEdge.from).cid);
-                    const toClusterNode = this.constructClusterNodeId(this.findNodeById(unitEdge.to).cid);
-
-                    if (fromClusterNode !== toClusterNode) {
-                        const clusterUnitEdge = this.buildUnitEdge(fromClusterNode, toClusterNode, 555, unitEdge.value);
-                        const existingEdgeIndex = this.graphEdges.findIndex((edge) => {
-                            return edge.from === clusterUnitEdge.from && edge.to === clusterUnitEdge.to;
-                        });
-
-                        if (existingEdgeIndex === -1) {
-                            this.graphEdges.push(clusterUnitEdge);
-                        } else {
-                            this.graphEdges[existingEdgeIndex].value += unitEdge.value;
-                        }
                     }
                 }
             },
@@ -265,6 +271,10 @@
                 type: Boolean,
                 default: () => (true),
             },
+            showClusterNodes: {
+                type: Boolean,
+                default: () => (false),
+            }
         },
     }
 </script>
