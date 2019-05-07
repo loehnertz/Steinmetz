@@ -307,6 +307,9 @@
             }
         },
         watch: {
+            uploadProjectName: function (uploadProjectName) {
+                this.selectedProjectId = uploadProjectName;
+            },
             selectedClusteringAlgorithm: function (selectedClusteringAlgorithm) {
                 if (selectedClusteringAlgorithm) this.fetchClusteredGraph();
             },
