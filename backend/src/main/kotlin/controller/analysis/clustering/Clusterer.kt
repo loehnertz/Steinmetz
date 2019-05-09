@@ -16,11 +16,11 @@ class Clusterer(graph: Graph) {
         }
     }
 
-    fun applyMcl(clusteringInflationValue: Double?): Graph {
+    private fun applyMcl(clusteringInflationValue: Double?): Graph {
         return mclManager.applyMcl(clusteringInflationValue)
     }
 
-    fun applyInfomap(iterationAmount: Int?): Graph {
+    private fun applyInfomap(iterationAmount: Int?): Graph {
         return if (iterationAmount != null) {
             infomapManager.applyInfomap(iterationAmount)
         } else {

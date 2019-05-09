@@ -81,9 +81,9 @@
                 this.graphNodes = [];
                 this.graphEdges = [];
             },
-            constructGraph(units, relationships) {
+            constructGraph(nodes, relationships) {
                 this.configureGravitation(relationships.length);
-                const clusterIds = this.setNodes(units);
+                const clusterIds = this.setNodes(nodes);
                 this.setEdges(relationships, clusterIds);
             },
             rerenderGraph() {
@@ -93,23 +93,23 @@
             configureGravitation(relationshipAmount) {
                 this.graphOptions.physics.barnesHut.gravitationalConstant = -(relationshipAmount * 1000)
             },
-            setNodes(units) {
-                const clusterIds = units.map((unit) => {
-                    return unit["attributes"]["cluster"]
+            setNodes(nodes) {
+                const clusterIds = nodes.map((node) => {
+                    return node["attributes"]["cluster"]
                 });
                 const clusterAmount = new Set(clusterIds).size;
 
-                for (let unit of units) {
-                    let node = this.buildUnitNode(
-                        unit["identifier"],
-                        unit["packageIdentifier"],
-                        unit["attributes"]["cluster"],
+                for (let node of nodes) {
+                    let unitNode = this.buildUnitNode(
+                        node["unit"]["identifier"],
+                        node["unit"]["packageIdentifier"],
+                        node["attributes"]["cluster"],
                         clusterAmount,
                     );
 
-                    if (!this.graphNodeIds.has(node.id)) {
-                        this.graphNodes.push(node);
-                        this.graphNodeIds.add(node.id);
+                    if (!this.graphNodeIds.has(unitNode.id)) {
+                        this.graphNodes.push(unitNode);
+                        this.graphNodeIds.add(unitNode.id);
                     }
                 }
 
@@ -142,7 +142,7 @@
                 return {
                     id: this.constructUnitNodeId(identifier, packageIdentifier),
                     cid: clusterId,
-                    title: this.generateNodePopup(`${packageIdentifier}.${identifier}`),
+                    title: this.generateGraphPopup(`${packageIdentifier}.${identifier}`),
                     label: identifier,
                     borderWidth: 5,
                     color: {
@@ -155,7 +155,7 @@
                 return {
                     id: this.constructClusterNodeId(clusterId),
                     cid: clusterId,
-                    title: this.generateNodePopup(`Service ${clusterId}`),
+                    title: this.generateGraphPopup(`Service ${clusterId}`),
                     borderWidth: 5,
                     color: {
                         background: 'whitesmoke',
@@ -169,6 +169,7 @@
                 return {
                     from: startNodeId,
                     to: endNodeId,
+                    title: this.generateGraphPopup(`${weight}`),
                     value: weight,
                     color: {
                         color: 'green',
@@ -203,7 +204,7 @@
                         const toClusterNode = this.constructClusterNodeId(this.findNodeById(unitEdge.to).cid);
 
                         if (fromClusterNode !== toClusterNode) {
-                            const clusterUnitEdge = this.buildUnitEdge(fromClusterNode, toClusterNode, 555, unitEdge.value);
+                            const clusterUnitEdge = this.buildUnitEdge(fromClusterNode, toClusterNode, unitEdge.value);
                             const existingEdgeIndex = this.graphEdges.findIndex((edge) => {
                                 return edge.from === clusterUnitEdge.from && edge.to === clusterUnitEdge.to;
                             });
@@ -237,9 +238,9 @@
                     return node.id === nodeId;
                 });
             },
-            generateNodePopup(title) {
+            generateGraphPopup(title) {
                 return (
-                    `<span class="box" style="font-family: 'Titillium Web', sans-serif;">${title}</span>`
+                    `<span class="box" style="font-family: 'Titillium Web', sans-serif; padding: 11px !important;">${title}</span>`
                 );
             },
             // Adapted from: https://krazydad.com/tutorials/makecolors.php
