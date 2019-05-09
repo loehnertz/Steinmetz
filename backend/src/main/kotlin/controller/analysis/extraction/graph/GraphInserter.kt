@@ -2,7 +2,6 @@ package controller.analysis.extraction.graph
 
 import controller.analysis.extraction.dynamicanalysis.jvm.JfrRecordingAnalyzer
 import controller.analysis.extraction.staticanalysis.jvm.JvmBytecodeExtractor
-import model.graph.Edge
 import model.graph.Graph
 import org.neo4j.ogm.cypher.ComparisonOperator
 import org.neo4j.ogm.cypher.Filter
@@ -22,10 +21,10 @@ class GraphInserter(
     }
 
     fun insert(): Graph {
-        val staticAnalysisEdges = processStaticAnalysisData()
-        val dynamicAnalysisEdges = processDynamicAnalysisData()
+        val staticAnalysisGraph: Graph = processStaticAnalysisData()
+        val dynamicAnalysisGraph: Graph = processDynamicAnalysisData()
 
-        val mergedGraph = mergeEdgeListsToGraph(staticAnalysisEdges, dynamicAnalysisEdges)
+        val mergedGraph: Graph = mergeGraphs(staticAnalysisGraph, dynamicAnalysisGraph)
 
         insertGraphIntoDatabase(mergedGraph)
 
@@ -33,7 +32,7 @@ class GraphInserter(
     }
 
     @Throws(IllegalArgumentException::class)
-    private fun processStaticAnalysisData(): List<Edge> {
+    private fun processStaticAnalysisData(): Graph {
         when (projectPlatform) {
             JvmProjectKey -> return JvmBytecodeExtractor(projectName, basePackageIdentifier, staticAnalysisArchive).extract()
             else -> throw IllegalArgumentException()
@@ -41,28 +40,22 @@ class GraphInserter(
     }
 
     @Throws(IllegalArgumentException::class)
-    private fun processDynamicAnalysisData(): List<Edge> {
+    private fun processDynamicAnalysisData(): Graph {
         when (projectPlatform) {
             JvmProjectKey -> return JfrRecordingAnalyzer(projectName, basePackageIdentifier, dynamicAnalysisArchive).extract()
             else -> throw IllegalArgumentException()
         }
     }
 
-    private fun mergeEdgeListsToGraph(vararg edgeLists: List<Edge>): Graph {
-        val edges = arrayListOf<Edge>()
+    private fun mergeGraphs(vararg graphs: Graph): Graph {
+        val mergedGraph = Graph()
 
-        for (edgeList in edgeLists) {
-            for (edge in edgeList) {
-                if (edges.contains(edge)) {
-                    val equalEdgeIndex = edges.indexOf(edge)
-                    edges[equalEdgeIndex].attributes.couplingScore += edge.attributes.couplingScore
-                } else {
-                    edges.add(edge)
-                }
-            }
+        for (graph: Graph in graphs) {
+            graph.edges.forEach(mergedGraph::addOrUpdateEdge)
+            graph.nodes.forEach(mergedGraph::addOrUpdateNode)
         }
 
-        return Graph(edges = edges.toMutableSet())
+        return mergedGraph
     }
 
     private fun insertGraphIntoDatabase(graph: Graph) {

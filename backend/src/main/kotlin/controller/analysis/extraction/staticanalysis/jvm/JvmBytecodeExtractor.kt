@@ -3,7 +3,7 @@ package controller.analysis.extraction.staticanalysis.jvm
 import controller.analysis.extraction.graph.GraphInserter
 import controller.analysis.extraction.graph.UnitContainerExtractor
 import controller.analysis.extraction.staticanalysis.StaticAnalysisExtractor
-import model.graph.Edge
+import model.graph.Graph
 import utility.ArchiveExtractor
 import java.io.File
 import javax.xml.transform.TransformerFactory
@@ -17,7 +17,7 @@ class JvmBytecodeExtractor(private val projectName: String, private val basePack
     private val staticAnalysisBasePath = "$basePath/$StaticAnalysisDirectory"
     private val unarchiver = ArchiveExtractor(".class", "$staticAnalysisBasePath/$unarchiverPath")
 
-    override fun extract(): List<Edge> {
+    override fun extract(): Graph {
         unarchiver.unpackAnalysisArchive(archive)
 
         Runtime.getRuntime().exec("java -jar backend/src/main/resources/jpeek.jar --sources $staticAnalysisBasePath/$unarchiverPath/${buildBasePackagePath()} --target $staticAnalysisBasePath/$SkeletonDirectoryName/jpeek --overwrite").waitFor()

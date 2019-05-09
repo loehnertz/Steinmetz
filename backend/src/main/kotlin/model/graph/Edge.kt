@@ -2,8 +2,8 @@ package model.graph
 
 
 data class Edge(
-        val start: Node,
-        val end: Node,
+        val start: Unit,
+        val end: Unit,
         val attributes: EdgeAttributes
 ) {
     override fun equals(other: Any?): Boolean {
@@ -25,4 +25,11 @@ data class Edge(
 
 data class EdgeAttributes(
         var couplingScore: Int
-)
+) {
+    companion object {
+        fun mergeEdgeAttributes(vararg edgeAttributes: EdgeAttributes): EdgeAttributes {
+            val summedCouplingScore: Int = edgeAttributes.sumBy { it.couplingScore }
+            return EdgeAttributes(couplingScore = summedCouplingScore)
+        }
+    }
+}

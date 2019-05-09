@@ -2,13 +2,15 @@ package controller.analysis.clustering.infomap
 
 import model.graph.Graph
 import model.graph.Node
+import model.graph.NodeAttributes
+import model.graph.Unit
 import java.io.File
 import java.util.*
 
 
 class InfomapManager(private val graph: Graph) {
-    private val node2IdMap: HashMap<Node, Int> = hashMapOf()
-    private val id2NodeMap: HashMap<Int, Node> = hashMapOf()
+    private val unit2IdMap: HashMap<Unit, Int> = hashMapOf()
+    private val id2UnitMap: HashMap<Int, Unit> = hashMapOf()
 
     fun applyInfomap(iterationAmount: Int = 10): Graph {
         createInputFile()
@@ -24,13 +26,13 @@ class InfomapManager(private val graph: Graph) {
         var currentNodeId = 1
 
         for (node in graph.nodes) {
-            node2IdMap[node] = currentNodeId
-            id2NodeMap[currentNodeId] = node
+            unit2IdMap[node.unit] = currentNodeId
+            id2UnitMap[currentNodeId] = node.unit
             currentNodeId++
         }
 
         for (edge in graph.edges) {
-            val inputLine = buildInfomapInputLine(startNode = edge.start, endNode = edge.end, weight = edge.attributes.couplingScore)
+            val inputLine = buildInfomapInputLine(startUnit = edge.start, endUnit = edge.end, weight = edge.attributes.couplingScore)
             inputFileString += "$inputLine\n"
         }
 
@@ -41,10 +43,9 @@ class InfomapManager(private val graph: Graph) {
         for (line in outputLines.filter { !it.startsWith('#') }) {
             val (nodeId, clusterId, _flowAmount) = line.split(' ')
 
-            val clusteredNode = id2NodeMap[nodeId.toInt()]
+            val clusteredUnit = id2UnitMap[nodeId.toInt()]
                     ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
-            clusteredNode.attributes.cluster = clusterId.toInt()
-            graph.updateNode(clusteredNode)
+            graph.addOrUpdateNode(Node(unit = clusteredUnit, attributes = NodeAttributes(cluster = clusterId.toInt())))
         }
 
         return graph
@@ -65,8 +66,8 @@ class InfomapManager(private val graph: Graph) {
         return "${retrieveInfomapExecutablePath()} $InputOutputPath/$InputFileName $InputOutputPath/$OutputDirectory/ -i link-list -N $iterationAmount --directed --clu"
     }
 
-    private fun buildInfomapInputLine(startNode: Node, endNode: Node, weight: Int): String {
-        return "${node2IdMap[startNode]} ${node2IdMap[endNode]} $weight"
+    private fun buildInfomapInputLine(startUnit: Unit, endUnit: Unit, weight: Int): String {
+        return "${unit2IdMap[startUnit]} ${unit2IdMap[endUnit]} $weight"
     }
 
     private fun retrieveInfomapExecutablePath(): String {

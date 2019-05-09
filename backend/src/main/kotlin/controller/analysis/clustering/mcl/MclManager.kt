@@ -3,6 +3,7 @@ package controller.analysis.clustering.mcl
 import model.graph.Graph
 import model.graph.Node
 import model.graph.NodeAttributes
+import model.graph.Unit
 import java.io.BufferedWriter
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
@@ -35,8 +36,8 @@ class MclManager(private val graph: Graph) {
             for (nodeIdentifierString in nodes) {
                 val nodeIdentifier = nodeIdentifierString.substringAfterLast('.')
                 val nodePackageIdentifier = nodeIdentifierString.substringBeforeLast('.')
-                val clusteredNode = Node(identifier = nodeIdentifier, packageIdentifier = nodePackageIdentifier, attributes = NodeAttributes(cluster = clusterId))
-                graph.updateNode(clusteredNode)
+                val clusteredNode = Node(unit = Unit(identifier = nodeIdentifier, packageIdentifier = nodePackageIdentifier), attributes = NodeAttributes(cluster = clusterId))
+                graph.addOrUpdateNode(clusteredNode)
             }
             clusterId++
         }
@@ -50,8 +51,8 @@ class MclManager(private val graph: Graph) {
         return mclCommand
     }
 
-    private fun buildMclInputLine(startNode: Node, endNode: Node, weight: Int): String {
-        return "${buildNodeIdentifier(startNode.identifier, startNode.packageIdentifier)}\t${buildNodeIdentifier(endNode.identifier, endNode.packageIdentifier)}\t$weight"
+    private fun buildMclInputLine(startUnit: Unit, endUnit: Unit, weight: Int): String {
+        return "${buildNodeIdentifier(startUnit.identifier, startUnit.packageIdentifier)}\t${buildNodeIdentifier(endUnit.identifier, endUnit.packageIdentifier)}\t$weight"
     }
 
     private fun buildNodeIdentifier(identifier: String, packageIdentifier: String): String {

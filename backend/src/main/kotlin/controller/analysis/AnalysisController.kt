@@ -11,6 +11,7 @@ import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
+import model.graph.Edge
 import model.graph.Graph
 import model.neo4j.node.Unit
 import model.resource.NewProjectRequest
@@ -33,8 +34,8 @@ class AnalysisController {
 
     fun getGraph(projectName: String): Graph {
         val filter = Filter(Unit::projectName.name, ComparisonOperator.EQUALS, projectName)
-        val units = Neo4jConnector.retrieveEntities(Unit::class.java, filter).map { it as Unit }
-        val relationships = GraphConverter.convertUnitListToRelationships(units)
+        val units: List<Unit> = Neo4jConnector.retrieveEntities(Unit::class.java, filter).map { it as Unit }
+        val relationships: ArrayList<Edge> = GraphConverter.convertUnitListToRelationships(units)
         return Graph(edges = relationships.toMutableSet())
     }
 
