@@ -6,6 +6,7 @@ import model.neo4j.relationship.CallsRelationship
 import org.neo4j.ogm.config.Configuration
 import org.neo4j.ogm.cypher.Filter
 import org.neo4j.ogm.cypher.Filters
+import org.neo4j.ogm.model.Result
 import org.neo4j.ogm.session.Session
 import org.neo4j.ogm.session.SessionFactory
 
@@ -50,6 +51,13 @@ object Neo4jConnector {
         val entities = session.loadAll(entityClass, filters)
         session.clear()
         return entities
+    }
+
+    fun executeCypher(cypher: String): Result {
+        val session = createSession()
+        val result = session.query(cypher, mapOf("" to ""))
+        session.clear()
+        return result
     }
 
     fun updateCouplingScore(relationship: Class<out CallsRelationship>, filters: Filters, newCouplingScore: Int): Int {
