@@ -6,14 +6,14 @@ import model.neo4j.node.Unit
 import model.neo4j.relationship.CallsRelationship
 
 
-object GraphConverter {
-    fun convertUnitListToRelationships(units: List<Unit>): ArrayList<Edge> {
-        val relationships: MutableSet<CallsRelationship> = retrieveRelationships(units)
+class GraphConverter(private val units: List<Unit>) {
+    fun convertUnitListToRelationships(): ArrayList<Edge> {
+        val relationships: MutableSet<CallsRelationship> = retrieveRelationships()
         return retrieveEdges(relationships)
     }
 
     @Suppress("SENSELESS_COMPARISON")
-    private fun retrieveRelationships(units: List<Unit>): MutableSet<CallsRelationship> {
+    private fun retrieveRelationships(): MutableSet<CallsRelationship> {
         val relationships: MutableSet<CallsRelationship> = mutableSetOf()
 
         for (unit in units) {
