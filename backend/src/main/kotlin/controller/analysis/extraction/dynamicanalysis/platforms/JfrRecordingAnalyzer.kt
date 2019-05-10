@@ -1,4 +1,4 @@
-package controller.analysis.extraction.dynamicanalysis.jvm
+package controller.analysis.extraction.dynamicanalysis.platforms
 
 import controller.analysis.extraction.dynamicanalysis.DynamicAnalysisExtractor
 import controller.analysis.extraction.graph.GraphInserter

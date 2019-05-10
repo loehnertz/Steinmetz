@@ -12,13 +12,13 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
-import model.resource.NewProjectRequest
+import model.resource.ProjectRequest
 
 
 fun Route.analysis(controller: AnalysisController) {
     route("/analysis") {
         post("/") {
-            val request: NewProjectRequest = controller.handleNewProjectUploads(call.receiveMultipart())
+            val request: ProjectRequest = controller.handleNewProjectUploads(call.receiveMultipart())
 
             call.respond(controller.insertProject(request))
         }
@@ -26,7 +26,7 @@ fun Route.analysis(controller: AnalysisController) {
         get("/{projectName}") {
             val projectName: String = call.parameters["projectName"].toString()
 
-            call.respond(controller.getGraph(projectName))
+            call.respond(controller.retrieveProject(projectName))
         }
 
         get("/{projectName}/cluster") {

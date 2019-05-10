@@ -1,4 +1,4 @@
-package controller.analysis.extraction.staticanalysis.jvm
+package controller.analysis.extraction.staticanalysis.platforms
 
 import controller.analysis.extraction.graph.GraphInserter
 import controller.analysis.extraction.graph.UnitContainerExtractor

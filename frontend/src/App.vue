@@ -152,6 +152,11 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="level-item">
+                            <p v-if="metricsData.hasOwnProperty('inputQuality')">
+                                Dynamic Analysis Quality: {{ metricsData["inputQuality"]["dynamicAnalysis"] }}%
+                            </p>
+                        </div>
                     </div>
                     <div class="level-right">
                         <div class="level-item">
@@ -192,6 +197,7 @@
                                                     :disabled="!selectedProjectId">
                                                 <option value="mcl">MCL</option>
                                                 <option value="infomap">Infomap</option>
+                                                <option value="louvain">Louvain</option>
                                             </select>
                                         </label>
                                     </span>
@@ -296,6 +302,7 @@
                 uploadDynamicAnalysisArchive: null,
                 selectedProjectId: '',
                 graphData: {},
+                metricsData: {},
                 staticProgramAnalyisUploadLabel: 'Static Analysis',
                 dynamicProgramAnalyisUploadLabel: 'Dynamic Analysis',
                 selectedClusteringAlgorithm: 'mcl',
@@ -335,7 +342,8 @@
                 axios
                     .post(`http://localhost:5656/analysis/`, data)
                     .then((response) => {
-                        this.graphData = response.data;
+                        this.graphData = response.data["graph"];
+                        this.metricsData = response.data["metrics"];
                         this.isLoading = false;
                     })
                     .catch((error) => {
@@ -348,7 +356,8 @@
                     .get(`http://localhost:5656/analysis/${this.selectedProjectId}`)
                     .then((response) => {
                         this.clusteredViewEnabled = false;
-                        this.graphData = response.data;
+                        this.graphData = response.data["graph"];
+                        this.metricsData = response.data["metrics"];
                         this.isLoading = false;
                     })
                     .catch((error) => {
@@ -372,7 +381,8 @@
                     .then((response) => {
                         this.clusterAvailable = true;
                         this.clusteredViewEnabled = true;
-                        this.graphData = response.data;
+                        this.graphData = response.data["graph"];
+                        this.metricsData = response.data["metrics"];
                         this.isLoading = false;
                         this.scrollToRefAnchor('clustering-controls');
                     })

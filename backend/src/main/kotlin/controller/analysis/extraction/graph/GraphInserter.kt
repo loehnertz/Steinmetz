@@ -1,8 +1,11 @@
 package controller.analysis.extraction.graph
 
-import controller.analysis.extraction.dynamicanalysis.jvm.JfrRecordingAnalyzer
-import controller.analysis.extraction.staticanalysis.jvm.JvmBytecodeExtractor
+import controller.analysis.extraction.dynamicanalysis.platforms.JfrRecordingAnalyzer
+import controller.analysis.extraction.staticanalysis.platforms.JvmBytecodeExtractor
+import controller.analysis.metrics.Metrics
+import controller.analysis.metrics.platforms.JvmMetricsManager
 import model.graph.Graph
+import model.resource.ProjectResponse
 import org.neo4j.ogm.cypher.ComparisonOperator
 import org.neo4j.ogm.cypher.Filter
 import utility.Neo4jConnector
@@ -20,15 +23,17 @@ class GraphInserter(
         if (projectAlreadyExists()) throw ProjectAlreadyExistsException()
     }
 
-    fun insert(): Graph {
+    fun insert(): ProjectResponse {
         val staticAnalysisGraph: Graph = processStaticAnalysisData()
         val dynamicAnalysisGraph: Graph = processDynamicAnalysisData()
 
         val mergedGraph: Graph = mergeGraphs(staticAnalysisGraph, dynamicAnalysisGraph)
+        val metrics: Metrics = calculateMetrics(staticAnalysisGraph, dynamicAnalysisGraph)
 
         insertGraphIntoDatabase(mergedGraph)
+        insertMetricsIntoDatabase(metrics)
 
-        return mergedGraph
+        return ProjectResponse(graph = mergedGraph, metrics = metrics)
     }
 
     @Throws(IllegalArgumentException::class)
@@ -43,6 +48,14 @@ class GraphInserter(
     private fun processDynamicAnalysisData(): Graph {
         when (projectPlatform) {
             JvmProjectKey -> return JfrRecordingAnalyzer(projectName, basePackageIdentifier, dynamicAnalysisArchive).extract()
+            else -> throw IllegalArgumentException()
+        }
+    }
+
+    @Throws(IllegalArgumentException::class)
+    private fun calculateMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph): Metrics {
+        when (projectPlatform) {
+            JvmProjectKey -> return JvmMetricsManager(staticAnalysisGraph, dynamicAnalysisGraph).generateMetrics()
             else -> throw IllegalArgumentException()
         }
     }
@@ -67,6 +80,11 @@ class GraphInserter(
 
             Neo4jConnector.saveEntity(startUnit)
         }
+    }
+
+    private fun insertMetricsIntoDatabase(metrics: Metrics) {
+        val metricsNode = model.neo4j.node.Metrics.create(projectName = projectName, metrics = metrics)
+        Neo4jConnector.saveEntity(metricsNode)
     }
 
     private fun projectAlreadyExists(): Boolean {
