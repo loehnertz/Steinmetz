@@ -1,5 +1,6 @@
 package controller.analysis.clustering.infomap
 
+import controller.analysis.clustering.ClusteringAlgorithmManager
 import model.graph.Graph
 import model.graph.Node
 import model.graph.NodeAttributes
@@ -8,17 +9,17 @@ import java.io.File
 import java.util.*
 
 
-class InfomapManager(private val graph: Graph) {
+class InfomapManager(private val graph: Graph, private val projectName: String) : ClusteringAlgorithmManager {
     private val unit2IdMap: HashMap<Unit, Int> = hashMapOf()
     private val id2UnitMap: HashMap<Int, Unit> = hashMapOf()
 
-    fun applyInfomap(iterationAmount: Int = 10): Graph {
+    override fun apply(tunableParameter: Double?): Graph {
         createInputFile()
 
-        Runtime.getRuntime().exec(buildCommand(iterationAmount)).waitFor()
+        Runtime.getRuntime().exec(buildCommand(tunableParameter?.toInt())).waitFor()
 
-        val outputLines = readOutputFileLines()
-        return convertInfomapOutputToGraph(outputLines)
+        val outputLines: List<String> = readOutputFileLines()
+        return convertOutputToGraph(outputLines)
     }
 
     private fun createInputFile() {
@@ -32,16 +33,16 @@ class InfomapManager(private val graph: Graph) {
         }
 
         for (edge in graph.edges) {
-            val inputLine = buildInfomapInputLine(startUnit = edge.start, endUnit = edge.end, weight = edge.attributes.couplingScore)
+            val inputLine = buildInputLine(startUnit = edge.start, endUnit = edge.end, weight = edge.attributes.couplingScore)
             inputFileString += "$inputLine\n"
         }
 
         writeInputFile(inputFileString)
     }
 
-    private fun convertInfomapOutputToGraph(outputLines: List<String>): Graph {
+    private fun convertOutputToGraph(outputLines: List<String>): Graph {
         for (line in outputLines.filter { !it.startsWith('#') }) {
-            val (nodeId, clusterId, _flowAmount) = line.split(' ')
+            val (nodeId, clusterId, _) = line.split(' ')
 
             val clusteredUnit = id2UnitMap[nodeId.toInt()]
                     ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
@@ -52,25 +53,25 @@ class InfomapManager(private val graph: Graph) {
     }
 
     private fun writeInputFile(inputFileString: String) {
-        val inputFile = File("$InputOutputPath/$InputFileName")
+        val inputFile = File("$InputOutputPath/$projectName/$InputFileName")
         inputFile.parentFile.mkdirs()
         inputFile.createNewFile()
         inputFile.bufferedWriter().use { file -> file.write(inputFileString) }
     }
 
     private fun readOutputFileLines(): List<String> {
-        return File("$InputOutputPath/$OutputDirectory/$OutputFileName").bufferedReader().readLines()
+        return File("$InputOutputPath/$projectName/$OutputDirectory/$OutputFileName").bufferedReader().readLines()
     }
 
-    private fun buildCommand(iterationAmount: Int): String {
-        return "${retrieveInfomapExecutablePath()} $InputOutputPath/$InputFileName $InputOutputPath/$OutputDirectory/ -i link-list -N $iterationAmount --directed --clu"
+    private fun buildCommand(iterationAmount: Int? = 10): String {
+        return "${retrieveExecutablePath()} $InputOutputPath/$projectName/$InputFileName $InputOutputPath/$projectName/$OutputDirectory/ -i link-list -N $iterationAmount --directed --clu"
     }
 
-    private fun buildInfomapInputLine(startUnit: Unit, endUnit: Unit, weight: Int): String {
+    private fun buildInputLine(startUnit: Unit, endUnit: Unit, weight: Int): String {
         return "${unit2IdMap[startUnit]} ${unit2IdMap[endUnit]} $weight"
     }
 
-    private fun retrieveInfomapExecutablePath(): String {
+    private fun retrieveExecutablePath(): String {
         return "backend/src/main/resources/Infomap"
     }
 

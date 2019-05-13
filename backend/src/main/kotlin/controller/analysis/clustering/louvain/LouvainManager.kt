@@ -1,5 +1,6 @@
 package controller.analysis.clustering.louvain
 
+import controller.analysis.clustering.ClusteringAlgorithmManager
 import model.graph.Graph
 import model.graph.Node
 import model.graph.NodeAttributes
@@ -9,8 +10,8 @@ import org.neo4j.ogm.model.Result
 import utility.Neo4jConnector
 
 
-class LouvainManager(private val graph: Graph, private val projectName: String) {
-    fun applyLouvain(): Graph {
+class LouvainManager(private val graph: Graph, private val projectName: String) : ClusteringAlgorithmManager {
+    override fun apply(tunableParameter: Double?): Graph {
         addLouvainLabel()
         val result: Result = executeGraphAlgorithm()
         removeLouvainLabel()

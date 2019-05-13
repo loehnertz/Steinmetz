@@ -1,5 +1,6 @@
 package controller.analysis.clustering.mcl
 
+import controller.analysis.clustering.ClusteringAlgorithmManager
 import model.graph.Graph
 import model.graph.Node
 import model.graph.NodeAttributes
@@ -10,32 +11,32 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 
-class MclManager(private val graph: Graph) {
-    fun applyMcl(clusteringInflationValue: Double?): Graph {
-        val process = Runtime.getRuntime().exec(buildMclCommand(clusteringInflationValue))
+class MclManager(private val graph: Graph) : ClusteringAlgorithmManager {
+    override fun apply(tunableParameter: Double?): Graph {
+        val process: Process = Runtime.getRuntime().exec(buildCommand(tunableParameter))
         BufferedWriter(OutputStreamWriter(process.outputStream)).use { writer ->
-            val input = convertGraphToMclInput()
+            val input: String = convertGraphToInput()
             writer.write(input)
             writer.flush()
         }
         process.waitFor()
-        val output = Scanner(process.inputStream, StandardCharsets.UTF_8.name()).useDelimiter("\\A").next()
-        return convertMclOutputToGraph(output)
+        val output: String = Scanner(process.inputStream, StandardCharsets.UTF_8.name()).useDelimiter("\\A").next()
+        return convertOutputToGraph(output)
     }
 
-    private fun convertGraphToMclInput(): String {
-        return graph.edges.joinToString("\n") { buildMclInputLine(it.start, it.end, it.attributes.couplingScore) }
+    private fun convertGraphToInput(): String {
+        return graph.edges.joinToString("\n") { buildInputLine(it.start, it.end, it.attributes.couplingScore) }
     }
 
-    private fun convertMclOutputToGraph(output: String): Graph {
-        val lines = output.split("\n").dropLast(1)  // The last item is always an empty line with this approach
+    private fun convertOutputToGraph(output: String): Graph {
+        val lines: List<String> = output.split("\n").dropLast(1)  // The last item is always an empty line with this approach
         var clusterId = 1
 
-        for (line in lines) {
-            val nodes = line.split("\t")
-            for (nodeIdentifierString in nodes) {
-                val nodeIdentifier = nodeIdentifierString.substringAfterLast('.')
-                val nodePackageIdentifier = nodeIdentifierString.substringBeforeLast('.')
+        for (line: String in lines) {
+            val nodes: List<String> = line.split("\t")
+            for (nodeIdentifierString: String in nodes) {
+                val nodeIdentifier: String = nodeIdentifierString.substringAfterLast('.')
+                val nodePackageIdentifier: String = nodeIdentifierString.substringBeforeLast('.')
                 val clusteredNode = Node(unit = Unit(identifier = nodeIdentifier, packageIdentifier = nodePackageIdentifier), attributes = NodeAttributes(cluster = clusterId))
                 graph.addOrUpdateNode(clusteredNode)
             }
@@ -45,13 +46,13 @@ class MclManager(private val graph: Graph) {
         return graph
     }
 
-    private fun buildMclCommand(clusteringInflationValue: Double?): String {
-        var mclCommand = MclBaseCommand
+    private fun buildCommand(clusteringInflationValue: Double?): String {
+        var mclCommand = "${retrieveExecutablePath()} $MclBaseCommand"
         if (clusteringInflationValue != null) mclCommand = mclCommand.plus(" -I $clusteringInflationValue")
         return mclCommand
     }
 
-    private fun buildMclInputLine(startUnit: Unit, endUnit: Unit, weight: Int): String {
+    private fun buildInputLine(startUnit: Unit, endUnit: Unit, weight: Int): String {
         return "${buildNodeIdentifier(startUnit.identifier, startUnit.packageIdentifier)}\t${buildNodeIdentifier(endUnit.identifier, endUnit.packageIdentifier)}\t$weight"
     }
 
@@ -59,7 +60,12 @@ class MclManager(private val graph: Graph) {
         return "$packageIdentifier.$identifier"
     }
 
+    private fun retrieveExecutablePath(): String {
+        return "backend/src/main/resources/$ExecutableName"
+    }
+
     companion object {
-        private const val MclBaseCommand = "mcl - --abc -o -"
+        private const val ExecutableName = "mcl"
+        private const val MclBaseCommand = "- --abc -o -"
     }
 }
