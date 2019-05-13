@@ -1,5 +1,6 @@
 <template>
     <Network
+            ref="graph"
             :nodes="graphNodes"
             :edges="graphEdges"
             :options="graphOptions"
@@ -9,6 +10,10 @@
 
 <script>
     import {Network} from 'vue2vis';
+
+    const DefaultColor = 'orange';
+    const ClusterNodeKeyword = '$cluster';
+    const LayoutSeed = 55609697;
 
     export default {
         name: 'Graph',
@@ -21,10 +26,34 @@
                 graphNodes: [],
                 graphEdges: [],
                 graphOptions: {
+                    nodes: {
+                        font: {
+                            face: 'Titillium Web',
+                            size: 21,
+                        },
+                        margin: 15,
+                        shape: 'box',
+                    },
                     edges: {
                         scaling: {
                             customScalingFunction: this.getEdgeScalingFunction(),
                         },
+                        smooth: {
+                            type: 'dynamic',
+                        },
+                    },
+                    layout: {
+                        randomSeed: LayoutSeed,
+                    },
+                    interaction: {
+                        hideEdgesOnDrag: true,
+                    },
+                    manipulation: {
+                        enabled: true,
+                        addNode: false,
+                        addEdge: false,
+                        deleteNode: false,
+                        deleteEdge: false,
                     },
                     physics: {
                         barnesHut: {
@@ -32,74 +61,115 @@
                         },
                     },
                 },
+                nodesInOpenClusters: [],
             }
         },
         watch: {
             graphData: function (graphData) {
-                if (graphData) this.constructGraph(this.graphData["edges"]);
+                if (graphData) this.rerenderGraph();
+            },
+            isClustered: function () {
+                this.rerenderGraph();
+            },
+            showClusterNodes: function () {
+                this.rerenderGraph();
             },
         },
         methods: {
-            constructGraph(relationships) {
+            flushGraph() {
+                this.graphNodeIds = new Set();
+                this.graphNodes = [];
+                this.graphEdges = [];
+            },
+            constructGraph(nodes, relationships) {
                 this.configureGravitation(relationships.length);
-                this.setNodes(relationships);
-                this.setEdges(relationships);
+                const clusterIds = this.setNodes(nodes);
+                this.setEdges(relationships, clusterIds);
+            },
+            rerenderGraph() {
+                this.flushGraph();
+                this.constructGraph(this.graphData["nodes"], this.graphData["edges"]);
             },
             configureGravitation(relationshipAmount) {
-                this.graphOptions.physics.barnesHut.gravitationalConstant = -(relationshipAmount * 100)
+                this.graphOptions.physics.barnesHut.gravitationalConstant = -(relationshipAmount * 1000)
             },
-            setNodes(relationships) {
-                for (let relationship of relationships) {
-                    let startNode = this.buildNode(relationship.start["identifier"], relationship.start["packageIdentifier"]);
-                    let endNode = this.buildNode(relationship.end["identifier"], relationship.end["packageIdentifier"]);
+            setNodes(nodes) {
+                const clusterIds = nodes.map((node) => {
+                    return node["attributes"]["cluster"]
+                });
+                const clusterAmount = new Set(clusterIds).size;
 
-                    if (!this.graphNodeIds.has(startNode.id)) {
-                        this.graphNodes.push(startNode);
-                        this.graphNodeIds.add(startNode.id);
-                    }
+                for (let node of nodes) {
+                    let unitNode = this.buildUnitNode(
+                        node["unit"]["identifier"],
+                        node["unit"]["packageIdentifier"],
+                        node["attributes"]["cluster"],
+                        clusterAmount,
+                    );
 
-                    if (!this.graphNodeIds.has(endNode.id)) {
-                        this.graphNodes.push(endNode);
-                        this.graphNodeIds.add(endNode.id);
+                    if (!this.graphNodeIds.has(unitNode.id)) {
+                        this.graphNodes.push(unitNode);
+                        this.graphNodeIds.add(unitNode.id);
                     }
                 }
-            },
-            setEdges(relationships) {
-                for (let relationship of relationships) {
-                    let startNode = relationship.start;
-                    let endNode = relationship.end;
-                    let attributes = relationship.attributes;
 
-                    let edge = this.buildEdge(
-                        this.constructNodeId(startNode["identifier"], startNode["packageIdentifier"]),
-                        this.constructNodeId(endNode["identifier"], endNode["packageIdentifier"]),
-                        '',
+                return clusterIds;
+            },
+            setEdges(relationships, clusterIds) {
+                for (let relationship of relationships) {
+                    const startNode = relationship.start;
+                    const endNode = relationship.end;
+                    const attributes = relationship.attributes;
+
+                    const edge = this.buildUnitEdge(
+                        this.constructUnitNodeId(startNode["identifier"], startNode["packageIdentifier"]),
+                        this.constructUnitNodeId(endNode["identifier"], endNode["packageIdentifier"]),
                         attributes["couplingScore"],
                     );
 
                     this.graphEdges.push(edge);
                 }
+
+                if (this.isClustered) this.clusterGraph(clusterIds, this.showClusterNodes);
             },
-            constructNodeId(identifier, packageIdentifier) {
+            constructUnitNodeId(identifier, packageIdentifier) {
                 return `${packageIdentifier}.${identifier}`;
             },
-            buildNode(identifier, packageIdentifier) {
+            constructClusterNodeId(clusterId) {
+                return `${ClusterNodeKeyword}:${clusterId}`;
+            },
+            buildUnitNode(identifier, packageIdentifier, clusterId, clusterAmount) {
                 return {
-                    id: this.constructNodeId(identifier, packageIdentifier),
-                    title: identifier,
+                    id: this.constructUnitNodeId(identifier, packageIdentifier),
+                    cid: clusterId,
+                    title: this.generateGraphPopup(`${packageIdentifier}.${identifier}`),
                     label: identifier,
-                    borderWidth: 2,
+                    borderWidth: 5,
                     color: {
                         background: 'whitesmoke',
-                        border: 'orange',
+                        border: this.getNodeBorderColor(clusterId, clusterAmount),
                     },
                 }
             },
-            buildEdge(startNodeId, endNodeId, label, weight) {
+            buildServiceNode(clusterId, hidden) {
+                return {
+                    id: this.constructClusterNodeId(clusterId),
+                    cid: clusterId,
+                    title: this.generateGraphPopup(`Service ${clusterId}`),
+                    borderWidth: 5,
+                    color: {
+                        background: 'whitesmoke',
+                        border: DefaultColor,
+                    },
+                    shape: 'hexagon',
+                    hidden: hidden,
+                }
+            },
+            buildUnitEdge(startNodeId, endNodeId, weight) {
                 return {
                     from: startNodeId,
                     to: endNodeId,
-                    label: label,
+                    title: this.generateGraphPopup(`${weight}`),
                     value: weight,
                     color: {
                         color: 'green',
@@ -113,6 +183,76 @@
                     },
                     arrowStrikethrough: false,
                 }
+            },
+            buildServiceEdge(unitNodeId, serviceNodeId) {
+                return {
+                    from: unitNodeId,
+                    to: serviceNodeId,
+                    color: {
+                        color: DefaultColor,
+                        highlight: DefaultColor,
+                    },
+                }
+            },
+            clusterGraph(clusterIds, showClusterNodes) {
+                if (showClusterNodes) {
+                    const unit2unitEdges = this.graphEdges;
+                    this.graphEdges = [];
+
+                    for (let unitEdge of unit2unitEdges) {
+                        const fromClusterNode = this.constructClusterNodeId(this.findNodeById(unitEdge.from).cid);
+                        const toClusterNode = this.constructClusterNodeId(this.findNodeById(unitEdge.to).cid);
+
+                        if (fromClusterNode !== toClusterNode) {
+                            const clusterUnitEdge = this.buildUnitEdge(fromClusterNode, toClusterNode, unitEdge.value);
+                            const existingEdgeIndex = this.graphEdges.findIndex((edge) => {
+                                return edge.from === clusterUnitEdge.from && edge.to === clusterUnitEdge.to;
+                            });
+
+                            if (existingEdgeIndex === -1) {
+                                this.graphEdges.push(clusterUnitEdge);
+                            } else {
+                                this.graphEdges[existingEdgeIndex].value += unitEdge.value;
+                            }
+                        }
+                    }
+                }
+
+                for (let unitNode of this.graphNodes) {
+                    const clusterEdge = this.buildServiceEdge(unitNode.id, this.constructClusterNodeId(unitNode.cid));
+
+                    this.graphEdges.push(clusterEdge);
+                }
+
+                for (let clusterId of clusterIds) {
+                    const clusterNode = this.buildServiceNode(clusterId, !showClusterNodes);
+
+                    if (!this.graphNodeIds.has(clusterNode.id)) {
+                        this.graphNodes.push(clusterNode);
+                        this.graphNodeIds.add(clusterNode.id);
+                    }
+                }
+            },
+            findNodeById(nodeId) {
+                return this.graphNodes.find((node) => {
+                    return node.id === nodeId;
+                });
+            },
+            generateGraphPopup(title) {
+                return (
+                    `<span class="box" style="font-family: 'Titillium Web', sans-serif; padding: 11px !important;">${title}</span>`
+                );
+            },
+            // Adapted from: https://krazydad.com/tutorials/makecolors.php
+            getNodeBorderColor(coloringKey, maxColoringKey) {
+                if (!coloringKey || !maxColoringKey) return DefaultColor;
+
+                const i = (coloringKey * 255 / maxColoringKey);
+                const r = Math.round(Math.sin(0.024 * i) * 127 + 128);
+                const g = Math.round(Math.sin(0.024 * i + 2) * 127 + 128);
+                const b = Math.round(Math.sin(0.024 * i + 4) * 127 + 128);
+
+                return `rgb(${r}, ${g}, ${b})`;
             },
             getEdgeScalingFunction() {
                 return function (min, max, total, value) {
@@ -130,9 +270,18 @@
                 type: Object,
                 default: () => ({}),
             },
+            isClustered: {
+                type: Boolean,
+                default: () => (true),
+            },
+            showClusterNodes: {
+                type: Boolean,
+                default: () => (false),
+            }
         },
     }
 </script>
 
 <style scoped>
+    @import '~vue2vis/dist/vue2vis.css';
 </style>

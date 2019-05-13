@@ -1,11 +1,11 @@
 package controller.analysis.extraction
 
-import model.graph.Edge
+import model.graph.Graph
 import java.io.File
 
 
 abstract class AbstractExtractor {
-    abstract fun extract(): List<Edge>
+    abstract fun extract(): Graph
 
     fun buildBasePath(platformIdentifier: String, projectName: String) = "$UnarchiverBasePath/$platformIdentifier/$projectName"
 

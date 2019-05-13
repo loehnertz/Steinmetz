@@ -1,17 +1,22 @@
 package controller.analysis
 
+import controller.analysis.clustering.Clusterer
+import controller.analysis.clustering.ClusteringAlgorithm
 import controller.analysis.extraction.dynamicanalysis.DynamicAnalysisExtractor
 import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
 import controller.analysis.extraction.staticanalysis.StaticAnalysisExtractor
+import controller.analysis.metrics.Metrics
+import controller.analysis.metrics.inputquality.InputQuality
 import io.ktor.features.BadRequestException
 import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
+import model.graph.Edge
 import model.graph.Graph
-import model.neo4j.node.Unit
-import model.resource.NewProjectRequest
+import model.resource.ProjectRequest
+import model.resource.ProjectResponse
 import org.neo4j.ogm.cypher.ComparisonOperator
 import org.neo4j.ogm.cypher.Filter
 import utility.Neo4jConnector
@@ -19,24 +24,47 @@ import java.io.File
 
 
 class AnalysisController {
-    fun insertProject(newProjectRequest: NewProjectRequest): Graph {
+    fun insertProject(projectRequest: ProjectRequest): ProjectResponse {
         return GraphInserter(
-                projectName = newProjectRequest.projectName,
-                projectPlatform = newProjectRequest.projectPlatform,
-                basePackageIdentifier = newProjectRequest.basePackageIdentifier,
-                staticAnalysisArchive = newProjectRequest.staticAnalysisArchive,
-                dynamicAnalysisArchive = newProjectRequest.dynamicAnalysisArchive
+                projectName = projectRequest.projectName,
+                projectPlatform = projectRequest.projectPlatform,
+                basePackageIdentifier = projectRequest.basePackageIdentifier,
+                staticAnalysisArchive = projectRequest.staticAnalysisArchive,
+                dynamicAnalysisArchive = projectRequest.dynamicAnalysisArchive
         ).insert()
     }
 
-    fun getGraph(projectName: String): Graph {
-        val filter = Filter(Unit::projectName.name, ComparisonOperator.EQUALS, projectName)
-        val units = Neo4jConnector.retrieveEntities(Unit::class.java, filter).map { it as Unit }
-        val relationships = GraphConverter.convertUnitListToRelationships(units)
-        return Graph(relationships.toSet())
+    fun retrieveProject(projectName: String): ProjectResponse {
+        return ProjectResponse(graph = retrieveGraph(projectName), metrics = retrieveMetrics(projectName))
     }
 
-    suspend fun handleNewProjectUploads(multipart: MultiPartData): NewProjectRequest {
+    fun clusterGraph(projectName: String, clusteringAlgorithm: ClusteringAlgorithm, tunableClusteringParameter: Double?): ProjectResponse {
+        val projectGraph: Graph = retrieveGraph(projectName)
+        val clusteredGraph: Graph = Clusterer(projectGraph, projectName).applyClusteringAlgorithm(clusteringAlgorithm, tunableClusteringParameter)
+
+        return ProjectResponse(graph = clusteredGraph, metrics = retrieveMetrics(projectName))
+    }
+
+    private fun retrieveGraph(projectName: String): Graph {
+        val filter = Filter(model.neo4j.node.Unit::projectName.name, ComparisonOperator.EQUALS, projectName)
+        val unitNodes: List<model.neo4j.node.Unit> = Neo4jConnector.retrieveEntities(model.neo4j.node.Unit::class.java, filter).map { it as model.neo4j.node.Unit }
+        val relationships: ArrayList<Edge> = GraphConverter(unitNodes).convertUnitListToRelationships()
+
+        return Graph(edges = relationships.toMutableSet())
+    }
+
+    private fun retrieveMetrics(projectName: String): Metrics {
+        val filter = Filter(model.neo4j.node.Metrics::projectName.name, ComparisonOperator.EQUALS, projectName)
+        val metricsNode: model.neo4j.node.Metrics? = Neo4jConnector.retrieveEntities(model.neo4j.node.Metrics::class.java, filter).map { it as model.neo4j.node.Metrics }.firstOrNull()
+
+        return if (metricsNode != null) {
+            model.neo4j.node.Metrics.convertToDataClass(metricsNode)
+        } else {
+            Metrics(inputQuality = InputQuality(dynamicAnalysis = -1))
+        }
+    }
+
+    suspend fun handleNewProjectUploads(multipart: MultiPartData): ProjectRequest {
         var projectName: String? = null
         var projectPlatform: String? = null
         var basePackageIdentifier: String? = null
@@ -48,27 +76,27 @@ class AnalysisController {
             when (part) {
                 is PartData.FormItem -> {
                     when (part.name) {
-                        NewProjectRequest::projectName.name -> projectName = part.value
-                        NewProjectRequest::projectPlatform.name -> projectPlatform = part.value
-                        NewProjectRequest::basePackageIdentifier.name -> basePackageIdentifier = part.value
+                        ProjectRequest::projectName.name -> projectName = part.value
+                        ProjectRequest::projectPlatform.name -> projectPlatform = part.value
+                        ProjectRequest::basePackageIdentifier.name -> basePackageIdentifier = part.value
                     }
                 }
                 is PartData.FileItem -> {
                     val file: File
                     when (part.name) {
-                        NewProjectRequest::staticAnalysisArchive.name -> {
+                        ProjectRequest::staticAnalysisArchive.name -> {
                             file = File("${StaticAnalysisExtractor.getArchiveUploadPath()}/$projectName")
                             file.parentFile.mkdirs()
                             file.createNewFile()
                             staticAnalysisArchive = file
                         }
-                        NewProjectRequest::dynamicAnalysisArchive.name -> {
+                        ProjectRequest::dynamicAnalysisArchive.name -> {
                             file = File("${DynamicAnalysisExtractor.getArchiveUploadPath()}/$projectName")
                             file.parentFile.mkdirs()
                             file.createNewFile()
                             dynamicAnalysisArchive = file
                         }
-                        else -> throw BadRequestException("File keys must be in ${listOf(NewProjectRequest::staticAnalysisArchive.name, NewProjectRequest::dynamicAnalysisArchive.name)}")
+                        else -> throw BadRequestException("File keys must be in ${listOf(ProjectRequest::staticAnalysisArchive.name, ProjectRequest::dynamicAnalysisArchive.name)}")
                     }
 
                     part.streamProvider().use { upload ->
@@ -84,7 +112,7 @@ class AnalysisController {
             part.dispose()
         }
 
-        return NewProjectRequest(
+        return ProjectRequest(
                 projectName = projectName!!,
                 projectPlatform = projectPlatform!!,
                 basePackageIdentifier = basePackageIdentifier!!,
