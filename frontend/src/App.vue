@@ -193,11 +193,14 @@
                                 >
                                     <span class="select">
                                         <label>
-                                            <select v-model="selectedClusteringAlgorithm"
-                                                    :disabled="!selectedProjectId">
+                                            <select
+                                                    v-model="selectedClusteringAlgorithm"
+                                                    :disabled="!selectedProjectId"
+                                            >
                                                 <option value="mcl">MCL</option>
                                                 <option value="infomap">Infomap</option>
                                                 <option value="louvain">Louvain</option>
+                                                <option value="clauset_newman_moore">Clauset-Newman-Moore</option>
                                             </select>
                                         </label>
                                     </span>
