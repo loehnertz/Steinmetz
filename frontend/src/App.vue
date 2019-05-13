@@ -197,10 +197,10 @@
                                                     v-model="selectedClusteringAlgorithm"
                                                     :disabled="!selectedProjectId"
                                             >
-                                                <option value="mcl">MCL</option>
-                                                <option value="infomap">Infomap</option>
-                                                <option value="louvain">Louvain</option>
-                                                <option value="clauset_newman_moore">Clauset-Newman-Moore</option>
+                                                <option :value="mclAlgorithm">MCL</option>
+                                                <option :value="infomapAlgorithm">Infomap</option>
+                                                <option :value="louvainAlgorithm">Louvain</option>
+                                                <option :value="clausetNewmanMooreAlgorithm">Clauset-Newman-Moore</option>
                                             </select>
                                         </label>
                                     </span>
@@ -217,7 +217,7 @@
                                         data-tooltip="Sets the tunable parameter of the selected graph clustering algorithm"
                                 >
                                     <Slider
-                                            :disabled="!selectedProjectId"
+                                            :disabled="!selectedProjectId || tunableClusteringParameterDisabled"
                                             :value="tunableClusteringParameter"
                                             @value-change="handleTunableClusteringParameterChange"
                                     />
@@ -289,6 +289,11 @@
     import Throbber from './components/Throbber.vue';
     import axios from 'axios';
 
+    const MclIdentifier = 'mcl';
+    const InfomapIdentifier = 'infomap';
+    const LouvainIdentifier = 'louvain';
+    const ClausetNewmanMooreIdentifier = 'clauset_newman_moore';
+
     export default {
         name: 'app',
         components: {
@@ -308,11 +313,16 @@
                 metricsData: {},
                 staticProgramAnalyisUploadLabel: 'Static Analysis',
                 dynamicProgramAnalyisUploadLabel: 'Dynamic Analysis',
+                mclAlgorithm: MclIdentifier,
+                infomapAlgorithm: InfomapIdentifier,
+                louvainAlgorithm: LouvainIdentifier,
+                clausetNewmanMooreAlgorithm: ClausetNewmanMooreIdentifier,
                 selectedClusteringAlgorithm: 'mcl',
                 clusterAvailable: false,
                 clusteredViewEnabled: false,
                 showClusterNodes: false,
                 tunableClusteringParameter: 2.0,
+                tunableClusteringParameterDisabled: false,
                 isLoading: false,
             }
         },
@@ -321,7 +331,12 @@
                 this.selectedProjectId = uploadProjectName;
             },
             selectedClusteringAlgorithm: function (selectedClusteringAlgorithm) {
-                if (selectedClusteringAlgorithm) this.fetchClusteredGraph();
+                if (selectedClusteringAlgorithm) {
+                    if (selectedClusteringAlgorithm === LouvainIdentifier || selectedClusteringAlgorithm === ClausetNewmanMooreIdentifier) {
+                        this.tunableClusteringParameterDisabled = true;
+                    }
+                    this.fetchClusteredGraph();
+                }
             },
             clusteredViewEnabled: function (clusteredViewEnabled) {
                 if (!clusteredViewEnabled) this.showClusterNodes = false;
