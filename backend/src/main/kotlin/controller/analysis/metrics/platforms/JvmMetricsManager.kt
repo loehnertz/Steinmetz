@@ -16,8 +16,14 @@ object JvmMetricsManager {
 
     fun calculateClusteringMetrics(clusteredGraph: Graph): ClusteringQuality {
         val amountOfClusters: Int = clusteredGraph.nodes.map { it.attributes.cluster }.toSet().size
-        val amountOfInterfaceEdges: Int = clusteredGraph.edges.filter { isInterClusterEdge(clusteredGraph, it) }.toSet().size
-        return ClusteringQuality(amountClusters = amountOfClusters, amountInterfaceEdges = amountOfInterfaceEdges)
+        val interClusterEdges: Set<Edge> = clusteredGraph.edges.filter { isInterClusterEdge(clusteredGraph, it) }.toSet()
+        val accumulatedInterfaceEdgeWeights: Int = interClusterEdges.sumBy { it.attributes.couplingScore }
+
+        return ClusteringQuality(
+                amountClusters = amountOfClusters,
+                amountInterfaceEdges = interClusterEdges.size,
+                accumulatedInterfaceEdgeWeights = accumulatedInterfaceEdgeWeights
+        )
     }
 
     private fun isInterClusterEdge(clusteredGraph: Graph, edge: Edge): Boolean {

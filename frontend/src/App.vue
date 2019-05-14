@@ -281,6 +281,7 @@
                 <p>Dynamic Analysis Quality: {{ dynamicAnalysisQuality }}</p>
                 <p>Amount of Clusters: {{ amountOfClusters }}</p>
                 <p>Amount of Inter-Cluster Edges: {{ amountOfInterClusterEdges }}</p>
+                <p>Accumulated Inter-Cluster Edge-Weights: {{ amountOfInterClusterEdgeWeights }}</p>
             </div>
         </section>
     </div>
@@ -313,25 +314,20 @@
                 }));
             },
             dynamicAnalysisQuality: function () {
-                if (!this.metricsData["inputQuality"] || !this.metricsData["inputQuality"].hasOwnProperty('dynamicAnalysis')) {
-                    return NotAvailableLabel;
-                } else {
-                    return `${this.metricsData["inputQuality"]["dynamicAnalysis"]}%`;
-                }
+                if (!this.metricsData["inputQuality"]) return NotAvailableLabel;
+                return `${this.metricsData["inputQuality"]["dynamicAnalysis"]}%`;
             },
             amountOfClusters: function () {
-                if (!this.metricsData["clusteringQuality"] || !this.metricsData["clusteringQuality"].hasOwnProperty('amountClusters')) {
-                    return NotAvailableLabel;
-                } else {
-                    return this.metricsData["clusteringQuality"]["amountClusters"];
-                }
+                if (!this.metricsData["clusteringQuality"]) return NotAvailableLabel;
+                return this.metricsData["clusteringQuality"]["amountClusters"];
             },
             amountOfInterClusterEdges: function () {
-                if (!this.metricsData["clusteringQuality"] || !this.metricsData["clusteringQuality"].hasOwnProperty('amountInterfaceEdges')) {
-                    return NotAvailableLabel;
-                } else {
-                    return this.metricsData["clusteringQuality"]["amountInterfaceEdges"];
-                }
+                if (!this.metricsData["clusteringQuality"]) return NotAvailableLabel;
+                return this.metricsData["clusteringQuality"]["amountInterfaceEdges"];
+            },
+            amountOfInterClusterEdgeWeights: function () {
+                if (!this.metricsData["clusteringQuality"]) return NotAvailableLabel;
+                return this.metricsData["clusteringQuality"]["accumulatedInterfaceEdgeWeights"];
             },
         },
         data() {
