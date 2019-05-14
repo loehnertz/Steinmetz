@@ -152,11 +152,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="level-item">
-                            <p v-if="metricsData.hasOwnProperty('inputQuality')">
-                                Dynamic Analysis Quality: {{ metricsData["inputQuality"]["dynamicAnalysis"] }}%
-                            </p>
-                        </div>
                     </div>
                     <div class="level-right">
                         <div class="level-item">
@@ -281,6 +276,13 @@
                 />
             </div>
         </section>
+        <section class="section">
+            <div class="container box">
+                <p>Dynamic Analysis Quality: {{ dynamicAnalysisQuality }}</p>
+                <p>Amount of Clusters: {{ amountOfClusters }}</p>
+                <p>Amount of Inter-Cluster Edges: {{ amountOfInterClusterEdges }}</p>
+            </div>
+        </section>
     </div>
 </template>
 
@@ -294,6 +296,7 @@
     const InfomapIdentifier = 'infomap';
     const LouvainIdentifier = 'louvain';
     const ClausetNewmanMooreIdentifier = 'clauset_newman_moore';
+    const NotAvailableLabel = 'N/A';
 
     export default {
         name: 'app',
@@ -308,6 +311,27 @@
                 return new Set(this.graphData["nodes"].map((node) => {
                     return node["attributes"]["cluster"];
                 }));
+            },
+            dynamicAnalysisQuality: function () {
+                if (!this.metricsData["inputQuality"] || !this.metricsData["inputQuality"].hasOwnProperty('dynamicAnalysis')) {
+                    return NotAvailableLabel;
+                } else {
+                    return `${this.metricsData["inputQuality"]["dynamicAnalysis"]}%`;
+                }
+            },
+            amountOfClusters: function () {
+                if (!this.metricsData["clusteringQuality"] || !this.metricsData["clusteringQuality"].hasOwnProperty('amountClusters')) {
+                    return NotAvailableLabel;
+                } else {
+                    return this.metricsData["clusteringQuality"]["amountClusters"];
+                }
+            },
+            amountOfInterClusterEdges: function () {
+                if (!this.metricsData["clusteringQuality"] || !this.metricsData["clusteringQuality"].hasOwnProperty('amountInterfaceEdges')) {
+                    return NotAvailableLabel;
+                } else {
+                    return this.metricsData["clusteringQuality"]["amountInterfaceEdges"];
+                }
             },
         },
         data() {
@@ -479,6 +503,11 @@
 
     #graph {
         height: 100%;
+    }
+
+    .section {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
     }
 
     .file-cta {
