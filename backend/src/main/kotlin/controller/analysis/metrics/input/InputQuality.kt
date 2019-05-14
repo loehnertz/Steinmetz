@@ -1,4 +1,4 @@
-package controller.analysis.metrics.inputquality
+package controller.analysis.metrics.input
 
 
 data class InputQuality(

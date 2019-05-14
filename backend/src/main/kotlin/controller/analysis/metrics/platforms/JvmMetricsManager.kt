@@ -1,15 +1,16 @@
 package controller.analysis.metrics.platforms
 
-import controller.analysis.metrics.Metrics
-import controller.analysis.metrics.inputquality.InputQuality
-import controller.analysis.metrics.inputquality.platforms.jvm.JvmInputQualityAnalyzer
+import controller.analysis.metrics.clustering.ClusteringQuality
+import controller.analysis.metrics.input.InputQuality
+import controller.analysis.metrics.input.platforms.jvm.JvmInputQualityAnalyzer
+import model.graph.Edge
 import model.graph.Graph
+import model.graph.Node
+import model.graph.Unit
 
 
-class JvmMetricsManager(private var staticAnalysisGraph: Graph, private var dynamicAnalysisGraph: Graph) {
-    fun generateMetrics(): Metrics {
-        val inputQuality: InputQuality = JvmInputQualityAnalyzer(staticAnalysisGraph, dynamicAnalysisGraph).calculate()
-
-        return Metrics(inputQuality = inputQuality)
+object JvmMetricsManager {
+    fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph): InputQuality {
+        return JvmInputQualityAnalyzer(staticAnalysisGraph, dynamicAnalysisGraph).calculate()
     }
 }

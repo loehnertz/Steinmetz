@@ -3,6 +3,7 @@ package controller.analysis.extraction.graph
 import controller.analysis.extraction.dynamicanalysis.platforms.JfrRecordingAnalyzer
 import controller.analysis.extraction.staticanalysis.platforms.JvmBytecodeExtractor
 import controller.analysis.metrics.Metrics
+import controller.analysis.metrics.input.InputQuality
 import controller.analysis.metrics.platforms.JvmMetricsManager
 import model.graph.Graph
 import model.resource.ProjectResponse
@@ -28,7 +29,8 @@ class GraphInserter(
         val dynamicAnalysisGraph: Graph = processDynamicAnalysisData()
 
         val mergedGraph: Graph = mergeGraphs(staticAnalysisGraph, dynamicAnalysisGraph)
-        val metrics: Metrics = calculateMetrics(staticAnalysisGraph, dynamicAnalysisGraph)
+        val inputQuality: InputQuality = calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph)
+        val metrics = Metrics(inputQuality = inputQuality)
 
         insertGraphIntoDatabase(mergedGraph)
         insertMetricsIntoDatabase(metrics)
@@ -53,9 +55,9 @@ class GraphInserter(
     }
 
     @Throws(IllegalArgumentException::class)
-    private fun calculateMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph): Metrics {
+    private fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph): InputQuality {
         when (projectPlatform) {
-            JvmProjectKey -> return JvmMetricsManager(staticAnalysisGraph, dynamicAnalysisGraph).generateMetrics()
+            JvmProjectKey -> return JvmMetricsManager.calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph)
             else -> throw IllegalArgumentException()
         }
     }

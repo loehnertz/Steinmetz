@@ -1,7 +1,7 @@
-package controller.analysis.metrics.inputquality.platforms.jvm
+package controller.analysis.metrics.input.platforms.jvm
 
-import controller.analysis.metrics.inputquality.InputQuality
-import controller.analysis.metrics.inputquality.platforms.jvm.dynamicanalysis.JfrRecordingQualityAnalyzer
+import controller.analysis.metrics.input.InputQuality
+import controller.analysis.metrics.input.platforms.jvm.dynamicanalysis.JfrRecordingQualityAnalyzer
 import model.graph.Graph
 
 

@@ -1,6 +1,6 @@
-package controller.analysis.metrics.inputquality.platforms.jvm.dynamicanalysis
+package controller.analysis.metrics.input.platforms.jvm.dynamicanalysis
 
-import controller.analysis.metrics.inputquality.DynamicAnalysisInputQualityAnalyzer
+import controller.analysis.metrics.input.DynamicAnalysisInputQualityAnalyzer
 import model.graph.Graph
 import model.graph.Unit
 
