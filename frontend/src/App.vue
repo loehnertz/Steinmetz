@@ -275,6 +275,7 @@
                 <Graph
                         id="graph"
                         :graph-data="graphData"
+                        :cluster-ids="clusterIds"
                         :is-clustered="clusteredViewEnabled"
                         :show-cluster-nodes="showClusterNodes"
                 />
@@ -300,6 +301,14 @@
             Graph,
             Slider,
             Throbber,
+        },
+        computed: {
+            clusterIds: function () {
+                if (!this.clusterAvailable) return new Set();
+                return new Set(this.graphData["nodes"].map((node) => {
+                    return node["attributes"]["cluster"];
+                }));
+            },
         },
         data() {
             return {
@@ -332,9 +341,7 @@
             },
             selectedClusteringAlgorithm: function (selectedClusteringAlgorithm) {
                 if (selectedClusteringAlgorithm) {
-                    if (selectedClusteringAlgorithm === LouvainIdentifier || selectedClusteringAlgorithm === ClausetNewmanMooreIdentifier) {
-                        this.tunableClusteringParameterDisabled = true;
-                    }
+                    this.tunableClusteringParameterDisabled = selectedClusteringAlgorithm === LouvainIdentifier || selectedClusteringAlgorithm === ClausetNewmanMooreIdentifier;
                     this.fetchClusteredGraph();
                 }
             },
