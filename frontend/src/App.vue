@@ -281,7 +281,7 @@
                 <p>Dynamic Analysis Quality: {{ dynamicAnalysisQuality }}</p>
                 <p>Amount of Clusters: {{ amountOfClusters }}</p>
                 <p>Amount of Inter-Cluster Edges: {{ amountOfInterClusterEdges }}</p>
-                <p>Accumulated Inter-Cluster Edge-Weights: {{ amountOfInterClusterEdgeWeights }}</p>
+                <p>Accumulated Inter-Cluster Edge-Weights: {{ accumulatedInterClusterEdgeWeights }}</p>
             </div>
         </section>
     </div>
@@ -325,7 +325,7 @@
                 if (!this.metricsData["clusteringQuality"]) return NotAvailableLabel;
                 return this.metricsData["clusteringQuality"]["amountInterfaceEdges"];
             },
-            amountOfInterClusterEdgeWeights: function () {
+            accumulatedInterClusterEdgeWeights: function () {
                 if (!this.metricsData["clusteringQuality"]) return NotAvailableLabel;
                 return this.metricsData["clusteringQuality"]["accumulatedInterfaceEdgeWeights"];
             },
