@@ -7,7 +7,7 @@ import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
 import controller.analysis.extraction.staticanalysis.StaticAnalysisExtractor
 import controller.analysis.metrics.Metrics
-import controller.analysis.metrics.inputquality.InputQuality
+import controller.analysis.metrics.platforms.JvmMetricsManager
 import io.ktor.features.BadRequestException
 import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
@@ -41,8 +41,10 @@ class AnalysisController {
     fun clusterGraph(projectName: String, clusteringAlgorithm: ClusteringAlgorithm, tunableClusteringParameter: Double?): ProjectResponse {
         val projectGraph: Graph = retrieveGraph(projectName)
         val clusteredGraph: Graph = Clusterer(projectGraph, projectName).applyClusteringAlgorithm(clusteringAlgorithm, tunableClusteringParameter)
+        val clusteredGraphMetrics: Metrics = calculateClusteredGraphMetrics(clusteredGraph)
+        val existingMetrics: Metrics = retrieveMetrics(projectName)
 
-        return ProjectResponse(graph = clusteredGraph, metrics = retrieveMetrics(projectName))
+        return ProjectResponse(graph = clusteredGraph, metrics = mergeMetrics(existingMetrics, clusteredGraphMetrics))
     }
 
     private fun retrieveGraph(projectName: String): Graph {
@@ -60,8 +62,23 @@ class AnalysisController {
         return if (metricsNode != null) {
             model.neo4j.node.Metrics.convertToDataClass(metricsNode)
         } else {
-            Metrics(inputQuality = InputQuality(dynamicAnalysis = -1))
+            Metrics()
         }
+    }
+
+    private fun calculateClusteredGraphMetrics(clusteredGraph: Graph): Metrics {
+        return Metrics(clusteringQuality = JvmMetricsManager.calculateClusteringMetrics(clusteredGraph))
+    }
+
+    private fun mergeMetrics(vararg metricsList: Metrics): Metrics {
+        val mergedMetrics = Metrics()
+
+        for (metrics: Metrics in metricsList) {
+            if (metrics.inputQuality != null) mergedMetrics.inputQuality = metrics.inputQuality
+            if (metrics.clusteringQuality != null) mergedMetrics.clusteringQuality = metrics.clusteringQuality
+        }
+
+        return mergedMetrics
     }
 
     suspend fun handleNewProjectUploads(multipart: MultiPartData): ProjectRequest {
