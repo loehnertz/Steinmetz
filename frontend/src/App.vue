@@ -192,10 +192,10 @@
                                                     v-model="selectedClusteringAlgorithm"
                                                     :disabled="!selectedProjectId"
                                             >
-                                                <option :value="mclAlgorithm">MCL</option>
-                                                <option :value="infomapAlgorithm">Infomap</option>
-                                                <option :value="louvainAlgorithm">Louvain</option>
-                                                <option :value="clausetNewmanMooreAlgorithm">Clauset-Newman-Moore</option>
+                                                <option :value="mclAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(mclAlgorithm) }}</option>
+                                                <option :value="infomapAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(infomapAlgorithm) }}</option>
+                                                <option :value="louvainAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(louvainAlgorithm) }}</option>
+                                                <option :value="clausetNewmanMooreAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(clausetNewmanMooreAlgorithm) }}</option>
                                             </select>
                                         </label>
                                     </span>
@@ -233,7 +233,7 @@
                                             type="checkbox"
                                             v-model="clusteredViewEnabled"
                                             :checked="clusteredViewEnabled"
-                                            :disabled="!selectedProjectId || !clusterAvailable"
+                                            :disabled="!selectedProjectId || !clusteringAvailable"
                                     >
                                     <label for="clusteredViewEnabled">
                                         Clustered View
@@ -253,7 +253,7 @@
                                             type="checkbox"
                                             v-model="showClusterNodes"
                                             :checked="showClusterNodes"
-                                            :disabled="!selectedProjectId || (!clusteredViewEnabled && !clusterAvailable)"
+                                            :disabled="!selectedProjectId || (!clusteredViewEnabled && !clusteringAvailable)"
                                     >
                                     <label for="showClusterNodes">
                                         Hide Inter-Cluster Edges
@@ -288,9 +288,11 @@
 </template>
 
 <script>
+    import ClusteringMetrics from './components/ClusteringMetrics.vue';
     import Graph from './components/Graph.vue';
     import Slider from './components/Slider.vue';
     import Throbber from './components/Throbber.vue';
+
     import axios from 'axios';
 
     const MclIdentifier = 'mcl';
@@ -302,32 +304,41 @@
     export default {
         name: 'app',
         components: {
+            ClusteringMetrics,
             Graph,
             Slider,
             Throbber,
         },
         computed: {
             clusterIds: function () {
-                if (!this.clusterAvailable) return new Set();
+                if (!this.clusteringAvailable || !this.graphData["nodes"]) return new Set();
                 return new Set(this.graphData["nodes"].map((node) => {
                     return node["attributes"]["cluster"];
                 }));
             },
             dynamicAnalysisQuality: function () {
                 if (!this.metricsData["inputQuality"]) return NotAvailableLabel;
-                return `${this.metricsData["inputQuality"]["dynamicAnalysis"]}%`;
+                return this.metricsData["inputQuality"]["dynamicAnalysis"];
+            },
+            accumulatedEdgeWeights: function () {
+                if (!this.metricsData["inputQuality"]) return NotAvailableLabel;
+                return this.metricsData["inputQuality"]["accumulatedEdgeWeight"];
             },
             amountOfClusters: function () {
-                if (!this.metricsData["clusteringQuality"]) return NotAvailableLabel;
+                if (!this.metricsData["clusteringQuality"]) return null;
                 return this.metricsData["clusteringQuality"]["amountClusters"];
             },
             amountOfInterClusterEdges: function () {
-                if (!this.metricsData["clusteringQuality"]) return NotAvailableLabel;
+                if (!this.metricsData["clusteringQuality"]) return null;
                 return this.metricsData["clusteringQuality"]["amountInterfaceEdges"];
             },
             accumulatedInterClusterEdgeWeights: function () {
-                if (!this.metricsData["clusteringQuality"]) return NotAvailableLabel;
+                if (!this.metricsData["clusteringQuality"]) return null;
                 return this.metricsData["clusteringQuality"]["accumulatedInterfaceEdgeWeights"];
+            },
+            percentageInterClusterEdgeWeights: function () {
+                if (!this.metricsData["clusteringQuality"]) return null;
+                return this.calculatePercentageRatioBetweenTwoNumbers(this.accumulatedInterClusterEdgeWeights, this.accumulatedEdgeWeights);
             },
         },
         data() {
@@ -346,8 +357,9 @@
                 infomapAlgorithm: InfomapIdentifier,
                 louvainAlgorithm: LouvainIdentifier,
                 clausetNewmanMooreAlgorithm: ClausetNewmanMooreIdentifier,
-                selectedClusteringAlgorithm: 'mcl',
-                clusterAvailable: false,
+                selectedClusteringAlgorithm: MclIdentifier,
+                clusteringAlgorithmMetrics: {},
+                clusteringAvailable: false,
                 clusteredViewEnabled: false,
                 showClusterNodes: false,
                 tunableClusteringParameter: 2.0,
@@ -416,6 +428,8 @@
                     'tunableClusteringParameter': this.tunableClusteringParameter,
                 };
 
+                this.isLoading = true;
+
                 axios
                     .get(
                         `http://localhost:5656/analysis/${this.selectedProjectId}/cluster`,
@@ -424,7 +438,7 @@
                         },
                     )
                     .then((response) => {
-                        this.clusterAvailable = true;
+                        this.clusteringAvailable = true;
                         this.clusteredViewEnabled = true;
                         this.graphData = response.data["graph"];
                         this.metricsData = response.data["metrics"];
@@ -439,6 +453,20 @@
             handleTunableClusteringParameterChange(value) {
                 this.tunableClusteringParameter = parseFloat(value);
             },
+            convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm) {
+                switch (clusteringAlgorithm) {
+                    case MclIdentifier:
+                        return 'MCL';
+                    case InfomapIdentifier:
+                        return 'Infomap';
+                    case LouvainIdentifier:
+                        return 'Louvain';
+                    case ClausetNewmanMooreIdentifier:
+                        return 'Clauset-Newman-Moore';
+                    default:
+                        return undefined
+                }
+            },
             onStaticAnalysisUploadFileChange(e) {
                 const files = e.target.files || e.dataTransfer.files;
                 if (files.length > 0) {
@@ -452,6 +480,9 @@
                     this.uploadDynamicAnalysisArchive = files[0];
                     this.dynamicProgramAnalyisUploadLabel = this.shortenText(files[0].name, 15);
                 }
+            },
+            calculatePercentageRatioBetweenTwoNumbers(first, second) {
+                return parseInt((first / second) * 100);
             },
             scrollToRefAnchor(refAnchorName) {
                 const element = this.$refs[refAnchorName];
