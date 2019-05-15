@@ -13,6 +13,7 @@ import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
+import io.ktor.util.KtorExperimentalAPI
 import model.graph.Edge
 import model.graph.Graph
 import model.resource.ProjectRequest
@@ -23,6 +24,7 @@ import utility.Neo4jConnector
 import java.io.File
 
 
+@KtorExperimentalAPI
 class AnalysisController {
     fun insertProject(projectRequest: ProjectRequest): ProjectResponse {
         return GraphInserter(

@@ -10,7 +10,7 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control has-icons-left tooltip"
+                                        class="control has-icons-left tooltip is-tooltip-bottom"
                                         data-tooltip="A unique project identifier for the project to add"
                                 >
                                     <input
@@ -28,7 +28,7 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control has-icons-left tooltip is-tooltip-multiline"
+                                        class="control has-icons-left tooltip is-tooltip-multiline is-tooltip-bottom"
                                         data-tooltip="The common package identifier of the project (utilized to exclude depencencies from the analysis)"
                                 >
                                     <input
@@ -46,7 +46,7 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control has-icons-left tooltip"
+                                        class="control has-icons-left tooltip is-tooltip-bottom"
                                         data-tooltip="Sets the project platform of project to be uploaded"
                                 >
                                     <span class="select">
@@ -65,7 +65,7 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control tooltip is-tooltip-multiline"
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
                                         data-tooltip="Sets the static program analysis file according to the selected platform for the upload"
                                 >
                                     <div class="file">
@@ -92,7 +92,7 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control tooltip is-tooltip-multiline"
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
                                         data-tooltip="Sets the dynamic program analysis file according to the selected platform for the upload"
                                 >
                                     <div class="file">
@@ -121,7 +121,7 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control tooltip is-tooltip-multiline"
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
                                         data-tooltip="Uploads the selected analysis files and starts the server-sided analysis"
                                 >
                                     <button class="button is-primary" @click="uploadNewProjectData">Upload</button>
