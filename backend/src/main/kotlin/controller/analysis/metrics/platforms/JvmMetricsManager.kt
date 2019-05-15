@@ -10,8 +10,8 @@ import model.graph.Unit
 
 
 object JvmMetricsManager {
-    fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph): InputQuality {
-        return JvmInputQualityAnalyzer(staticAnalysisGraph, dynamicAnalysisGraph).calculate()
+    fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph, mergedGraph: Graph): InputQuality {
+        return JvmInputQualityAnalyzer(staticAnalysisGraph, dynamicAnalysisGraph, mergedGraph).calculate()
     }
 
     fun calculateClusteringMetrics(clusteredGraph: Graph): ClusteringQuality {

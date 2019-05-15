@@ -29,7 +29,7 @@ class GraphInserter(
         val dynamicAnalysisGraph: Graph = processDynamicAnalysisData()
 
         val mergedGraph: Graph = mergeGraphs(staticAnalysisGraph, dynamicAnalysisGraph)
-        val inputQuality: InputQuality = calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph)
+        val inputQuality: InputQuality = calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph, mergedGraph)
         val metrics = Metrics(inputQuality = inputQuality)
 
         insertGraphIntoDatabase(mergedGraph)
@@ -55,9 +55,9 @@ class GraphInserter(
     }
 
     @Throws(IllegalArgumentException::class)
-    private fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph): InputQuality {
+    private fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph, mergedGraph: Graph): InputQuality {
         when (projectPlatform) {
-            JvmProjectKey -> return JvmMetricsManager.calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph)
+            JvmProjectKey -> return JvmMetricsManager.calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph, mergedGraph)
             else -> throw IllegalArgumentException()
         }
     }

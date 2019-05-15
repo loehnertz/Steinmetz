@@ -8,18 +8,27 @@ import org.neo4j.ogm.annotation.NodeEntity
 
 
 @NodeEntity
-class Metrics(var projectName: String, var dynamicAnalysisQuality: Int?) : GraphEntity {
+class Metrics(var projectName: String, var dynamicAnalysisQuality: Int?, var accumulatedEdgeWeight: Int?) : GraphEntity {
     @Id
     @GeneratedValue
     override var id: Long? = null
 
     companion object Factory {
         fun create(projectName: String, metrics: controller.analysis.metrics.Metrics): Metrics {
-            return Metrics(projectName = projectName, dynamicAnalysisQuality = metrics.inputQuality?.dynamicAnalysis)
+            return Metrics(
+                    projectName = projectName,
+                    dynamicAnalysisQuality = metrics.inputQuality?.dynamicAnalysis,
+                    accumulatedEdgeWeight = metrics.inputQuality?.accumulatedEdgeWeight
+            )
         }
 
         fun convertToDataClass(metricsNode: Metrics): controller.analysis.metrics.Metrics {
-            return controller.analysis.metrics.Metrics(inputQuality = InputQuality(dynamicAnalysis = metricsNode.dynamicAnalysisQuality!!))
+            return controller.analysis.metrics.Metrics(
+                    inputQuality = InputQuality(
+                            dynamicAnalysis = metricsNode.dynamicAnalysisQuality!!,
+                            accumulatedEdgeWeight = metricsNode.accumulatedEdgeWeight!!
+                    )
+            )
         }
     }
 }
