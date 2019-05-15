@@ -276,12 +276,35 @@
                 />
             </div>
         </section>
-        <section class="section">
-            <div class="container box">
-                <p>Dynamic Analysis Quality: {{ dynamicAnalysisQuality }}</p>
-                <p>Amount of Clusters: {{ amountOfClusters }}</p>
-                <p>Amount of Inter-Cluster Edges: {{ amountOfInterClusterEdges }}</p>
-                <p>Accumulated Inter-Cluster Edge-Weights: {{ accumulatedInterClusterEdgeWeights }}</p>
+        <section class="section" v-if="clusteringAvailable">
+            <div class="container">
+                <div class="box">
+                    <h1 class="title">Metrics</h1>
+                    <p>Dynamic Analysis Quality: {{ dynamicAnalysisQuality }}%</p>
+                    <p>Accumulated Edge Weights: {{ accumulatedEdgeWeights }}</p>
+                </div>
+                <ClusteringMetrics
+                        :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(selectedClusteringAlgorithm)"
+                        :amount-of-clusters="amountOfClusters"
+                        :amount-of-inter-cluster-edges="amountOfInterClusterEdges"
+                        :percentage-inter-cluster-edge-weights="percentageInterClusterEdgeWeights"
+                        :accumulated-inter-cluster-edge-weights="accumulatedInterClusterEdgeWeights"
+                />
+                <div class="box level">
+                    <div
+                            class="level-item"
+                            v-for="(metrics, clusteringAlgorithm) in clusteringAlgorithmMetrics"
+                            :key="clusteringAlgorithm"
+                    >
+                        <ClusteringMetrics
+                                :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)"
+                                :amount-of-clusters="metrics['clusteringQuality']['amountClusters']"
+                                :amount-of-inter-cluster-edges="metrics['clusteringQuality']['amountInterfaceEdges']"
+                                :accumulated-inter-cluster-edge-weights="metrics['clusteringQuality']['accumulatedInterfaceEdgeWeights']"
+                                :percentage-inter-cluster-edge-weights="calculatePercentageRatioBetweenTwoNumbers(metrics['clusteringQuality']['accumulatedInterfaceEdgeWeights'], accumulatedEdgeWeights)"
+                        />
+                    </div>
+                </div>
             </div>
         </section>
     </div>
@@ -449,6 +472,40 @@
                         console.error(error);
                         this.isLoading = false;
                     });
+
+                this.fetchClusteredGraphOfEveryGraphClusteringAlgorithm();
+            },
+            fetchClusteredGraphOfEveryGraphClusteringAlgorithm() {
+                const clusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier].filter((algo) => algo !== this.selectedClusteringAlgorithm);
+
+                this.clusteringAlgorithmMetrics = {};
+
+                for (let clusteringAlgorithm of clusteringAlgorithms) {
+                    const params = {
+                        'clusteringAlgorithm': clusteringAlgorithm,
+                        'tunableClusteringParameter': this.tunableClusteringParameter,
+                    };
+
+                    axios
+                        .get(
+                            `http://localhost:5656/analysis/${this.selectedProjectId}/cluster`,
+                            {
+                                params: params,
+                            },
+                        )
+                        .then((response) => {
+                            this.clusteringAvailable = true;
+                            this.clusteredViewEnabled = true;
+                            this.clusteringAlgorithmMetrics[clusteringAlgorithm] = response.data["metrics"];
+                            this.$forceUpdate();
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                            this.isLoading = false;
+                        });
+                }
+
+                this.scrollToRefAnchor('clustering-controls');
             },
             handleTunableClusteringParameterChange(value) {
                 this.tunableClusteringParameter = parseFloat(value);
