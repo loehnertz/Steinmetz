@@ -287,6 +287,7 @@
                         :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(selectedClusteringAlgorithm)"
                         :amount-of-clusters="amountOfClusters"
                         :amount-of-inter-cluster-edges="amountOfInterClusterEdges"
+                        :graph-modularity="graphModularity"
                         :percentage-inter-cluster-edge-weights="percentageInterClusterEdgeWeights"
                         :accumulated-inter-cluster-edge-weights="accumulatedInterClusterEdgeWeights"
                 />
@@ -300,6 +301,7 @@
                                 :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)"
                                 :amount-of-clusters="metrics['clusteringQuality']['amountClusters']"
                                 :amount-of-inter-cluster-edges="metrics['clusteringQuality']['amountInterfaceEdges']"
+                                :graph-modularity="metrics['clusteringQuality']['graphModularity']"
                                 :accumulated-inter-cluster-edge-weights="metrics['clusteringQuality']['accumulatedInterfaceEdgeWeights']"
                                 :percentage-inter-cluster-edge-weights="calculatePercentageRatioBetweenTwoNumbers(metrics['clusteringQuality']['accumulatedInterfaceEdgeWeights'], accumulatedEdgeWeights)"
                         />
@@ -354,6 +356,10 @@
             amountOfInterClusterEdges: function () {
                 if (!this.metricsData["clusteringQuality"]) return null;
                 return this.metricsData["clusteringQuality"]["amountInterfaceEdges"];
+            },
+            graphModularity: function () {
+                if (!this.metricsData["clusteringQuality"]) return null;
+                return this.metricsData["clusteringQuality"]["graphModularity"];
             },
             accumulatedInterClusterEdgeWeights: function () {
                 if (!this.metricsData["clusteringQuality"]) return null;

@@ -23,6 +23,10 @@ class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: MutableSet<
         inferNodesOutOfEdges()
     }
 
+    fun findNodeByUnit(unit: Unit): Node? {
+        return nodes.firstOrNull { it.unit == unit }
+    }
+
     private fun mergeEqualEdges(firstEdge: Edge, secondEdge: Edge): Edge {
         if (firstEdge != secondEdge) throw IllegalArgumentException("The two passed edges are not equal")
         return Edge(start = firstEdge.start, end = firstEdge.end, attributes = mergeEdgeAttributes(firstEdge.attributes, secondEdge.attributes))

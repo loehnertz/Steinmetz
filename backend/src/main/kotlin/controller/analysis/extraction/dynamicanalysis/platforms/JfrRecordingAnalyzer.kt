@@ -27,23 +27,23 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
     private fun analyzeRecording(): Graph {
         val edges: ArrayList<Edge> = arrayListOf()
 
-        RecordingFile(Paths.get(jfrRecording.absolutePath)).use { f ->
-            while (f.hasMoreEvents()) {
-                val event: RecordedEvent = f.readEvent()
+        RecordingFile(Paths.get(jfrRecording.absolutePath)).use { file: RecordingFile ->
+            while (file.hasMoreEvents()) {
+                val event: RecordedEvent = file.readEvent()
 
                 if (event.eventType.name == methodInvocationEventType) {
                     val stackTrace: RecordedStackTrace = event.stackTrace ?: continue
                     val frames: List<RecordedFrame> = stackTrace.frames.filter { it.isJavaFrame && it.method.type.name.startsWith(basePackageIdentifier) }.reversed()
 
-                    frames.forEachIndexed { index, caller ->
+                    frames.forEachIndexed { index: Int, caller: RecordedFrame ->
                         if (index + 1 < frames.size) {
-                            val callee = frames[index + 1]
+                            val callee: RecordedFrame = frames[index + 1]
 
-                            val callerIdentifier = caller.method.type.name.substringBefore('$').substringAfterLast('.')
-                            val callerPackageIdentifier = caller.method.type.name.substringBefore('$').substringBeforeLast('.')
+                            val callerIdentifier: String = caller.method.type.name.substringBefore('$').substringAfterLast('.')
+                            val callerPackageIdentifier: String = caller.method.type.name.substringBefore('$').substringBeforeLast('.')
 
-                            val calleeIdentifier = callee.method.type.name.substringBefore('$').substringAfterLast('.')
-                            val calleePackageIdentifier = callee.method.type.name.substringBefore('$').substringBeforeLast('.')
+                            val calleeIdentifier: String = callee.method.type.name.substringBefore('$').substringAfterLast('.')
+                            val calleePackageIdentifier: String = callee.method.type.name.substringBefore('$').substringBeforeLast('.')
 
                             val callerUnit = Unit(identifier = callerIdentifier, packageIdentifier = callerPackageIdentifier)
                             val calleeUnit = Unit(identifier = calleeIdentifier, packageIdentifier = calleePackageIdentifier)
