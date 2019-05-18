@@ -12,6 +12,8 @@
     import {Network} from 'vue2vis';
 
     const DefaultColor = 'orange';
+    const NormalNodeShape = 'dot';
+    const InterfaceNodeShape = 'diamond';
     const ClusterNodeKeyword = '$cluster';
     const LayoutSeed = 55609697;
 
@@ -32,7 +34,7 @@
                             size: 21,
                         },
                         margin: 15,
-                        shape: 'box',
+                        shape: NormalNodeShape,
                     },
                     edges: {
                         scaling: {
@@ -101,6 +103,7 @@
                     let unitNode = this.buildUnitNode(
                         node["unit"]["identifier"],
                         node["unit"]["packageIdentifier"],
+                        node["attributes"]["footprint"]["byteSize"],
                         node["attributes"]["cluster"],
                         this.clusterIds.size,
                     );
@@ -145,17 +148,18 @@
             constructClusterNodeId(clusterId) {
                 return `${ClusterNodeKeyword}:${clusterId}`;
             },
-            buildUnitNode(identifier, packageIdentifier, clusterId, clusterAmount) {
+            buildUnitNode(identifier, packageIdentifier, size, clusterId, clusterAmount) {
                 return {
                     id: this.constructUnitNodeId(identifier, packageIdentifier),
                     cid: clusterId,
-                    title: this.generateGraphPopup(`${packageIdentifier}.${identifier}`),
+                    title: this.generateGraphPopup(`${packageIdentifier}.${identifier}<br>Size: ${size} Byte`),
                     label: identifier,
                     borderWidth: 5,
                     color: {
                         background: 'whitesmoke',
                         border: this.getNodeBorderColor(clusterId, clusterAmount),
                     },
+                    size: size / 100,
                 }
             },
             buildServiceNode(clusterId, hidden) {
@@ -177,8 +181,8 @@
 
                 if (isInterface) {
                     color = 'blue';
-                    this.updateNodeShape(startNodeId, 'diamond');
-                    this.updateNodeShape(endNodeId, 'diamond');
+                    this.updateNodeShape(startNodeId, InterfaceNodeShape);
+                    this.updateNodeShape(endNodeId, InterfaceNodeShape);
                 }
 
                 return {
