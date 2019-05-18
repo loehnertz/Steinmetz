@@ -75,8 +75,18 @@ class GraphInserter(
 
     private fun insertGraphIntoDatabase(graph: Graph) {
         for (edge in graph.edges) {
-            val startUnit = model.neo4j.node.Unit.create(edge.start.identifier, edge.start.packageIdentifier, projectName)
-            val endUnit = model.neo4j.node.Unit.create(edge.end.identifier, edge.end.packageIdentifier, projectName)
+            val startUnit = model.neo4j.node.Unit.create(
+                    edge.start.identifier,
+                    edge.start.packageIdentifier,
+                    projectName,
+                    graph.findNodeByUnit(edge.start)!!.attributes.footprint!!.byteSize
+            )
+            val endUnit = model.neo4j.node.Unit.create(
+                    edge.end.identifier,
+                    edge.end.packageIdentifier,
+                    projectName,
+                    graph.findNodeByUnit(edge.end)!!.attributes.footprint!!.byteSize
+            )
 
             startUnit.calls(endUnit, edge.attributes.couplingScore)
 

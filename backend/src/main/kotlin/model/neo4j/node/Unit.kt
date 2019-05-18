@@ -18,7 +18,7 @@ import utility.Neo4jConnector
 
 
 @NodeEntity
-class Unit(var identifier: String, var packageIdentifier: String, var projectName: String) : GraphEntity {
+class Unit(var identifier: String, var packageIdentifier: String, var projectName: String, var size: Long) : GraphEntity {
     @Id
     @GeneratedValue
     override var id: Long? = null
@@ -33,14 +33,14 @@ class Unit(var identifier: String, var packageIdentifier: String, var projectNam
     var service: Service? = null
 
     fun calls(callee: Unit, couplingScore: Int = 1): CallsRelationship {
-        val existingRelationship = retrieveExistingRelationship(callee)
+        val existingRelationship: CallsRelationship? = retrieveExistingRelationship(callee)
         if (existingRelationship != null) {
-            val newCouplingScore = existingRelationship.couplingScore + couplingScore
+            val newCouplingScore: Int = existingRelationship.couplingScore + couplingScore
             updateCouplingScore(existingRelationship, newCouplingScore)
             return existingRelationship
         }
 
-        val relationship = buildRelationship(callee, couplingScore)
+        val relationship: CallsRelationship = buildRelationship(callee, couplingScore)
         insertRelationship(relationship)
 
         return relationship
@@ -92,17 +92,17 @@ class Unit(var identifier: String, var packageIdentifier: String, var projectNam
 
     companion object Factory {
         @Suppress("SENSELESS_COMPARISON")
-        fun create(identifier: String, packageIdentifier: String, projectName: String): Unit {
-            val filters = buildFilters(identifier, packageIdentifier, projectName)
-            val existingEntity = Neo4jConnector.retrieveEntity(Unit::class.java, filters)
+        fun create(identifier: String, packageIdentifier: String, projectName: String, size: Long): Unit {
+            val filters: Filters = buildFilters(identifier, packageIdentifier, projectName)
+            val existingEntity: GraphEntity? = Neo4jConnector.retrieveEntity(Unit::class.java, filters)
 
             return if (existingEntity != null) {
-                val unit = existingEntity as Unit
+                val unit: Unit = existingEntity as Unit
                 if (unit.calleeRelationships == null) unit.calleeRelationships = mutableSetOf()
                 if (unit.callerRelationships == null) unit.callerRelationships = mutableSetOf()
                 unit
             } else {
-                Unit(identifier, packageIdentifier, projectName)
+                Unit(identifier, packageIdentifier, projectName, size)
             }
         }
 
