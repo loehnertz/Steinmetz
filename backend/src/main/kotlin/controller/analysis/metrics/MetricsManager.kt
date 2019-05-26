@@ -1,11 +1,11 @@
-package controller.analysis.metrics.platforms
+package controller.analysis.metrics
 
-import controller.analysis.metrics.clustering.ClusteringQuality
-import controller.analysis.metrics.input.InputQuality
 import model.graph.Edge
 import model.graph.Graph
 import model.graph.Node
 import model.graph.Unit
+import model.metrics.ClusteringQuality
+import model.metrics.InputQuality
 
 
 abstract class MetricsManager {

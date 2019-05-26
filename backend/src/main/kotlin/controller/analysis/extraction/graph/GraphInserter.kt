@@ -1,12 +1,12 @@
 package controller.analysis.extraction.graph
 
-import controller.analysis.extraction.dynamicanalysis.platforms.JfrRecordingAnalyzer
-import controller.analysis.extraction.staticanalysis.platforms.JvmBytecodeExtractor
-import controller.analysis.metrics.Metrics
-import controller.analysis.metrics.input.InputQuality
-import controller.analysis.metrics.platforms.JvmMetricsManager
+import controller.analysis.extraction.dynamicanalysis.platforms.jvm.JfrRecordingAnalyzer
+import controller.analysis.extraction.staticanalysis.platforms.jvm.JvmBytecodeExtractor
+import controller.analysis.metrics.platforms.jvm.JvmMetricsManager
 import model.graph.Edge
 import model.graph.Graph
+import model.metrics.InputQuality
+import model.metrics.Metrics
 import model.resource.ProjectResponse
 import org.neo4j.ogm.cypher.ComparisonOperator
 import org.neo4j.ogm.cypher.Filter

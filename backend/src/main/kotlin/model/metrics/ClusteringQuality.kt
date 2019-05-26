@@ -1,4 +1,4 @@
-package controller.analysis.metrics.clustering
+package model.metrics
 
 
 data class ClusteringQuality(

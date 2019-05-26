@@ -6,8 +6,7 @@ import controller.analysis.extraction.dynamicanalysis.DynamicAnalysisExtractor
 import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
 import controller.analysis.extraction.staticanalysis.StaticAnalysisExtractor
-import controller.analysis.metrics.Metrics
-import controller.analysis.metrics.platforms.JvmMetricsManager
+import controller.analysis.metrics.platforms.jvm.JvmMetricsManager
 import io.ktor.features.BadRequestException
 import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
@@ -15,6 +14,7 @@ import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
 import io.ktor.util.KtorExperimentalAPI
 import model.graph.Graph
+import model.metrics.Metrics
 import model.resource.ProjectRequest
 import model.resource.ProjectResponse
 import org.neo4j.ogm.cypher.ComparisonOperator
