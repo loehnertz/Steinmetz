@@ -12,7 +12,7 @@
     import {Network} from 'vue2vis';
 
     const DefaultColor = 'orange';
-    const NormalNodeShape = 'dot';
+    const NormalNodeShape = 'square';
     const InterfaceNodeShape = 'diamond';
     const ClusterNodeKeyword = '$cluster';
     const LayoutSeed = 55609697;
@@ -54,6 +54,8 @@
                         enabled: true,
                         addNode: false,
                         addEdge: false,
+                        editNode: true,
+                        editEdge: false,
                         deleteNode: false,
                         deleteEdge: false,
                     },
@@ -93,7 +95,7 @@
             },
             rerenderGraphWithDelay() {
                 this.flushGraph();
-                setTimeout(() => this.constructGraph(this.graphData["nodes"], this.graphData["edges"]), 555);
+                setTimeout(() => this.constructGraph(this.graphData["nodes"], this.graphData["edges"]));
             },
             configureGravitation(relationshipAmount) {
                 this.graphOptions.physics.barnesHut.gravitationalConstant = -(relationshipAmount * 1000);
