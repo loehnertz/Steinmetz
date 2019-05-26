@@ -13,7 +13,7 @@ import model.skeleton.UnitContainer
 
 abstract class StaticAnalysisExtractor : AbstractExtractor() {
     fun convertUnitContainerToGraph(unitContainer: UnitContainer, basePackageIdentifier: String): Graph {
-        val edges: ArrayList<Edge> = arrayListOf()
+        val graph = Graph()
 
         for (unit: Unit in unitContainer.units) {
             if (unit.identifier.endsWith("Test")) continue
@@ -32,19 +32,19 @@ abstract class StaticAnalysisExtractor : AbstractExtractor() {
                     targetComponents = targetComponents.dropLast(1)
                     val packageIdentifier: String = targetComponents.joinToString(".")
 
-                    if (identifier.endsWith("Test")) continue
-                    if (!packageIdentifier.startsWith(basePackageIdentifier)) continue
-
                     val endUnit = model.graph.Unit(identifier = identifier, packageIdentifier = packageIdentifier)
 
-                    if (startUnit != endUnit) {
-                        edges.add(Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(couplingScore = 1)))
-                    }
+                    if (identifier.endsWith("Test")) continue
+                    if (!packageIdentifier.startsWith(basePackageIdentifier)) continue
+                    if (startUnit == endUnit) continue
+
+                    val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(couplingScore = 1))
+                    graph.addOrUpdateEdge(edge)
                 }
             }
         }
 
-        return Graph(edges = edges.toMutableSet())
+        return graph
     }
 
     companion object : ExtractorCompanion {

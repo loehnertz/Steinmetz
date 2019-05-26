@@ -5,6 +5,7 @@ import controller.analysis.extraction.staticanalysis.platforms.JvmBytecodeExtrac
 import controller.analysis.metrics.Metrics
 import controller.analysis.metrics.input.InputQuality
 import controller.analysis.metrics.platforms.JvmMetricsManager
+import model.graph.Edge
 import model.graph.Graph
 import model.resource.ProjectResponse
 import org.neo4j.ogm.cypher.ComparisonOperator
@@ -27,8 +28,8 @@ class GraphInserter(
     fun insert(): ProjectResponse {
         val staticAnalysisGraph: Graph = processStaticAnalysisData()
         val dynamicAnalysisGraph: Graph = processDynamicAnalysisData()
-
         val mergedGraph: Graph = mergeGraphs(staticAnalysisGraph, dynamicAnalysisGraph)
+
         val inputQuality: InputQuality = calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph, mergedGraph)
         val metrics = Metrics(inputQuality = inputQuality)
 
@@ -74,18 +75,18 @@ class GraphInserter(
     }
 
     private fun insertGraphIntoDatabase(graph: Graph) {
-        for (edge in graph.edges) {
+        for (edge: Edge in graph.edges) {
             val startUnit = model.neo4j.node.Unit.create(
-                    edge.start.identifier,
-                    edge.start.packageIdentifier,
-                    projectName,
-                    graph.findNodeByUnit(edge.start)!!.attributes.footprint!!.byteSize
+                    identifier = edge.start.identifier,
+                    packageIdentifier = edge.start.packageIdentifier,
+                    projectName = projectName,
+                    size = graph.findNodeByUnit(edge.start)?.attributes?.footprint?.byteSize ?: -1
             )
             val endUnit = model.neo4j.node.Unit.create(
-                    edge.end.identifier,
-                    edge.end.packageIdentifier,
-                    projectName,
-                    graph.findNodeByUnit(edge.end)!!.attributes.footprint!!.byteSize
+                    identifier = edge.end.identifier,
+                    packageIdentifier = edge.end.packageIdentifier,
+                    projectName = projectName,
+                    size = graph.findNodeByUnit(edge.end)?.attributes?.footprint?.byteSize ?: -1
             )
 
             startUnit.calls(endUnit, edge.attributes.couplingScore)
