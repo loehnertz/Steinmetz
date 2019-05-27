@@ -1,4 +1,4 @@
-package controller.analysis.extraction.staticanalysis
+package controller.analysis.extraction.coupling.statically
 
 import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.ExtractorCompanion
@@ -38,7 +38,7 @@ abstract class StaticAnalysisExtractor : AbstractExtractor() {
                     if (!packageIdentifier.startsWith(basePackageIdentifier)) continue
                     if (startUnit == endUnit) continue
 
-                    val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(couplingScore = 1))
+                    val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(dynamicCouplingScore = 0, logicalCouplingScore = 0))
                     graph.addOrUpdateEdge(edge)
                 }
             }
@@ -51,8 +51,8 @@ abstract class StaticAnalysisExtractor : AbstractExtractor() {
         const val StaticAnalysisDirectory = "static"
         const val SkeletonDirectoryName = "skeleton"
 
-        override fun getArchiveUploadPath(): String {
-            return "$UnarchiverBasePath/$StaticAnalysisDirectory"
+        override fun getWorkingDirectory(): String {
+            return "$ExtractionBasePath/$StaticAnalysisDirectory"
         }
     }
 }

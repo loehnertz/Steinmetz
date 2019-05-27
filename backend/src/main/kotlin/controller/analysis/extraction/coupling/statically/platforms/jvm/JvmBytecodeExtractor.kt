@@ -1,8 +1,8 @@
-package controller.analysis.extraction.staticanalysis.platforms.jvm
+package controller.analysis.extraction.coupling.statically.platforms.jvm
 
+import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
 import controller.analysis.extraction.graph.GraphInserter
 import controller.analysis.extraction.graph.UnitContainerExtractor
-import controller.analysis.extraction.staticanalysis.StaticAnalysisExtractor
 import model.graph.Graph
 import model.graph.Node
 import model.graph.Unit
