@@ -346,8 +346,8 @@
                 return this.metricsData["inputQuality"]["dynamicAnalysis"];
             },
             accumulatedEdgeWeights: function () {
-                if (!this.metricsData["inputQuality"]) return NotAvailableLabel;
-                return this.metricsData["inputQuality"]["accumulatedEdgeWeight"];
+                if (!this.metricsData["clusteringQuality"]) return NotAvailableLabel;
+                return this.metricsData["clusteringQuality"]["accumulatedEdgeWeights"];
             },
             amountOfClusters: function () {
                 if (!this.metricsData["clusteringQuality"]) return null;
