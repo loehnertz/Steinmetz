@@ -1,23 +1,25 @@
-package controller.analysis.metrics.platforms
+package controller.analysis.metrics
 
-import controller.analysis.metrics.clustering.ClusteringQuality
-import controller.analysis.metrics.input.InputQuality
 import model.graph.Edge
 import model.graph.Graph
 import model.graph.Node
 import model.graph.Unit
+import model.metrics.ClusteringQuality
+import model.metrics.InputQuality
 
 
 abstract class MetricsManager {
     abstract fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph, mergedGraph: Graph): InputQuality
 
     fun calculateClusteringMetrics(clusteredGraph: Graph): ClusteringQuality {
+        val accumulatedEdgeWeights: Int = clusteredGraph.edges.sumBy { it.attributes.couplingScore }
         val amountOfClusters: Int = clusteredGraph.nodes.map { it.attributes.cluster }.toSet().size
         val interClusterEdges: Set<Edge> = clusteredGraph.edges.filter { isInterClusterEdge(clusteredGraph, it) }.toSet()
         val accumulatedInterfaceEdgeWeights: Int = interClusterEdges.sumBy { it.attributes.couplingScore }
         val graphModularity: Double = calculateGraphModularity(clusteredGraph)
 
         return ClusteringQuality(
+                accumulatedEdgeWeights = accumulatedEdgeWeights,
                 amountClusters = amountOfClusters,
                 amountInterfaceEdges = interClusterEdges.size,
                 accumulatedInterfaceEdgeWeights = accumulatedInterfaceEdgeWeights,

@@ -9,7 +9,8 @@ import org.neo4j.ogm.annotation.*
 class CallsRelationship(
         @StartNode var caller: Unit,
         @EndNode var callee: Unit,
-        @Property var couplingScore: Int = 1
+        @Property var dynamiCouplingScore: Int = 0,
+        @Property var logicalCouplingScore: Int = 0
 ) : GraphEntity {
     @Id
     @GeneratedValue

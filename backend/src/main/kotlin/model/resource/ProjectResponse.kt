@@ -1,7 +1,7 @@
 package model.resource
 
-import controller.analysis.metrics.Metrics
 import model.graph.Graph
+import model.metrics.Metrics
 
 
 class ProjectResponse(

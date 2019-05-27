@@ -2,12 +2,16 @@ package controller.analysis
 
 import controller.analysis.clustering.Clusterer
 import controller.analysis.clustering.ClusteringAlgorithm
-import controller.analysis.extraction.dynamicanalysis.DynamicAnalysisExtractor
+import controller.analysis.extraction.Platform
+import controller.analysis.extraction.Platform.Companion.getPlatformByName
+import controller.analysis.extraction.coupling.dynamic.DynamicAnalysisExtractor
+import controller.analysis.extraction.coupling.logical.LogicalAnalysisExtractor
+import controller.analysis.extraction.coupling.logical.VcsSystem
+import controller.analysis.extraction.coupling.logical.VcsSystem.Companion.getVcsSystemByName
+import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
 import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
-import controller.analysis.extraction.staticanalysis.StaticAnalysisExtractor
-import controller.analysis.metrics.Metrics
-import controller.analysis.metrics.platforms.JvmMetricsManager
+import controller.analysis.metrics.platforms.jvm.JvmMetricsManager
 import io.ktor.features.BadRequestException
 import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
@@ -15,6 +19,7 @@ import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
 import io.ktor.util.KtorExperimentalAPI
 import model.graph.Graph
+import model.metrics.Metrics
 import model.resource.ProjectRequest
 import model.resource.ProjectResponse
 import org.neo4j.ogm.cypher.ComparisonOperator
@@ -29,9 +34,11 @@ class AnalysisController {
         return GraphInserter(
                 projectName = projectRequest.projectName,
                 projectPlatform = projectRequest.projectPlatform,
+                vcsSystem = projectRequest.vcsSystem,
                 basePackageIdentifier = projectRequest.basePackageIdentifier,
-                staticAnalysisArchive = projectRequest.staticAnalysisArchive,
-                dynamicAnalysisArchive = projectRequest.dynamicAnalysisArchive
+                staticAnalysisFile = projectRequest.staticAnalysisFile,
+                dynamicAnalysisFile = projectRequest.dynamicAnalysisFile,
+                logicalAnalysisFile = projectRequest.logicalAnalysisFile
         ).insert()
     }
 
@@ -41,7 +48,8 @@ class AnalysisController {
 
     fun clusterGraph(projectName: String, clusteringAlgorithm: ClusteringAlgorithm, tunableClusteringParameter: Double?): ProjectResponse {
         val projectGraph: Graph = retrieveGraph(projectName)
-        val clusteredGraph: Graph = Clusterer(projectGraph, projectName).applyClusteringAlgorithm(clusteringAlgorithm, tunableClusteringParameter)
+        val clusterer: Clusterer = Clusterer(projectGraph, projectName).also { it.applyEdgeWeighting() }
+        val clusteredGraph: Graph = clusterer.applyClusteringAlgorithm(clusteringAlgorithm, tunableClusteringParameter)
         val clusteredGraphMetrics: Metrics = calculateClusteredGraphMetrics(clusteredGraph)
         val existingMetrics: Metrics = retrieveMetrics(projectName)
 
@@ -83,10 +91,12 @@ class AnalysisController {
 
     suspend fun handleNewProjectUploads(multipart: MultiPartData): ProjectRequest {
         var projectName: String? = null
-        var projectPlatform: String? = null
+        var projectPlatform: Platform? = null
+        var vcsSystem: VcsSystem? = null
         var basePackageIdentifier: String? = null
-        var staticAnalysisArchive: File? = null
-        var dynamicAnalysisArchive: File? = null
+        var staticAnalysisFile: File? = null
+        var dynamicAnalysisFile: File? = null
+        var logicalAnalysisFile: File? = null
 
         multipart.forEachPart { part ->
             // Only continue if the part is a file (it could be form item)
@@ -94,26 +104,33 @@ class AnalysisController {
                 is PartData.FormItem -> {
                     when (part.name) {
                         ProjectRequest::projectName.name -> projectName = part.value
-                        ProjectRequest::projectPlatform.name -> projectPlatform = part.value
+                        ProjectRequest::projectPlatform.name -> projectPlatform = getPlatformByName(part.value)
+                        ProjectRequest::vcsSystem.name -> vcsSystem = getVcsSystemByName(part.value)
                         ProjectRequest::basePackageIdentifier.name -> basePackageIdentifier = part.value
                     }
                 }
                 is PartData.FileItem -> {
                     val file: File
                     when (part.name) {
-                        ProjectRequest::staticAnalysisArchive.name -> {
-                            file = File("${StaticAnalysisExtractor.getArchiveUploadPath()}/$projectName")
+                        ProjectRequest::staticAnalysisFile.name -> {
+                            file = File("${StaticAnalysisExtractor.getWorkingDirectory()}/$projectName")
                             file.parentFile.mkdirs()
                             file.createNewFile()
-                            staticAnalysisArchive = file
+                            staticAnalysisFile = file
                         }
-                        ProjectRequest::dynamicAnalysisArchive.name -> {
-                            file = File("${DynamicAnalysisExtractor.getArchiveUploadPath()}/$projectName")
+                        ProjectRequest::dynamicAnalysisFile.name -> {
+                            file = File("${DynamicAnalysisExtractor.getWorkingDirectory()}/$projectName")
                             file.parentFile.mkdirs()
                             file.createNewFile()
-                            dynamicAnalysisArchive = file
+                            dynamicAnalysisFile = file
                         }
-                        else -> throw BadRequestException("File keys must be in ${listOf(ProjectRequest::staticAnalysisArchive.name, ProjectRequest::dynamicAnalysisArchive.name)}")
+                        ProjectRequest::logicalAnalysisFile.name -> {
+                            file = File("${LogicalAnalysisExtractor.getWorkingDirectory()}/$projectName")
+                            file.parentFile.mkdirs()
+                            file.createNewFile()
+                            logicalAnalysisFile = file
+                        }
+                        else -> throw BadRequestException("File keys must be in ${listOf(ProjectRequest::staticAnalysisFile.name, ProjectRequest::dynamicAnalysisFile.name, ProjectRequest::logicalAnalysisFile.name)}")
                     }
 
                     part.streamProvider().use { upload ->
@@ -132,9 +149,11 @@ class AnalysisController {
         return ProjectRequest(
                 projectName = projectName!!,
                 projectPlatform = projectPlatform!!,
+                vcsSystem = vcsSystem!!,
                 basePackageIdentifier = basePackageIdentifier!!,
-                staticAnalysisArchive = staticAnalysisArchive!!,
-                dynamicAnalysisArchive = dynamicAnalysisArchive!!
+                staticAnalysisFile = staticAnalysisFile!!,
+                dynamicAnalysisFile = dynamicAnalysisFile!!,
+                logicalAnalysisFile = logicalAnalysisFile!!
         )
     }
 }

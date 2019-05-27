@@ -1,7 +1,7 @@
-package controller.analysis.extraction.dynamicanalysis.platforms
+package controller.analysis.extraction.coupling.dynamic.platforms.jvm
 
-import controller.analysis.extraction.dynamicanalysis.DynamicAnalysisExtractor
-import controller.analysis.extraction.graph.GraphInserter
+import controller.analysis.extraction.Platform
+import controller.analysis.extraction.coupling.dynamic.DynamicAnalysisExtractor
 import jdk.jfr.consumer.RecordedEvent
 import jdk.jfr.consumer.RecordedFrame
 import jdk.jfr.consumer.RecordedStackTrace
@@ -15,7 +15,7 @@ import java.nio.file.Paths
 
 
 class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifier: String, private val jfrRecording: File) : DynamicAnalysisExtractor() {
-    private val basePath = buildBasePath(platformIdentifier, projectName)
+    private val basePath: String = buildBasePath(platformIdentifier, projectName)
     private val dynamicAnalysisBasePath = "$basePath/$DynamicAnalysisDirectory"
 
     override fun extract(): Graph {
@@ -49,7 +49,7 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
                             val calleeUnit = Unit(identifier = calleeIdentifier, packageIdentifier = calleePackageIdentifier)
 
                             if (callerUnit != calleeUnit) {
-                                edges.add(Edge(start = callerUnit, end = calleeUnit, attributes = EdgeAttributes(couplingScore = 1)))
+                                edges.add(Edge(start = callerUnit, end = calleeUnit, attributes = EdgeAttributes(dynamicCouplingScore = 1, logicalCouplingScore = 0)))
                             }
                         }
                     }
@@ -61,7 +61,7 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
     }
 
     companion object {
-        private const val platformIdentifier = GraphInserter.JvmProjectKey
+        private val platformIdentifier: String = Platform.JVM.toString().toLowerCase()
         private const val methodInvocationEventType = "jdk.ExecutionSample"
     }
 }
