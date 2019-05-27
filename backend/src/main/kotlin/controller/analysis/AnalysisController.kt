@@ -2,7 +2,12 @@ package controller.analysis
 
 import controller.analysis.clustering.Clusterer
 import controller.analysis.clustering.ClusteringAlgorithm
+import controller.analysis.extraction.Platform
+import controller.analysis.extraction.Platform.Companion.getPlatformByName
 import controller.analysis.extraction.coupling.dynamic.DynamicAnalysisExtractor
+import controller.analysis.extraction.coupling.logical.LogicalAnalysisExtractor
+import controller.analysis.extraction.coupling.logical.VcsSystem
+import controller.analysis.extraction.coupling.logical.VcsSystem.Companion.getVcsSystemByName
 import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
 import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
@@ -29,9 +34,11 @@ class AnalysisController {
         return GraphInserter(
                 projectName = projectRequest.projectName,
                 projectPlatform = projectRequest.projectPlatform,
+                vcsSystem = projectRequest.vcsSystem,
                 basePackageIdentifier = projectRequest.basePackageIdentifier,
                 staticAnalysisFile = projectRequest.staticAnalysisFile,
-                dynamicAnalysisFile = projectRequest.dynamicAnalysisFile
+                dynamicAnalysisFile = projectRequest.dynamicAnalysisFile,
+                logicalAnalysisFile = projectRequest.logicalAnalysisFile
         ).insert()
     }
 
@@ -84,10 +91,12 @@ class AnalysisController {
 
     suspend fun handleNewProjectUploads(multipart: MultiPartData): ProjectRequest {
         var projectName: String? = null
-        var projectPlatform: String? = null
+        var projectPlatform: Platform? = null
+        var vcsSystem: VcsSystem? = null
         var basePackageIdentifier: String? = null
         var staticAnalysisFile: File? = null
         var dynamicAnalysisFile: File? = null
+        var logicalAnalysisFile: File? = null
 
         multipart.forEachPart { part ->
             // Only continue if the part is a file (it could be form item)
@@ -95,7 +104,8 @@ class AnalysisController {
                 is PartData.FormItem -> {
                     when (part.name) {
                         ProjectRequest::projectName.name -> projectName = part.value
-                        ProjectRequest::projectPlatform.name -> projectPlatform = part.value
+                        ProjectRequest::projectPlatform.name -> projectPlatform = getPlatformByName(part.value)
+                        ProjectRequest::vcsSystem.name -> vcsSystem = getVcsSystemByName(part.value)
                         ProjectRequest::basePackageIdentifier.name -> basePackageIdentifier = part.value
                     }
                 }
@@ -114,7 +124,13 @@ class AnalysisController {
                             file.createNewFile()
                             dynamicAnalysisFile = file
                         }
-                        else -> throw BadRequestException("File keys must be in ${listOf(ProjectRequest::staticAnalysisFile.name, ProjectRequest::dynamicAnalysisFile.name)}")
+                        ProjectRequest::logicalAnalysisFile.name -> {
+                            file = File("${LogicalAnalysisExtractor.getWorkingDirectory()}/$projectName")
+                            file.parentFile.mkdirs()
+                            file.createNewFile()
+                            logicalAnalysisFile = file
+                        }
+                        else -> throw BadRequestException("File keys must be in ${listOf(ProjectRequest::staticAnalysisFile.name, ProjectRequest::dynamicAnalysisFile.name, ProjectRequest::logicalAnalysisFile.name)}")
                     }
 
                     part.streamProvider().use { upload ->
@@ -133,9 +149,11 @@ class AnalysisController {
         return ProjectRequest(
                 projectName = projectName!!,
                 projectPlatform = projectPlatform!!,
+                vcsSystem = vcsSystem!!,
                 basePackageIdentifier = basePackageIdentifier!!,
                 staticAnalysisFile = staticAnalysisFile!!,
-                dynamicAnalysisFile = dynamicAnalysisFile!!
+                dynamicAnalysisFile = dynamicAnalysisFile!!,
+                logicalAnalysisFile = logicalAnalysisFile!!
         )
     }
 }

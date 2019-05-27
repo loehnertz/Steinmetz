@@ -1,7 +1,7 @@
 package controller.analysis.extraction.coupling.statically.platforms.jvm
 
+import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
-import controller.analysis.extraction.graph.GraphInserter
 import controller.analysis.extraction.graph.UnitContainerExtractor
 import model.graph.Graph
 import model.graph.Node
@@ -66,7 +66,7 @@ class JvmBytecodeExtractor(private val projectName: String, private val basePack
     }
 
     companion object {
-        private const val platformIdentifier = GraphInserter.JvmProjectKey
+        private val platformIdentifier: String = Platform.JVM.toString().toLowerCase()
         private const val unarchiverPath = "jar"
         private const val classFileExtension = "class"
     }

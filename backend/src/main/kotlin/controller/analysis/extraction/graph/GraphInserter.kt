@@ -1,8 +1,9 @@
 package controller.analysis.extraction.graph
 
+import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.dynamic.platforms.jvm.JfrRecordingAnalyzer
-import controller.analysis.extraction.coupling.logical.platforms.jvm.JvmLogicalCouplingExtractor
-import controller.analysis.extraction.coupling.logical.platforms.jvm.JvmLogicalCouplingExtractor.Companion.ExampleLog
+import controller.analysis.extraction.coupling.logical.VcsSystem
+import controller.analysis.extraction.coupling.logical.platforms.jvm.JvmLogicalAnalysisExtractor
 import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import controller.analysis.metrics.platforms.jvm.JvmMetricsManager
 import model.graph.Edge
@@ -18,10 +19,12 @@ import java.io.File
 
 class GraphInserter(
         private val projectName: String,
-        private val projectPlatform: String,
+        private val projectPlatform: Platform,
+        private val vcsSystem: VcsSystem,
         private val basePackageIdentifier: String,
         private val staticAnalysisFile: File,
-        private val dynamicAnalysisFile: File
+        private val dynamicAnalysisFile: File,
+        private val logicalAnalysisFile: File
 ) {
     init {
         if (projectAlreadyExists()) throw ProjectAlreadyExistsException()
@@ -46,7 +49,7 @@ class GraphInserter(
     @Throws(IllegalArgumentException::class)
     private fun processStaticAnalysisData(): Graph {
         when (projectPlatform) {
-            JvmProjectKey -> return JvmBytecodeExtractor(projectName, basePackageIdentifier, staticAnalysisFile).extract()
+            Platform.JVM -> return JvmBytecodeExtractor(projectName, basePackageIdentifier, staticAnalysisFile).extract()
             else -> throw IllegalArgumentException()
         }
     }
@@ -54,7 +57,7 @@ class GraphInserter(
     @Throws(IllegalArgumentException::class)
     private fun processDynamicAnalysisData(): Graph {
         when (projectPlatform) {
-            JvmProjectKey -> return JfrRecordingAnalyzer(projectName, basePackageIdentifier, dynamicAnalysisFile).extract()
+            Platform.JVM -> return JfrRecordingAnalyzer(projectName, basePackageIdentifier, dynamicAnalysisFile).extract()
             else -> throw IllegalArgumentException()
         }
     }
@@ -62,7 +65,7 @@ class GraphInserter(
     @Throws(IllegalArgumentException::class)
     private fun processLogicalCouplingData(): Graph {
         when (projectPlatform) {
-            JvmProjectKey -> return JvmLogicalCouplingExtractor(basePackageIdentifier, File(ExampleLog)).extract()
+            Platform.JVM -> return JvmLogicalAnalysisExtractor(vcsSystem, basePackageIdentifier, logicalAnalysisFile).extract()
             else -> throw IllegalArgumentException()
         }
     }
@@ -70,7 +73,7 @@ class GraphInserter(
     @Throws(IllegalArgumentException::class)
     private fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph, mergedGraph: Graph): InputQuality {
         when (projectPlatform) {
-            JvmProjectKey -> return JvmMetricsManager.calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph, mergedGraph)
+            Platform.JVM -> return JvmMetricsManager.calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph, mergedGraph)
             else -> throw IllegalArgumentException()
         }
     }
@@ -110,10 +113,6 @@ class GraphInserter(
     private fun projectAlreadyExists(): Boolean {
         val filter = Filter(model.neo4j.node.Unit::projectName.name, ComparisonOperator.EQUALS, projectName)
         return Neo4jConnector.retrieveEntities(model.neo4j.node.Unit::class.java, filter).isNotEmpty()
-    }
-
-    companion object {
-        const val JvmProjectKey = "jvm"
     }
 }
 

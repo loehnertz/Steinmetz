@@ -1,7 +1,7 @@
 package controller.analysis.extraction.coupling.dynamic.platforms.jvm
 
+import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.dynamic.DynamicAnalysisExtractor
-import controller.analysis.extraction.graph.GraphInserter
 import jdk.jfr.consumer.RecordedEvent
 import jdk.jfr.consumer.RecordedFrame
 import jdk.jfr.consumer.RecordedStackTrace
@@ -61,7 +61,7 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
     }
 
     companion object {
-        private const val platformIdentifier = GraphInserter.JvmProjectKey
+        private val platformIdentifier: String = Platform.JVM.toString().toLowerCase()
         private const val methodInvocationEventType = "jdk.ExecutionSample"
     }
 }

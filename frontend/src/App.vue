@@ -47,7 +47,7 @@
                             <div class="field">
                                 <div
                                         class="control has-icons-left tooltip is-tooltip-bottom"
-                                        data-tooltip="Sets the project platform of project to be uploaded"
+                                        data-tooltip="Sets the project platform of the project to be uploaded"
                                 >
                                     <span class="select">
                                         <label>
@@ -65,6 +65,33 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
+                                        class="control has-icons-left tooltip is-tooltip-bottom"
+                                        data-tooltip="Sets the VCS system of the project to be uploaded"
+                                >
+                                    <span class="select">
+                                        <label>
+                                            <select v-model="uploadVcsSystem">
+                                                <option value="git2">Git</option>
+                                                <option value="hg">Mercurial</option>
+                                                <option value="svn">SVN</option>
+                                                <option value="p4">Perforce</option>
+                                                <option value="tfs">Team Foundation Server </option>
+                                            </select>
+                                        </label>
+                                    </span>
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-code-branch"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="level">
+                    <div class="level-left">
+                        <div class="level-item">
+                            <div class="field">
+                                <div
                                         class="control tooltip is-tooltip-multiline is-tooltip-bottom"
                                         data-tooltip="Sets the static program analysis file according to the selected platform for the upload"
                                 >
@@ -73,7 +100,7 @@
                                             <input
                                                     class="file-input"
                                                     type="file"
-                                                    placeholder="Static Analysis Archive"
+                                                    placeholder="Static Analysis File"
                                                     @change="onStaticAnalysisUploadFileChange"
                                             >
                                             <span class="file-cta">
@@ -100,7 +127,7 @@
                                             <input
                                                     class="file-input"
                                                     type="file"
-                                                    placeholder="Dynamic Analysis Archive"
+                                                    placeholder="Dynamic Analysis File"
                                                     @change="onDynamicAnalysisUploadFileChange"
                                             >
                                             <span class="file-cta">
@@ -109,6 +136,33 @@
                                                 </span>
                                                 <span class="file-label">
                                                     {{ dynamicProgramAnalyisUploadLabel }}
+                                                </span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
+                                        data-tooltip="Sets the VCS log file according to the selected VCS system for the upload"
+                                >
+                                    <div class="file">
+                                        <label class="file-label">
+                                            <input
+                                                    class="file-input"
+                                                    type="file"
+                                                    placeholder="VCS log"
+                                                    @change="onLogicalAnalysisUploadFileChange"
+                                            >
+                                            <span class="file-cta">
+                                                <span class="file-icon">
+                                                    <i class="fas fa-upload"></i>
+                                                </span>
+                                                <span class="file-label">
+                                                    {{ vcsLogAnalyisUploadLabel }}
                                                 </span>
                                             </span>
                                         </label>
@@ -374,14 +428,17 @@
             return {
                 uploadProjectName: '',
                 uploadProjectPlatform: 'jvm',
+                uploadVcsSystem: 'git2',
                 uploadBasePackageIdentifier: '',
-                uploadStaticAnalysisArchive: null,
-                uploadDynamicAnalysisArchive: null,
+                uploadStaticAnalysisFile: null,
+                uploadDynamicAnalysisFile: null,
+                uploadLogicalAnalysisFile: null,
                 selectedProjectId: '',
                 graphData: {},
                 metricsData: {},
                 staticProgramAnalyisUploadLabel: 'Static Analysis',
                 dynamicProgramAnalyisUploadLabel: 'Dynamic Analysis',
+                vcsLogAnalyisUploadLabel: 'Logical Analysis',
                 mclAlgorithm: MclIdentifier,
                 infomapAlgorithm: InfomapIdentifier,
                 louvainAlgorithm: LouvainIdentifier,
@@ -421,9 +478,11 @@
 
                 data.append('projectName', this.uploadProjectName);
                 data.append('projectPlatform', this.uploadProjectPlatform);
+                data.append('vcsSystem', this.uploadVcsSystem);
                 data.append('basePackageIdentifier', this.uploadBasePackageIdentifier);
-                data.append('staticAnalysisArchive', this.uploadStaticAnalysisArchive);
-                data.append('dynamicAnalysisArchive', this.uploadDynamicAnalysisArchive);
+                data.append('staticAnalysisFile', this.uploadStaticAnalysisFile);
+                data.append('dynamicAnalysisFile', this.uploadDynamicAnalysisFile);
+                data.append('logicalAnalysisFile', this.uploadDynamicAnalysisFile);
 
                 axios
                     .post(`http://localhost:5656/analysis/`, data)
@@ -533,15 +592,22 @@
             onStaticAnalysisUploadFileChange(e) {
                 const files = e.target.files || e.dataTransfer.files;
                 if (files.length > 0) {
-                    this.uploadStaticAnalysisArchive = files[0];
+                    this.uploadStaticAnalysisFile = files[0];
                     this.staticProgramAnalyisUploadLabel = this.shortenText(files[0].name, 15);
                 }
             },
             onDynamicAnalysisUploadFileChange(e) {
                 const files = e.target.files || e.dataTransfer.files;
                 if (files.length > 0) {
-                    this.uploadDynamicAnalysisArchive = files[0];
+                    this.uploadDynamicAnalysisFile = files[0];
                     this.dynamicProgramAnalyisUploadLabel = this.shortenText(files[0].name, 15);
+                }
+            },
+            onLogicalAnalysisUploadFileChange(e) {
+                const files = e.target.files || e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.uploadLogicalAnalysisFile = files[0];
+                    this.staticProgramAnalyisUploadLabel = this.shortenText(files[0].name, 15);
                 }
             },
             calculatePercentageRatioBetweenTwoNumbers(first, second) {
