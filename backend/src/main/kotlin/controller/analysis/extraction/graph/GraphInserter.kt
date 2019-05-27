@@ -1,7 +1,9 @@
 package controller.analysis.extraction.graph
 
-import controller.analysis.extraction.dynamicanalysis.platforms.jvm.JfrRecordingAnalyzer
-import controller.analysis.extraction.staticanalysis.platforms.jvm.JvmBytecodeExtractor
+import controller.analysis.extraction.coupling.dynamic.platforms.jvm.JfrRecordingAnalyzer
+import controller.analysis.extraction.coupling.logical.platforms.jvm.JvmLogicalCouplingExtractor
+import controller.analysis.extraction.coupling.logical.platforms.jvm.JvmLogicalCouplingExtractor.Companion.ExampleLog
+import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import controller.analysis.metrics.platforms.jvm.JvmMetricsManager
 import model.graph.Edge
 import model.graph.Graph
@@ -27,10 +29,12 @@ class GraphInserter(
 
     fun insert(): ProjectResponse {
         val staticAnalysisGraph: Graph = processStaticAnalysisData()
-        val dynamicAnalysisGraph: Graph = processDynamicAnalysisData()
-        val mergedGraph: Graph = mergeGraphs(staticAnalysisGraph, dynamicAnalysisGraph)
+        val dynamicCouplingGraph: Graph = processDynamicAnalysisData()
+        val logicalCouplingGraph: Graph = processLogicalCouplingData()
 
-        val inputQuality: InputQuality = calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph, mergedGraph)
+        val mergedGraph: Graph = mergeGraphs(staticAnalysisGraph, dynamicCouplingGraph, logicalCouplingGraph)
+
+        val inputQuality: InputQuality = calculateInputMetrics(staticAnalysisGraph, dynamicCouplingGraph, mergedGraph)
         val metrics = Metrics(inputQuality = inputQuality)
 
         insertGraphIntoDatabase(mergedGraph)
@@ -56,6 +60,14 @@ class GraphInserter(
     }
 
     @Throws(IllegalArgumentException::class)
+    private fun processLogicalCouplingData(): Graph {
+        when (projectPlatform) {
+            JvmProjectKey -> return JvmLogicalCouplingExtractor(basePackageIdentifier, File(ExampleLog)).extract()
+            else -> throw IllegalArgumentException()
+        }
+    }
+
+    @Throws(IllegalArgumentException::class)
     private fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph, mergedGraph: Graph): InputQuality {
         when (projectPlatform) {
             JvmProjectKey -> return JvmMetricsManager.calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph, mergedGraph)
@@ -63,15 +75,10 @@ class GraphInserter(
         }
     }
 
-    private fun mergeGraphs(vararg graphs: Graph): Graph {
-        val mergedGraph = Graph()
-
-        for (graph: Graph in graphs) {
-            graph.edges.forEach(mergedGraph::addOrUpdateEdge)
-            graph.nodes.forEach(mergedGraph::addOrUpdateNode)
-        }
-
-        return mergedGraph
+    private fun mergeGraphs(staticAnalysisGraph: Graph, dynamicCouplingGraph: Graph, logicalCouplingGraph: Graph): Graph {
+        dynamicCouplingGraph.edges.forEach { staticAnalysisGraph.updateEdge(it) }
+        logicalCouplingGraph.edges.forEach { staticAnalysisGraph.updateEdge(it) }
+        return staticAnalysisGraph
     }
 
     private fun insertGraphIntoDatabase(graph: Graph) {
@@ -89,7 +96,7 @@ class GraphInserter(
                     size = graph.findNodeByUnit(edge.end)?.attributes?.footprint?.byteSize ?: -1
             )
 
-            startUnit.calls(endUnit, edge.attributes.couplingScore)
+            startUnit.calls(endUnit, dynamicCouplingScore = edge.attributes.dynamicCouplingScore, logicalCouplingScore = edge.attributes.logicalCouplingScore)
 
             Neo4jConnector.saveEntity(startUnit)
         }

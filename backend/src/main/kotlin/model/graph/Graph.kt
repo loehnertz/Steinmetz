@@ -33,6 +33,12 @@ class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: MutableSet<
         inferNodesOutOfEdges()
     }
 
+    fun updateEdge(edge: Edge) {
+        val existingEdge: Edge = edges.find { it == edge } ?: return
+        edges.remove(existingEdge)
+        edges.add(mergeEqualEdges(existingEdge, edge))
+    }
+
     fun findNodeByUnit(unit: Unit): Node? {
         return nodes.firstOrNull { it.unit == unit }
     }
