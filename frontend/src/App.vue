@@ -162,7 +162,7 @@
                                                     <i class="fas fa-upload"></i>
                                                 </span>
                                                 <span class="file-label">
-                                                    {{ vcsLogAnalyisUploadLabel }}
+                                                    {{ logicalAnalyisUploadLabel }}
                                                 </span>
                                             </span>
                                         </label>
@@ -438,7 +438,7 @@
                 metricsData: {},
                 staticProgramAnalyisUploadLabel: 'Static Analysis',
                 dynamicProgramAnalyisUploadLabel: 'Dynamic Analysis',
-                vcsLogAnalyisUploadLabel: 'Logical Analysis',
+                logicalAnalyisUploadLabel: 'Logical Analysis',
                 mclAlgorithm: MclIdentifier,
                 infomapAlgorithm: InfomapIdentifier,
                 louvainAlgorithm: LouvainIdentifier,
@@ -607,7 +607,7 @@
                 const files = e.target.files || e.dataTransfer.files;
                 if (files.length > 0) {
                     this.uploadLogicalAnalysisFile = files[0];
-                    this.staticProgramAnalyisUploadLabel = this.shortenText(files[0].name, 15);
+                    this.logicalAnalyisUploadLabel = this.shortenText(files[0].name, 15);
                 }
             },
             calculatePercentageRatioBetweenTwoNumbers(first, second) {
