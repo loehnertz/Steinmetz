@@ -7,6 +7,6 @@ data class ProjectRequest(
         val projectName: String,
         val projectPlatform: String,
         val basePackageIdentifier: String,
-        val staticAnalysisArchive: File,
-        val dynamicAnalysisArchive: File
+        val staticAnalysisFile: File,
+        val dynamicAnalysisFile: File
 )

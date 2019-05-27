@@ -20,8 +20,8 @@ class GraphInserter(
         private val projectName: String,
         private val projectPlatform: String,
         private val basePackageIdentifier: String,
-        private val staticAnalysisArchive: File,
-        private val dynamicAnalysisArchive: File
+        private val staticAnalysisFile: File,
+        private val dynamicAnalysisFile: File
 ) {
     init {
         if (projectAlreadyExists()) throw ProjectAlreadyExistsException()
@@ -46,7 +46,7 @@ class GraphInserter(
     @Throws(IllegalArgumentException::class)
     private fun processStaticAnalysisData(): Graph {
         when (projectPlatform) {
-            JvmProjectKey -> return JvmBytecodeExtractor(projectName, basePackageIdentifier, staticAnalysisArchive).extract()
+            JvmProjectKey -> return JvmBytecodeExtractor(projectName, basePackageIdentifier, staticAnalysisFile).extract()
             else -> throw IllegalArgumentException()
         }
     }
@@ -54,7 +54,7 @@ class GraphInserter(
     @Throws(IllegalArgumentException::class)
     private fun processDynamicAnalysisData(): Graph {
         when (projectPlatform) {
-            JvmProjectKey -> return JfrRecordingAnalyzer(projectName, basePackageIdentifier, dynamicAnalysisArchive).extract()
+            JvmProjectKey -> return JfrRecordingAnalyzer(projectName, basePackageIdentifier, dynamicAnalysisFile).extract()
             else -> throw IllegalArgumentException()
         }
     }

@@ -30,8 +30,8 @@ class AnalysisController {
                 projectName = projectRequest.projectName,
                 projectPlatform = projectRequest.projectPlatform,
                 basePackageIdentifier = projectRequest.basePackageIdentifier,
-                staticAnalysisArchive = projectRequest.staticAnalysisArchive,
-                dynamicAnalysisArchive = projectRequest.dynamicAnalysisArchive
+                staticAnalysisFile = projectRequest.staticAnalysisFile,
+                dynamicAnalysisFile = projectRequest.dynamicAnalysisFile
         ).insert()
     }
 
@@ -86,8 +86,8 @@ class AnalysisController {
         var projectName: String? = null
         var projectPlatform: String? = null
         var basePackageIdentifier: String? = null
-        var staticAnalysisArchive: File? = null
-        var dynamicAnalysisArchive: File? = null
+        var staticAnalysisFile: File? = null
+        var dynamicAnalysisFile: File? = null
 
         multipart.forEachPart { part ->
             // Only continue if the part is a file (it could be form item)
@@ -102,19 +102,19 @@ class AnalysisController {
                 is PartData.FileItem -> {
                     val file: File
                     when (part.name) {
-                        ProjectRequest::staticAnalysisArchive.name -> {
+                        ProjectRequest::staticAnalysisFile.name -> {
                             file = File("${StaticAnalysisExtractor.getWorkingDirectory()}/$projectName")
                             file.parentFile.mkdirs()
                             file.createNewFile()
-                            staticAnalysisArchive = file
+                            staticAnalysisFile = file
                         }
-                        ProjectRequest::dynamicAnalysisArchive.name -> {
+                        ProjectRequest::dynamicAnalysisFile.name -> {
                             file = File("${DynamicAnalysisExtractor.getWorkingDirectory()}/$projectName")
                             file.parentFile.mkdirs()
                             file.createNewFile()
-                            dynamicAnalysisArchive = file
+                            dynamicAnalysisFile = file
                         }
-                        else -> throw BadRequestException("File keys must be in ${listOf(ProjectRequest::staticAnalysisArchive.name, ProjectRequest::dynamicAnalysisArchive.name)}")
+                        else -> throw BadRequestException("File keys must be in ${listOf(ProjectRequest::staticAnalysisFile.name, ProjectRequest::dynamicAnalysisFile.name)}")
                     }
 
                     part.streamProvider().use { upload ->
@@ -134,8 +134,8 @@ class AnalysisController {
                 projectName = projectName!!,
                 projectPlatform = projectPlatform!!,
                 basePackageIdentifier = basePackageIdentifier!!,
-                staticAnalysisArchive = staticAnalysisArchive!!,
-                dynamicAnalysisArchive = dynamicAnalysisArchive!!
+                staticAnalysisFile = staticAnalysisFile!!,
+                dynamicAnalysisFile = dynamicAnalysisFile!!
         )
     }
 }
