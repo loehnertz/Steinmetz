@@ -1,8 +1,6 @@
 package utility
 
-import io.ktor.features.NotFoundException
 import model.neo4j.GraphEntity
-import model.neo4j.relationship.CallsRelationship
 import org.neo4j.ogm.config.Configuration
 import org.neo4j.ogm.cypher.Filter
 import org.neo4j.ogm.cypher.Filters
@@ -58,19 +56,6 @@ object Neo4jConnector {
         val result = session.query(cypher, mapOf("" to ""))
         session.clear()
         return result
-    }
-
-    fun updateCouplingScore(relationship: Class<out CallsRelationship>, filters: Filters, newCouplingScore: Int): Int {
-        val session = createSession()
-        val edge = session.loadAll(relationship, filters).firstOrNull()
-        session.clear()
-        if (edge == null) throw NotFoundException("No relationship was found")
-
-        edge.couplingScore = newCouplingScore
-
-        saveEntity(edge)
-
-        return edge.couplingScore
     }
 
     private fun createSession(): Session {

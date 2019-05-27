@@ -8,12 +8,7 @@ import model.metrics.InputQuality
 class JvmInputQualityAnalyzer(private val staticAnalysisGraph: Graph, private val dynamicAnalysisGraph: Graph, private val mergedGraph: Graph) {
     fun calculate(): InputQuality {
         val dynamicAnalysisQuality: Int = JfrRecordingQualityAnalyzer.calculateQuality(staticAnalysisGraph = staticAnalysisGraph, dynamicAnalysisGraph = dynamicAnalysisGraph)
-        val accumulatedEdgeWeight: Int = calculateAccumulatedEdgeWeight()
 
-        return InputQuality(dynamicAnalysis = dynamicAnalysisQuality, accumulatedEdgeWeight = accumulatedEdgeWeight)
-    }
-
-    private fun calculateAccumulatedEdgeWeight(): Int {
-        return mergedGraph.edges.sumBy { it.attributes.couplingScore }
+        return InputQuality(dynamicAnalysis = dynamicAnalysisQuality)
     }
 }

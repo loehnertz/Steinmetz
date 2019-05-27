@@ -2,10 +2,10 @@ package controller.analysis
 
 import controller.analysis.clustering.Clusterer
 import controller.analysis.clustering.ClusteringAlgorithm
-import controller.analysis.extraction.dynamicanalysis.DynamicAnalysisExtractor
+import controller.analysis.extraction.coupling.dynamic.DynamicAnalysisExtractor
+import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
 import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
-import controller.analysis.extraction.staticanalysis.StaticAnalysisExtractor
 import controller.analysis.metrics.platforms.jvm.JvmMetricsManager
 import io.ktor.features.BadRequestException
 import io.ktor.http.content.MultiPartData
@@ -41,7 +41,8 @@ class AnalysisController {
 
     fun clusterGraph(projectName: String, clusteringAlgorithm: ClusteringAlgorithm, tunableClusteringParameter: Double?): ProjectResponse {
         val projectGraph: Graph = retrieveGraph(projectName)
-        val clusteredGraph: Graph = Clusterer(projectGraph, projectName).applyClusteringAlgorithm(clusteringAlgorithm, tunableClusteringParameter)
+        val clusterer: Clusterer = Clusterer(projectGraph, projectName).also { it.applyEdgeWeighting() }
+        val clusteredGraph: Graph = clusterer.applyClusteringAlgorithm(clusteringAlgorithm, tunableClusteringParameter)
         val clusteredGraphMetrics: Metrics = calculateClusteredGraphMetrics(clusteredGraph)
         val existingMetrics: Metrics = retrieveMetrics(projectName)
 
@@ -102,13 +103,13 @@ class AnalysisController {
                     val file: File
                     when (part.name) {
                         ProjectRequest::staticAnalysisArchive.name -> {
-                            file = File("${StaticAnalysisExtractor.getArchiveUploadPath()}/$projectName")
+                            file = File("${StaticAnalysisExtractor.getWorkingDirectory()}/$projectName")
                             file.parentFile.mkdirs()
                             file.createNewFile()
                             staticAnalysisArchive = file
                         }
                         ProjectRequest::dynamicAnalysisArchive.name -> {
-                            file = File("${DynamicAnalysisExtractor.getArchiveUploadPath()}/$projectName")
+                            file = File("${DynamicAnalysisExtractor.getWorkingDirectory()}/$projectName")
                             file.parentFile.mkdirs()
                             file.createNewFile()
                             dynamicAnalysisArchive = file

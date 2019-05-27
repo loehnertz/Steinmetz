@@ -12,12 +12,14 @@ abstract class MetricsManager {
     abstract fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph, mergedGraph: Graph): InputQuality
 
     fun calculateClusteringMetrics(clusteredGraph: Graph): ClusteringQuality {
+        val accumulatedEdgeWeights: Int = clusteredGraph.edges.sumBy { it.attributes.couplingScore }
         val amountOfClusters: Int = clusteredGraph.nodes.map { it.attributes.cluster }.toSet().size
         val interClusterEdges: Set<Edge> = clusteredGraph.edges.filter { isInterClusterEdge(clusteredGraph, it) }.toSet()
         val accumulatedInterfaceEdgeWeights: Int = interClusterEdges.sumBy { it.attributes.couplingScore }
         val graphModularity: Double = calculateGraphModularity(clusteredGraph)
 
         return ClusteringQuality(
+                accumulatedEdgeWeights = accumulatedEdgeWeights,
                 amountClusters = amountOfClusters,
                 amountInterfaceEdges = interClusterEdges.size,
                 accumulatedInterfaceEdgeWeights = accumulatedInterfaceEdgeWeights,

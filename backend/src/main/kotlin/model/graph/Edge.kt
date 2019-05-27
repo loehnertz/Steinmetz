@@ -24,12 +24,16 @@ data class Edge(
 }
 
 data class EdgeAttributes(
-        var couplingScore: Int
+        var couplingScore: Int = 1,
+        var dynamicCouplingScore: Int,
+        var logicalCouplingScore: Int
 ) {
     companion object {
         fun mergeEdgeAttributes(vararg edgeAttributes: EdgeAttributes): EdgeAttributes {
-            val summedCouplingScore: Int = edgeAttributes.sumBy { it.couplingScore }
-            return EdgeAttributes(couplingScore = summedCouplingScore)
+            return EdgeAttributes(
+                    dynamicCouplingScore = edgeAttributes.sumBy { it.dynamicCouplingScore },
+                    logicalCouplingScore = edgeAttributes.sumBy { it.logicalCouplingScore }
+            )
         }
     }
 }
