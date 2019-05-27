@@ -482,7 +482,7 @@
                 data.append('basePackageIdentifier', this.uploadBasePackageIdentifier);
                 data.append('staticAnalysisFile', this.uploadStaticAnalysisFile);
                 data.append('dynamicAnalysisFile', this.uploadDynamicAnalysisFile);
-                data.append('logicalAnalysisFile', this.uploadDynamicAnalysisFile);
+                data.append('logicalAnalysisFile', this.uploadLogicalAnalysisFile);
 
                 axios
                     .post(`http://localhost:5656/analysis/`, data)
