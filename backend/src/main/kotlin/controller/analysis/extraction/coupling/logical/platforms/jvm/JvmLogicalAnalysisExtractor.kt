@@ -1,6 +1,7 @@
 package controller.analysis.extraction.coupling.logical.platforms.jvm
 
-import controller.analysis.extraction.coupling.logical.LogicalCouplingExtractor
+import controller.analysis.extraction.coupling.logical.LogicalAnalysisExtractor
+import controller.analysis.extraction.coupling.logical.VcsSystem
 import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
@@ -11,12 +12,12 @@ import java.io.InputStreamReader
 import java.util.*
 
 
-class JvmLogicalCouplingExtractor(private val basePackageIdentifier: String, private val gitLogFile: File) : LogicalCouplingExtractor() {
+class JvmLogicalAnalysisExtractor(private val vcsSystem: VcsSystem, private val basePackageIdentifier: String, private val vcsLogFile: File) : LogicalAnalysisExtractor() {
     private val pathBasedBasePackageIdentifier: String = basePackageIdentifier.replace('.', '/')
 
     override fun extract(): Graph {
         val output: ArrayList<String> = arrayListOf()
-        val processBuilder: ProcessBuilder = ProcessBuilder("java", "-jar", "backend/src/main/resources/code-maat.jar", "-l", gitLogFile.absolutePath, "-c", "git2", "-a", "coupling", "-n", "3", "-m", "3", "-i", "1", "-t", "1").also { it.redirectErrorStream(true) }
+        val processBuilder: ProcessBuilder = ProcessBuilder("java", "-jar", "backend/src/main/resources/code-maat.jar", "-l", vcsLogFile.absolutePath, "-c", vcsSystem.toString().toLowerCase(), "-a", "coupling", "-n", "3", "-m", "3", "-i", "1", "-t", "1").also { it.redirectErrorStream(true) }
         val process: Process = processBuilder.start()
         val reader = BufferedReader(InputStreamReader(process.inputStream))
         var line: String = reader.readLine()
@@ -26,6 +27,8 @@ class JvmLogicalCouplingExtractor(private val basePackageIdentifier: String, pri
         }
         process.waitFor()
         output.removeAt(0)
+
+        cleanup(vcsLogFile.absolutePath)
 
         return convertOutputToGraph(output)
     }
@@ -64,6 +67,5 @@ class JvmLogicalCouplingExtractor(private val basePackageIdentifier: String, pri
 
     companion object {
         private const val FileExtension = ".java"
-        const val ExampleLog = "backend/src/main/resources/gitlog.txt"
     }
 }
