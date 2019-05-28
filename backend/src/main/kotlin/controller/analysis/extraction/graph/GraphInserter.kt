@@ -6,6 +6,10 @@ import controller.analysis.extraction.coupling.logical.VcsSystem
 import controller.analysis.extraction.coupling.logical.platforms.jvm.JvmLogicalAnalysisExtractor
 import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import controller.analysis.metrics.platforms.jvm.JvmMetricsManager
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import model.graph.Edge
 import model.graph.Graph
 import model.metrics.InputQuality
@@ -31,19 +35,25 @@ class GraphInserter(
     }
 
     fun insert(): ProjectResponse {
-        val staticAnalysisGraph: Graph = processStaticAnalysisData()
-        val dynamicCouplingGraph: Graph = processDynamicAnalysisData()
-        val logicalCouplingGraph: Graph = processLogicalCouplingData()
+        val deferredStaticCouplingGraph: Deferred<Graph> = GlobalScope.async { processStaticAnalysisData() }
+        val deferredDynamicCouplingGraph: Deferred<Graph> = GlobalScope.async { processDynamicAnalysisData() }
+        val deferredLogicalCouplingGraph: Deferred<Graph> = GlobalScope.async { processLogicalCouplingData() }
 
-        val mergedGraph: Graph = mergeGraphs(staticAnalysisGraph, dynamicCouplingGraph, logicalCouplingGraph)
+        return runBlocking {
+            val staticCouplingGraph: Graph = deferredStaticCouplingGraph.await()
+            val dynamicCouplingGraph: Graph = deferredDynamicCouplingGraph.await()
+            val logicalCouplingGraph: Graph = deferredLogicalCouplingGraph.await()
 
-        val inputQuality: InputQuality = calculateInputMetrics(staticAnalysisGraph, dynamicCouplingGraph, mergedGraph)
-        val metrics = Metrics(inputQuality = inputQuality)
+            val mergedGraph: Graph = mergeGraphs(staticCouplingGraph, dynamicCouplingGraph, logicalCouplingGraph)
 
-        insertGraphIntoDatabase(mergedGraph)
-        insertMetricsIntoDatabase(metrics)
+            val inputQuality: InputQuality = calculateInputMetrics(staticCouplingGraph, dynamicCouplingGraph, mergedGraph)
+            val metrics = Metrics(inputQuality = inputQuality)
 
-        return ProjectResponse(graph = mergedGraph, metrics = metrics)
+            insertGraphIntoDatabase(mergedGraph)
+            insertMetricsIntoDatabase(metrics)
+
+            return@runBlocking ProjectResponse(graph = mergedGraph, metrics = metrics)
+        }
     }
 
     @Throws(IllegalArgumentException::class)
