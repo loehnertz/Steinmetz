@@ -5,7 +5,7 @@ import controller.analysis.clustering.ClusteringAlgorithm
 import controller.analysis.extraction.Platform
 import controller.analysis.extraction.Platform.Companion.getPlatformByName
 import controller.analysis.extraction.coupling.dynamic.DynamicAnalysisExtractor
-import controller.analysis.extraction.coupling.logical.LogicalAnalysisExtractor
+import controller.analysis.extraction.coupling.logical.LogicalCouplingExtractor
 import controller.analysis.extraction.coupling.logical.VcsSystem
 import controller.analysis.extraction.coupling.logical.VcsSystem.Companion.getVcsSystemByName
 import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
@@ -125,7 +125,7 @@ class AnalysisController {
                             dynamicAnalysisFile = file
                         }
                         ProjectRequest::logicalAnalysisFile.name -> {
-                            file = File("${LogicalAnalysisExtractor.getWorkingDirectory()}/$projectName")
+                            file = File("${LogicalCouplingExtractor.getWorkingDirectory()}/$projectName")
                             file.parentFile.mkdirs()
                             file.createNewFile()
                             logicalAnalysisFile = file

@@ -3,7 +3,7 @@ package controller.analysis.extraction.graph
 import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.dynamic.platforms.jvm.JfrRecordingAnalyzer
 import controller.analysis.extraction.coupling.logical.VcsSystem
-import controller.analysis.extraction.coupling.logical.platforms.jvm.JvmLogicalAnalysisExtractor
+import controller.analysis.extraction.coupling.logical.platforms.jvm.JvmLogicalCouplingExtractor
 import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import controller.analysis.metrics.platforms.jvm.JvmMetricsManager
 import model.graph.Edge
@@ -65,7 +65,7 @@ class GraphInserter(
     @Throws(IllegalArgumentException::class)
     private fun processLogicalCouplingData(): Graph {
         when (projectPlatform) {
-            Platform.JVM -> return JvmLogicalAnalysisExtractor(vcsSystem, basePackageIdentifier, logicalAnalysisFile).extract()
+            Platform.JVM -> return JvmLogicalCouplingExtractor(vcsSystem, basePackageIdentifier, logicalAnalysisFile).extract()
             else -> throw IllegalArgumentException()
         }
     }

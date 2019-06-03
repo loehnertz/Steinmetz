@@ -25,8 +25,9 @@ data class Edge(
 
 data class EdgeAttributes(
         var couplingScore: Int = 1,
-        var dynamicCouplingScore: Int,
-        var logicalCouplingScore: Int
+        var dynamicCouplingScore: Int = 0,
+        var semanticCouplingScore: Double = 0.0,
+        var logicalCouplingScore: Int = 0
 ) {
     companion object {
         fun mergeEdgeAttributes(vararg edgeAttributes: EdgeAttributes): EdgeAttributes {
