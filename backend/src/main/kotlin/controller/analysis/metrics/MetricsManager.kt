@@ -9,7 +9,7 @@ import model.metrics.InputQuality
 
 
 abstract class MetricsManager {
-    abstract fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph, mergedGraph: Graph): InputQuality
+    abstract fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph, mergedStaticAndDynamicAnalysisGraph: Graph, semanticCouplingGraph: Graph, logicalCouplingGraph: Graph): InputQuality
 
     fun calculateClusteringMetrics(clusteredGraph: Graph): ClusteringQuality {
         val accumulatedEdgeWeights: Int = clusteredGraph.edges.sumBy { it.attributes.couplingScore }
