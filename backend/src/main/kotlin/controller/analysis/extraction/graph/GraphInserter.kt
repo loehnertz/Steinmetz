@@ -4,6 +4,7 @@ import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.dynamic.platforms.jvm.JfrRecordingAnalyzer
 import controller.analysis.extraction.coupling.logical.VcsSystem
 import controller.analysis.extraction.coupling.logical.platforms.jvm.JvmLogicalCouplingExtractor
+import controller.analysis.extraction.coupling.semantic.platforms.java.JavaSemanticCouplingExtractor
 import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import controller.analysis.metrics.platforms.jvm.JvmMetricsManager
 import model.graph.Edge
@@ -24,26 +25,35 @@ class GraphInserter(
         private val basePackageIdentifier: String,
         private val staticAnalysisFile: File,
         private val dynamicAnalysisFile: File,
+        private val semanticAnalysisFile: File,
         private val logicalAnalysisFile: File
 ) {
     init {
         if (projectAlreadyExists()) throw ProjectAlreadyExistsException()
     }
 
+    private lateinit var staticAnalysisGraph: Graph
+    private lateinit var dynamicCouplingGraph: Graph
+    private lateinit var semanticCouplingGraph: Graph
+    private lateinit var logicalCouplingGraph: Graph
+
     fun insert(): ProjectResponse {
-        val staticAnalysisGraph: Graph = processStaticAnalysisData()
-        val dynamicCouplingGraph: Graph = processDynamicAnalysisData()
-        val logicalCouplingGraph: Graph = processLogicalCouplingData()
+        staticAnalysisGraph = processStaticAnalysisData()
+        dynamicCouplingGraph = processDynamicCouplingData()
 
-        val mergedGraph: Graph = mergeGraphs(staticAnalysisGraph, dynamicCouplingGraph, logicalCouplingGraph)
+        val baseGraph: Graph = mergeStaticAndDynamicCouplingGraphs()
 
-        val inputQuality: InputQuality = calculateInputMetrics(staticAnalysisGraph, dynamicCouplingGraph, mergedGraph)
-        val metrics = Metrics(inputQuality = inputQuality)
+        semanticCouplingGraph = processSemanticCouplingData(baseGraph.edges)
+        logicalCouplingGraph = processLogicalCouplingData()
 
-        insertGraphIntoDatabase(mergedGraph)
+        val finalGraph: Graph = mergeSemanticAndLogicalCouplingGraphs(baseGraph)
+
+        val metrics: Metrics = calculateMetrics(baseGraph = baseGraph)
+
+        insertGraphIntoDatabase(finalGraph)
         insertMetricsIntoDatabase(metrics)
 
-        return ProjectResponse(graph = mergedGraph, metrics = metrics)
+        return ProjectResponse(graph = finalGraph, metrics = metrics)
     }
 
     @Throws(IllegalArgumentException::class)
@@ -55,9 +65,17 @@ class GraphInserter(
     }
 
     @Throws(IllegalArgumentException::class)
-    private fun processDynamicAnalysisData(): Graph {
+    private fun processDynamicCouplingData(): Graph {
         when (projectPlatform) {
             Platform.JAVA -> return JfrRecordingAnalyzer(projectName, basePackageIdentifier, dynamicAnalysisFile).extract()
+            else -> throw IllegalArgumentException()
+        }
+    }
+
+    @Throws(IllegalArgumentException::class)
+    private fun processSemanticCouplingData(edgesToConsider: Set<Edge>): Graph {
+        when (projectPlatform) {
+            Platform.JAVA -> return JavaSemanticCouplingExtractor(projectName, basePackageIdentifier, semanticAnalysisFile, edgesToConsider).extract()
             else -> throw IllegalArgumentException()
         }
     }
@@ -70,18 +88,29 @@ class GraphInserter(
         }
     }
 
+    private fun calculateMetrics(baseGraph: Graph): Metrics {
+        val inputQuality: InputQuality = calculateInputMetrics(staticAnalysisGraph = staticAnalysisGraph, dynamicAnalysisGraph = dynamicCouplingGraph, mergedStaticAndDynamicAnalysisGraph = baseGraph, semanticCouplingGraph = semanticCouplingGraph, logicalCouplingGraph = logicalCouplingGraph)
+
+        return Metrics(inputQuality = inputQuality)
+    }
+
     @Throws(IllegalArgumentException::class)
-    private fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph, mergedGraph: Graph): InputQuality {
+    private fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph, mergedStaticAndDynamicAnalysisGraph: Graph, semanticCouplingGraph: Graph, logicalCouplingGraph: Graph): InputQuality {
         when (projectPlatform) {
-            Platform.JAVA -> return JvmMetricsManager.calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph, mergedGraph)
+            Platform.JAVA -> return JvmMetricsManager.calculateInputMetrics(staticAnalysisGraph = staticAnalysisGraph, dynamicAnalysisGraph = dynamicAnalysisGraph, mergedStaticAndDynamicAnalysisGraph = mergedStaticAndDynamicAnalysisGraph, semanticCouplingGraph = semanticCouplingGraph, logicalCouplingGraph = logicalCouplingGraph)
             else -> throw IllegalArgumentException()
         }
     }
 
-    private fun mergeGraphs(staticAnalysisGraph: Graph, dynamicCouplingGraph: Graph, logicalCouplingGraph: Graph): Graph {
-        dynamicCouplingGraph.edges.forEach { staticAnalysisGraph.updateEdge(it) }
-        logicalCouplingGraph.edges.forEach { staticAnalysisGraph.updateEdge(it) }
+    private fun mergeStaticAndDynamicCouplingGraphs(): Graph {
+        dynamicCouplingGraph.edges.forEach { staticAnalysisGraph.addOrUpdateEdge(it) }
         return staticAnalysisGraph
+    }
+
+    private fun mergeSemanticAndLogicalCouplingGraphs(baseGraph: Graph): Graph {
+        semanticCouplingGraph.edges.forEach { baseGraph.updateEdge(it) }
+        logicalCouplingGraph.edges.forEach { baseGraph.updateEdge(it) }
+        return baseGraph
     }
 
     private fun insertGraphIntoDatabase(graph: Graph) {
@@ -99,14 +128,19 @@ class GraphInserter(
                     size = graph.findNodeByUnit(edge.end)?.attributes?.footprint?.byteSize ?: -1
             )
 
-            startUnit.calls(endUnit, dynamicCouplingScore = edge.attributes.dynamicCouplingScore, logicalCouplingScore = edge.attributes.logicalCouplingScore)
+            startUnit.calls(
+                    callee = endUnit,
+                    dynamicCouplingScore = edge.attributes.dynamicCouplingScore,
+                    semanticCouplingScore = edge.attributes.semanticCouplingScore,
+                    logicalCouplingScore = edge.attributes.logicalCouplingScore
+            )
 
             Neo4jConnector.saveEntity(startUnit)
         }
     }
 
     private fun insertMetricsIntoDatabase(metrics: Metrics) {
-        val metricsNode = model.neo4j.node.Metrics.create(projectName = projectName, metrics = metrics)
+        val metricsNode: model.neo4j.node.Metrics = model.neo4j.node.Metrics.create(projectName = projectName, metrics = metrics)
         Neo4jConnector.saveEntity(metricsNode)
     }
 
