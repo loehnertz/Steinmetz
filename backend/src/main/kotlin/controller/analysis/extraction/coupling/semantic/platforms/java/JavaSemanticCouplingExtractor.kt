@@ -12,8 +12,8 @@ import utility.ArchiveExtractor
 import java.io.File
 
 
-class JavaSemanticCouplingExtractor(projectName: String, private val basePackageIdentifier: String, private val sourceCodeFilesArchive: File, private val edgesToConsider: List<Edge>) : SemanticCouplingExtractor() {
-    private val unarchiverPath = "${getWorkingDirectory()}/$projectName"
+class JavaSemanticCouplingExtractor(projectName: String, private val basePackageIdentifier: String, private val sourceCodeFilesArchive: File, private val edgesToConsider: Set<Edge>) : SemanticCouplingExtractor() {
+    private val unarchiverPath = "${getWorkingDirectory()}/sources/$projectName/"
     private val unarchiver = ArchiveExtractor(FileExtension, unarchiverPath)
 
     override fun extract(): Graph {
@@ -23,7 +23,7 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
         val semanticCouplingCalculator: SemanticCouplingCalculator = setupSemanticCouplingCalculator(files).also { it.calculate() }
         val similarities: List<Triple<String, String, Double>> = semanticCouplingCalculator.retrieveSimilaritiesAsListOfTriples()
 
-        cleanup(unarchiverPath)
+        cleanup(unarchiverPath, sourceCodeFilesArchive.absolutePath)
 
         return Graph(edges = buildEdgesOutOfSimilarities(similarities).toMutableSet())
     }
@@ -49,7 +49,6 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
     private fun retrieveSourceCodeFiles(): List<File> {
         return File(unarchiverPath)
                 .walkTopDown()
-                .map { it }
                 .filter { it.isFile }
                 .filter { it.name.endsWith(FileExtension) }
                 .filter { it.name != PackageInfoFileName }
@@ -66,7 +65,7 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
     }
 
     private fun buildFilePairsToCalculate(): List<Pair<String, String>> {
-        return edgesToConsider.map { Pair("${it.start.packageIdentifier}.${it.start.identifier}", "${it.end.packageIdentifier}.${it.end.identifier}") }
+        return edgesToConsider.map { Pair(it.start.toString(), it.end.toString()) }
     }
 
     private fun buildFileListMap(files: List<File>): List<Map<String, String>> {
