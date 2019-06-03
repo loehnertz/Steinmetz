@@ -32,11 +32,11 @@ class Unit(var identifier: String, var packageIdentifier: String, var projectNam
     @Relationship(type = BelongsToRelation, direction = OUTGOING)
     var service: Service? = null
 
-    fun calls(callee: Unit, dynamicCouplingScore: Int = 0, semanticCouplingScore: Double = 0.0, logicalCouplingScore: Int = 0): CallsRelationship {
+    fun calls(callee: Unit, dynamicCouplingScore: Int = 0, semanticCouplingScore: Int = 0, logicalCouplingScore: Int = 0): CallsRelationship {
         val existingRelationship: CallsRelationship? = retrieveExistingRelationship(callee)
         if (existingRelationship != null) {
             val newDynamicCouplingScore: Int = existingRelationship.dynamiCouplingScore + dynamicCouplingScore
-            val newSemanticCouplingScore: Double = existingRelationship.semanticCouplingScore + semanticCouplingScore
+            val newSemanticCouplingScore: Int = existingRelationship.semanticCouplingScore + semanticCouplingScore
             val newLogicalCouplingScore: Int = existingRelationship.logicalCouplingScore + logicalCouplingScore
             updateCouplingScores(existingRelationship, newDynamicCouplingScore = newDynamicCouplingScore, newSemanticCouplingScore = newSemanticCouplingScore, newLogicalCouplingScore = newLogicalCouplingScore)
             return existingRelationship
@@ -48,7 +48,7 @@ class Unit(var identifier: String, var packageIdentifier: String, var projectNam
         return relationship
     }
 
-    private fun updateCouplingScores(existingRelationship: CallsRelationship, newDynamicCouplingScore: Int, newSemanticCouplingScore: Double, newLogicalCouplingScore: Int) {
+    private fun updateCouplingScores(existingRelationship: CallsRelationship, newDynamicCouplingScore: Int, newSemanticCouplingScore: Int, newLogicalCouplingScore: Int) {
         removeRelationship(existingRelationship)
         insertRelationship(buildRelationship(existingRelationship.callee, dynamicCouplingScore = newDynamicCouplingScore, semanticCouplingScore = newSemanticCouplingScore, logicalCouplingScore = newLogicalCouplingScore))
     }
@@ -58,7 +58,7 @@ class Unit(var identifier: String, var packageIdentifier: String, var projectNam
         insertRelationship(buildRelationship(existingRelationship.callee, dynamicCouplingScore = newDynamicCouplingScore, semanticCouplingScore = existingRelationship.semanticCouplingScore, logicalCouplingScore = existingRelationship.logicalCouplingScore))
     }
 
-    private fun updateSemanticCouplingScore(existingRelationship: CallsRelationship, newSemanticCouplingScore: Double) {
+    private fun updateSemanticCouplingScore(existingRelationship: CallsRelationship, newSemanticCouplingScore: Int) {
         removeRelationship(existingRelationship)
         insertRelationship(buildRelationship(existingRelationship.callee, semanticCouplingScore = newSemanticCouplingScore, dynamicCouplingScore = existingRelationship.dynamiCouplingScore, logicalCouplingScore = existingRelationship.logicalCouplingScore))
     }
@@ -68,7 +68,7 @@ class Unit(var identifier: String, var packageIdentifier: String, var projectNam
         insertRelationship(buildRelationship(existingRelationship.callee, logicalCouplingScore = newLogicalCouplingScore, dynamicCouplingScore = existingRelationship.dynamiCouplingScore, semanticCouplingScore = existingRelationship.semanticCouplingScore))
     }
 
-    private fun buildRelationship(callee: Unit, dynamicCouplingScore: Int, semanticCouplingScore: Double, logicalCouplingScore: Int): CallsRelationship {
+    private fun buildRelationship(callee: Unit, dynamicCouplingScore: Int, semanticCouplingScore: Int, logicalCouplingScore: Int): CallsRelationship {
         return CallsRelationship(caller = this, callee = callee, dynamiCouplingScore = dynamicCouplingScore, semanticCouplingScore = semanticCouplingScore, logicalCouplingScore = logicalCouplingScore)
     }
 
