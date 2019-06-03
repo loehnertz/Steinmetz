@@ -50,7 +50,7 @@ class JvmLogicalCouplingExtractor(private val vcsSystem: VcsSystem, private val 
 
             if (!startUnit.packageIdentifier.startsWith(basePackageIdentifier) || !endUnit.packageIdentifier.startsWith(basePackageIdentifier)) return null
 
-            return Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(logicalCouplingScore = degree.toInt(), dynamicCouplingScore = 0))
+            return Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(logicalCouplingScore = degree.toInt()))
         } catch (exception: Exception) {
             return null
         }

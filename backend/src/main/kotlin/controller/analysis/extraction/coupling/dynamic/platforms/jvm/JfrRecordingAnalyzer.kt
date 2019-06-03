@@ -49,7 +49,7 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
                             val calleeUnit = Unit(identifier = calleeIdentifier, packageIdentifier = calleePackageIdentifier)
 
                             if (callerUnit != calleeUnit) {
-                                edges.add(Edge(start = callerUnit, end = calleeUnit, attributes = EdgeAttributes(dynamicCouplingScore = 1, logicalCouplingScore = 0)))
+                                edges.add(Edge(start = callerUnit, end = calleeUnit, attributes = EdgeAttributes(dynamicCouplingScore = 1)))
                             }
                         }
                     }
@@ -61,7 +61,7 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
     }
 
     companion object {
-        private val platformIdentifier: String = Platform.JVM.toString().toLowerCase()
+        private val platformIdentifier: String = Platform.JAVA.toString().toLowerCase()
         private const val methodInvocationEventType = "jdk.ExecutionSample"
     }
 }

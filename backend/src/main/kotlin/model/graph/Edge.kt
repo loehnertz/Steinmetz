@@ -33,6 +33,7 @@ data class EdgeAttributes(
         fun mergeEdgeAttributes(vararg edgeAttributes: EdgeAttributes): EdgeAttributes {
             return EdgeAttributes(
                     dynamicCouplingScore = edgeAttributes.sumBy { it.dynamicCouplingScore },
+                    semanticCouplingScore = edgeAttributes.sumByDouble { it.semanticCouplingScore },
                     logicalCouplingScore = edgeAttributes.sumBy { it.logicalCouplingScore }
             )
         }

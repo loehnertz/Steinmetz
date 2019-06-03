@@ -52,7 +52,7 @@
                                     <span class="select">
                                         <label>
                                             <select v-model="uploadProjectPlatform">
-                                                <option value="jvm">JVM</option>
+                                                <option value="java">Java</option>
                                             </select>
                                         </label>
                                     </span>
@@ -427,7 +427,7 @@
         data() {
             return {
                 uploadProjectName: '',
-                uploadProjectPlatform: 'jvm',
+                uploadProjectPlatform: 'java',
                 uploadVcsSystem: 'git2',
                 uploadBasePackageIdentifier: '',
                 uploadStaticAnalysisFile: null,

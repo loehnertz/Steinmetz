@@ -2,7 +2,7 @@ package controller.analysis.extraction
 
 
 enum class Platform {
-    JVM;
+    JAVA;
 
     companion object {
         fun getPlatformByName(name: String): Platform = valueOf(name.toUpperCase())

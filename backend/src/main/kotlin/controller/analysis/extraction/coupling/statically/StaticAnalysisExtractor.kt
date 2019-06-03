@@ -38,7 +38,7 @@ abstract class StaticAnalysisExtractor : AbstractExtractor() {
                     if (!packageIdentifier.startsWith(basePackageIdentifier)) continue
                     if (startUnit == endUnit) continue
 
-                    val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(dynamicCouplingScore = 0, logicalCouplingScore = 0))
+                    val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes())
                     graph.addOrUpdateEdge(edge)
                 }
             }

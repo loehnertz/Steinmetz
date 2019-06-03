@@ -49,7 +49,7 @@ class GraphInserter(
     @Throws(IllegalArgumentException::class)
     private fun processStaticAnalysisData(): Graph {
         when (projectPlatform) {
-            Platform.JVM -> return JvmBytecodeExtractor(projectName, basePackageIdentifier, staticAnalysisFile).extract()
+            Platform.JAVA -> return JvmBytecodeExtractor(projectName, basePackageIdentifier, staticAnalysisFile).extract()
             else -> throw IllegalArgumentException()
         }
     }
@@ -57,7 +57,7 @@ class GraphInserter(
     @Throws(IllegalArgumentException::class)
     private fun processDynamicAnalysisData(): Graph {
         when (projectPlatform) {
-            Platform.JVM -> return JfrRecordingAnalyzer(projectName, basePackageIdentifier, dynamicAnalysisFile).extract()
+            Platform.JAVA -> return JfrRecordingAnalyzer(projectName, basePackageIdentifier, dynamicAnalysisFile).extract()
             else -> throw IllegalArgumentException()
         }
     }
@@ -65,7 +65,7 @@ class GraphInserter(
     @Throws(IllegalArgumentException::class)
     private fun processLogicalCouplingData(): Graph {
         when (projectPlatform) {
-            Platform.JVM -> return JvmLogicalCouplingExtractor(vcsSystem, basePackageIdentifier, logicalAnalysisFile).extract()
+            Platform.JAVA -> return JvmLogicalCouplingExtractor(vcsSystem, basePackageIdentifier, logicalAnalysisFile).extract()
             else -> throw IllegalArgumentException()
         }
     }
@@ -73,7 +73,7 @@ class GraphInserter(
     @Throws(IllegalArgumentException::class)
     private fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph, mergedGraph: Graph): InputQuality {
         when (projectPlatform) {
-            Platform.JVM -> return JvmMetricsManager.calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph, mergedGraph)
+            Platform.JAVA -> return JvmMetricsManager.calculateInputMetrics(staticAnalysisGraph, dynamicAnalysisGraph, mergedGraph)
             else -> throw IllegalArgumentException()
         }
     }
