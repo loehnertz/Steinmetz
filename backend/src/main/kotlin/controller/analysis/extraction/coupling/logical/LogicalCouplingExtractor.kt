@@ -4,7 +4,7 @@ import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.ExtractorCompanion
 
 
-abstract class LogicalAnalysisExtractor : AbstractExtractor() {
+abstract class LogicalCouplingExtractor : AbstractExtractor() {
     companion object : ExtractorCompanion {
         private const val LogicalAnalysisDirectory = "logical"
 
