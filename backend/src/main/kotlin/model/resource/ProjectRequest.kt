@@ -12,5 +12,6 @@ data class ProjectRequest(
         val basePackageIdentifier: String,
         val staticAnalysisFile: File,
         val dynamicAnalysisFile: File,
+        val semanticAnalysisFile: File,
         val logicalAnalysisFile: File
 )

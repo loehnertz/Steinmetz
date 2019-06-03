@@ -127,7 +127,7 @@
                                             <input
                                                     class="file-input"
                                                     type="file"
-                                                    placeholder="Dynamic Analysis File"
+                                                    placeholder="Dynamic Coupling Analysis File"
                                                     @change="onDynamicAnalysisUploadFileChange"
                                             >
                                             <span class="file-cta">
@@ -147,6 +147,33 @@
                             <div class="field">
                                 <div
                                         class="control tooltip is-tooltip-multiline is-tooltip-bottom"
+                                        data-tooltip="Sets the semantic coupling analysis file according to the selected platform for the upload"
+                                >
+                                    <div class="file">
+                                        <label class="file-label">
+                                            <input
+                                                    class="file-input"
+                                                    type="file"
+                                                    placeholder="Semantic Coupling Analysis File"
+                                                    @change="onSemanticAnalysisUploadFileChange"
+                                            >
+                                            <span class="file-cta">
+                                                <span class="file-icon">
+                                                    <i class="fas fa-upload"></i>
+                                                </span>
+                                                <span class="file-label">
+                                                    {{ semanticProgramAnalyisUploadLabel }}
+                                                </span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
                                         data-tooltip="Sets the VCS log file according to the selected VCS system for the upload"
                                 >
                                     <div class="file">
@@ -154,7 +181,7 @@
                                             <input
                                                     class="file-input"
                                                     type="file"
-                                                    placeholder="VCS log"
+                                                    placeholder="Logical Coupling Analysis File"
                                                     @change="onLogicalAnalysisUploadFileChange"
                                             >
                                             <span class="file-cta">
@@ -335,6 +362,9 @@
                 <div class="box">
                     <h1 class="title">Metrics</h1>
                     <p>Dynamic Analysis Quality: {{ dynamicAnalysisQuality }}%</p>
+                    <p>Semantic Analysis Quality: {{ semanticAnalysisQuality }}%</p>
+                    <p>Logical Analysis Quality: {{ logicalAnalysisQuality }}%</p>
+                    <br>
                     <p>Accumulated Edge Weights: {{ accumulatedEdgeWeights }}</p>
                 </div>
                 <ClusteringMetrics
@@ -399,6 +429,14 @@
                 if (!this.metricsData["inputQuality"]) return NotAvailableLabel;
                 return this.metricsData["inputQuality"]["dynamicAnalysis"];
             },
+            semanticAnalysisQuality: function () {
+                if (!this.metricsData["inputQuality"]) return NotAvailableLabel;
+                return this.metricsData["inputQuality"]["semanticAnalysis"];
+            },
+            logicalAnalysisQuality: function () {
+                if (!this.metricsData["inputQuality"]) return NotAvailableLabel;
+                return this.metricsData["inputQuality"]["logicalAnalysis"];
+            },
             accumulatedEdgeWeights: function () {
                 if (!this.metricsData["clusteringQuality"]) return NotAvailableLabel;
                 return this.metricsData["clusteringQuality"]["accumulatedEdgeWeights"];
@@ -432,12 +470,14 @@
                 uploadBasePackageIdentifier: '',
                 uploadStaticAnalysisFile: null,
                 uploadDynamicAnalysisFile: null,
+                uploadSemanticAnalysisFile: null,
                 uploadLogicalAnalysisFile: null,
                 selectedProjectId: '',
                 graphData: {},
                 metricsData: {},
                 staticProgramAnalyisUploadLabel: 'Static Analysis',
                 dynamicProgramAnalyisUploadLabel: 'Dynamic Analysis',
+                semanticProgramAnalyisUploadLabel: 'Semantic Analysis',
                 logicalAnalyisUploadLabel: 'Logical Analysis',
                 mclAlgorithm: MclIdentifier,
                 infomapAlgorithm: InfomapIdentifier,
@@ -482,6 +522,7 @@
                 data.append('basePackageIdentifier', this.uploadBasePackageIdentifier);
                 data.append('staticAnalysisFile', this.uploadStaticAnalysisFile);
                 data.append('dynamicAnalysisFile', this.uploadDynamicAnalysisFile);
+                data.append('semanticAnalysisFile', this.uploadSemanticAnalysisFile);
                 data.append('logicalAnalysisFile', this.uploadLogicalAnalysisFile);
 
                 axios
@@ -601,6 +642,13 @@
                 if (files.length > 0) {
                     this.uploadDynamicAnalysisFile = files[0];
                     this.dynamicProgramAnalyisUploadLabel = this.shortenText(files[0].name, 15);
+                }
+            },
+            onSemanticAnalysisUploadFileChange(e) {
+                const files = e.target.files || e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.uploadSemanticAnalysisFile = files[0];
+                    this.semanticProgramAnalyisUploadLabel = this.shortenText(files[0].name, 15);
                 }
             },
             onLogicalAnalysisUploadFileChange(e) {
