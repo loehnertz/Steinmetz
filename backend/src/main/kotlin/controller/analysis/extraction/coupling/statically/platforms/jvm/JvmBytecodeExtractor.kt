@@ -66,7 +66,7 @@ class JvmBytecodeExtractor(private val projectName: String, private val basePack
     }
 
     companion object {
-        private val platformIdentifier: String = Platform.JVM.toString().toLowerCase()
+        private val platformIdentifier: String = Platform.JAVA.toString().toLowerCase()
         private const val unarchiverPath = "jar"
         private const val classFileExtension = "class"
     }

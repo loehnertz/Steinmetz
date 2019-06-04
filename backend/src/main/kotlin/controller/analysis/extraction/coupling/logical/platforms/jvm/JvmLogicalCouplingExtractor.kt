@@ -1,6 +1,6 @@
 package controller.analysis.extraction.coupling.logical.platforms.jvm
 
-import controller.analysis.extraction.coupling.logical.LogicalAnalysisExtractor
+import controller.analysis.extraction.coupling.logical.LogicalCouplingExtractor
 import controller.analysis.extraction.coupling.logical.VcsSystem
 import model.graph.Edge
 import model.graph.EdgeAttributes
@@ -12,7 +12,7 @@ import java.io.InputStreamReader
 import java.util.*
 
 
-class JvmLogicalAnalysisExtractor(private val vcsSystem: VcsSystem, private val basePackageIdentifier: String, private val vcsLogFile: File) : LogicalAnalysisExtractor() {
+class JvmLogicalCouplingExtractor(private val vcsSystem: VcsSystem, private val basePackageIdentifier: String, private val vcsLogFile: File) : LogicalCouplingExtractor() {
     private val pathBasedBasePackageIdentifier: String = basePackageIdentifier.replace('.', '/')
 
     override fun extract(): Graph {
@@ -50,7 +50,7 @@ class JvmLogicalAnalysisExtractor(private val vcsSystem: VcsSystem, private val 
 
             if (!startUnit.packageIdentifier.startsWith(basePackageIdentifier) || !endUnit.packageIdentifier.startsWith(basePackageIdentifier)) return null
 
-            return Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(logicalCouplingScore = degree.toInt(), dynamicCouplingScore = 0))
+            return Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(logicalCouplingScore = degree.toInt()))
         } catch (exception: Exception) {
             return null
         }

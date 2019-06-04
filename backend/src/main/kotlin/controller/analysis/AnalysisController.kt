@@ -5,19 +5,18 @@ import controller.analysis.clustering.ClusteringAlgorithm
 import controller.analysis.extraction.Platform
 import controller.analysis.extraction.Platform.Companion.getPlatformByName
 import controller.analysis.extraction.coupling.dynamic.DynamicAnalysisExtractor
-import controller.analysis.extraction.coupling.logical.LogicalAnalysisExtractor
+import controller.analysis.extraction.coupling.logical.LogicalCouplingExtractor
 import controller.analysis.extraction.coupling.logical.VcsSystem
 import controller.analysis.extraction.coupling.logical.VcsSystem.Companion.getVcsSystemByName
+import controller.analysis.extraction.coupling.semantic.SemanticCouplingExtractor
 import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
 import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
 import controller.analysis.metrics.platforms.jvm.JvmMetricsManager
-import io.ktor.features.BadRequestException
 import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
-import io.ktor.util.KtorExperimentalAPI
 import model.graph.Graph
 import model.metrics.Metrics
 import model.resource.ProjectRequest
@@ -28,7 +27,6 @@ import utility.Neo4jConnector
 import java.io.File
 
 
-@KtorExperimentalAPI
 class AnalysisController {
     fun insertProject(projectRequest: ProjectRequest): ProjectResponse {
         return GraphInserter(
@@ -38,6 +36,7 @@ class AnalysisController {
                 basePackageIdentifier = projectRequest.basePackageIdentifier,
                 staticAnalysisFile = projectRequest.staticAnalysisFile,
                 dynamicAnalysisFile = projectRequest.dynamicAnalysisFile,
+                semanticAnalysisFile = projectRequest.semanticAnalysisFile,
                 logicalAnalysisFile = projectRequest.logicalAnalysisFile
         ).insert()
     }
@@ -96,10 +95,10 @@ class AnalysisController {
         var basePackageIdentifier: String? = null
         var staticAnalysisFile: File? = null
         var dynamicAnalysisFile: File? = null
+        var semanticAnalysisFile: File? = null
         var logicalAnalysisFile: File? = null
 
         multipart.forEachPart { part ->
-            // Only continue if the part is a file (it could be form item)
             when (part) {
                 is PartData.FormItem -> {
                     when (part.name) {
@@ -124,13 +123,19 @@ class AnalysisController {
                             file.createNewFile()
                             dynamicAnalysisFile = file
                         }
+                        ProjectRequest::semanticAnalysisFile.name -> {
+                            file = File("${SemanticCouplingExtractor.getWorkingDirectory()}/$projectName")
+                            file.parentFile.mkdirs()
+                            file.createNewFile()
+                            semanticAnalysisFile = file
+                        }
                         ProjectRequest::logicalAnalysisFile.name -> {
-                            file = File("${LogicalAnalysisExtractor.getWorkingDirectory()}/$projectName")
+                            file = File("${LogicalCouplingExtractor.getWorkingDirectory()}/$projectName")
                             file.parentFile.mkdirs()
                             file.createNewFile()
                             logicalAnalysisFile = file
                         }
-                        else -> throw BadRequestException("File keys must be in ${listOf(ProjectRequest::staticAnalysisFile.name, ProjectRequest::dynamicAnalysisFile.name, ProjectRequest::logicalAnalysisFile.name)}")
+                        else -> throw IllegalArgumentException("File keys must be in ${listOf(ProjectRequest::staticAnalysisFile.name, ProjectRequest::dynamicAnalysisFile.name, ProjectRequest::semanticAnalysisFile.name, ProjectRequest::logicalAnalysisFile.name)}")
                     }
 
                     part.streamProvider().use { upload ->
@@ -153,6 +158,7 @@ class AnalysisController {
                 basePackageIdentifier = basePackageIdentifier!!,
                 staticAnalysisFile = staticAnalysisFile!!,
                 dynamicAnalysisFile = dynamicAnalysisFile!!,
+                semanticAnalysisFile = semanticAnalysisFile!!,
                 logicalAnalysisFile = logicalAnalysisFile!!
         )
     }

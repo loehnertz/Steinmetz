@@ -9,7 +9,7 @@ abstract class AbstractExtractor {
 
     fun buildBasePath(platformIdentifier: String, projectName: String) = "$ExtractionBasePath/$platformIdentifier/$projectName"
 
-    fun cleanup(basePath: String) = File(basePath).deleteRecursively()
+    fun cleanup(vararg basePaths: String) = basePaths.forEach { File(it).deleteRecursively() }
 
     companion object {
         const val ExtractionBasePath: String = ExtractorCompanion.ExtractionBasePath
