@@ -6,7 +6,7 @@ import controller.analysis.extraction.coupling.logical.VcsSystem
 import controller.analysis.extraction.coupling.logical.platforms.jvm.JvmLogicalCouplingExtractor
 import controller.analysis.extraction.coupling.semantic.platforms.java.JavaSemanticCouplingExtractor
 import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
-import controller.analysis.metrics.platforms.jvm.JvmMetricsManager
+import controller.analysis.metrics.input.InputQualityAnalyzer
 import model.graph.Edge
 import model.graph.Graph
 import model.metrics.InputQuality
@@ -89,17 +89,13 @@ class GraphInserter(
     }
 
     private fun calculateMetrics(baseGraph: Graph): Metrics {
-        val inputQuality: InputQuality = calculateInputMetrics(staticAnalysisGraph = staticAnalysisGraph, dynamicAnalysisGraph = dynamicCouplingGraph, mergedStaticAndDynamicAnalysisGraph = baseGraph, semanticCouplingGraph = semanticCouplingGraph, logicalCouplingGraph = logicalCouplingGraph)
+        val inputQuality: InputQuality = calculateInputMetrics(baseGraph)
 
         return Metrics(inputQuality = inputQuality)
     }
 
-    @Throws(IllegalArgumentException::class)
-    private fun calculateInputMetrics(staticAnalysisGraph: Graph, dynamicAnalysisGraph: Graph, mergedStaticAndDynamicAnalysisGraph: Graph, semanticCouplingGraph: Graph, logicalCouplingGraph: Graph): InputQuality {
-        when (projectPlatform) {
-            Platform.JAVA -> return JvmMetricsManager.calculateInputMetrics(staticAnalysisGraph = staticAnalysisGraph, dynamicAnalysisGraph = dynamicAnalysisGraph, mergedStaticAndDynamicAnalysisGraph = mergedStaticAndDynamicAnalysisGraph, semanticCouplingGraph = semanticCouplingGraph, logicalCouplingGraph = logicalCouplingGraph)
-            else -> throw IllegalArgumentException()
-        }
+    private fun calculateInputMetrics(mergedStaticAndDynamicAnalysisGraph: Graph): InputQuality {
+        return InputQualityAnalyzer(staticAnalysisGraph = staticAnalysisGraph, dynamicAnalysisGraph = dynamicCouplingGraph, mergedStaticAndDynamicAnalysisGraph = mergedStaticAndDynamicAnalysisGraph, semanticAnalysisGraph = semanticCouplingGraph, logicalAnalysisGraph = logicalCouplingGraph).calculateInputQualityMetrics()
     }
 
     private fun mergeStaticAndDynamicCouplingGraphs(): Graph {
