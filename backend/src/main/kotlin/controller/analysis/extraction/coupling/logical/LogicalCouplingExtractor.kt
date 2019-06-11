@@ -8,8 +8,6 @@ abstract class LogicalCouplingExtractor : AbstractExtractor() {
     companion object : ExtractorCompanion {
         private const val LogicalAnalysisDirectory = "logical"
 
-        override fun getWorkingDirectory(): String {
-            return "$ExtractionBasePath/$LogicalAnalysisDirectory"
-        }
+        override fun getWorkingDirectory(): String = "$ExtractionBasePath/$LogicalAnalysisDirectory"
     }
 }

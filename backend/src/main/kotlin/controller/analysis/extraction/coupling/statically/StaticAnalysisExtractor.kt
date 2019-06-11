@@ -51,8 +51,6 @@ abstract class StaticAnalysisExtractor : AbstractExtractor() {
         const val StaticAnalysisDirectory = "static"
         const val SkeletonDirectoryName = "skeleton"
 
-        override fun getWorkingDirectory(): String {
-            return "$ExtractionBasePath/$StaticAnalysisDirectory"
-        }
+        override fun getWorkingDirectory(): String = "$ExtractionBasePath/$StaticAnalysisDirectory"
     }
 }
