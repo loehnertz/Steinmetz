@@ -20,8 +20,8 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
 
     override fun extract(): Graph {
         val dynamicAnalysisGraph: Graph = analyzeRecording()
-        cleanup(dynamicAnalysisBasePath)
-        return dynamicAnalysisGraph
+        cleanup(basePath, dynamicAnalysisBasePath)
+        return weightDynamicCouplingScores(dynamicAnalysisGraph)
     }
 
     private fun analyzeRecording(): Graph {
