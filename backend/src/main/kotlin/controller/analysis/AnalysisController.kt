@@ -12,7 +12,7 @@ import controller.analysis.extraction.coupling.semantic.SemanticCouplingExtracto
 import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
 import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
-import controller.analysis.metrics.platforms.jvm.JvmMetricsManager
+import controller.analysis.metrics.clustering.ClusteringQualityAnalyzer
 import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
@@ -74,7 +74,7 @@ class AnalysisController {
     }
 
     private fun calculateClusteredGraphMetrics(clusteredGraph: Graph): Metrics {
-        return Metrics(clusteringQuality = JvmMetricsManager.calculateClusteringMetrics(clusteredGraph))
+        return Metrics(clusteringQuality = ClusteringQualityAnalyzer(clusteredGraph).calculateClusteringQualityMetrics())
     }
 
     private fun mergeMetrics(vararg metricsList: Metrics): Metrics {
@@ -138,10 +138,10 @@ class AnalysisController {
                         else -> throw IllegalArgumentException("File keys must be in ${listOf(ProjectRequest::staticAnalysisFile.name, ProjectRequest::dynamicAnalysisFile.name, ProjectRequest::semanticAnalysisFile.name, ProjectRequest::logicalAnalysisFile.name)}")
                     }
 
-                    part.streamProvider().use { upload ->
+                    part.streamProvider().use { uploadStream ->
                         // Copy the stream to the file with buffering
-                        file.outputStream().buffered().use {
-                            upload.copyTo(it)
+                        file.outputStream().buffered().use { fileStream ->
+                            uploadStream.copyTo(fileStream)
                         }
                     }
                 }
