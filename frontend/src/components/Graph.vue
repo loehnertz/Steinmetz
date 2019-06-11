@@ -14,7 +14,7 @@
     const DefaultColor = 'orange';
     const DefaultUnitEdgeLength = 1000;
     const InterfaceUnitEdgeLength = DefaultUnitEdgeLength * 10;
-    const NormalNodeShape = 'dot';
+    const NormalNodeShape = 'square';
     const InterfaceNodeShape = 'diamond';
     const ClusterNodeKeyword = '$cluster';
     const LayoutSeed = 55609697;

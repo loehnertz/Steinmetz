@@ -25,7 +25,7 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
     }
 
     private fun analyzeRecording(): Graph {
-        val edges: ArrayList<Edge> = arrayListOf()
+        val graph = Graph()
 
         RecordingFile(Paths.get(jfrRecording.absolutePath)).use { file: RecordingFile ->
             while (file.hasMoreEvents()) {
@@ -48,16 +48,16 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
                             val callerUnit = Unit(identifier = callerIdentifier, packageIdentifier = callerPackageIdentifier)
                             val calleeUnit = Unit(identifier = calleeIdentifier, packageIdentifier = calleePackageIdentifier)
 
-                            if (callerUnit != calleeUnit) {
-                                edges.add(Edge(start = callerUnit, end = calleeUnit, attributes = EdgeAttributes(dynamicCouplingScore = 1)))
-                            }
+                            val edge = Edge(start = callerUnit, end = calleeUnit, attributes = EdgeAttributes(dynamicCouplingScore = 1))
+
+                            if (callerUnit != calleeUnit) graph.addOrUpdateEdge(edge)
                         }
                     }
                 }
             }
         }
 
-        return Graph(edges = edges.toMutableSet())
+        return graph
     }
 
     companion object {

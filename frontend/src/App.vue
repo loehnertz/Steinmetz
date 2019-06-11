@@ -369,11 +369,15 @@
                 </div>
                 <ClusteringMetrics
                         :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(selectedClusteringAlgorithm)"
-                        :amount-of-clusters="amountOfClusters"
-                        :amount-of-inter-cluster-edges="amountOfInterClusterEdges"
-                        :graph-modularity="graphModularity"
-                        :percentage-inter-cluster-edge-weights="percentageInterClusterEdgeWeights"
+                        :amount-of-clusters="metricsData['clusteringQuality']['amountClusters']"
+                        :amount-of-inter-cluster-edges="metricsData['clusteringQuality']['amountInterfaceEdges']"
                         :accumulated-inter-cluster-edge-weights="accumulatedInterClusterEdgeWeights"
+                        :percentage-inter-cluster-edge-weights="percentageInterClusterEdgeWeights"
+                        :graph-modularity="metricsData['clusteringQuality']['graphModularity']"
+                        :dynamic-coupling-modularity="metricsData['clusteringQuality']['dynamicCouplingModularity']"
+                        :semantic-coupling-modularity="metricsData['clusteringQuality']['semanticCouplingModularity']"
+                        :logical-coupling-modularity="metricsData['clusteringQuality']['logicalCouplingModularity']"
+                        :total-coupling-modularity="metricsData['clusteringQuality']['totalCouplingModularity']"
                 />
                 <div class="box level">
                     <div
@@ -385,9 +389,13 @@
                                 :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)"
                                 :amount-of-clusters="metrics['clusteringQuality']['amountClusters']"
                                 :amount-of-inter-cluster-edges="metrics['clusteringQuality']['amountInterfaceEdges']"
-                                :graph-modularity="metrics['clusteringQuality']['graphModularity']"
                                 :accumulated-inter-cluster-edge-weights="metrics['clusteringQuality']['accumulatedInterfaceEdgeWeights']"
                                 :percentage-inter-cluster-edge-weights="calculatePercentageRatioBetweenTwoNumbers(metrics['clusteringQuality']['accumulatedInterfaceEdgeWeights'], accumulatedEdgeWeights)"
+                                :graph-modularity="metrics['clusteringQuality']['graphModularity']"
+                                :dynamic-coupling-modularity="metrics['clusteringQuality']['dynamicCouplingModularity']"
+                                :semantic-coupling-modularity="metrics['clusteringQuality']['semanticCouplingModularity']"
+                                :logical-coupling-modularity="metrics['clusteringQuality']['logicalCouplingModularity']"
+                                :total-coupling-modularity="metrics['clusteringQuality']['totalCouplingModularity']"
                         />
                     </div>
                 </div>
@@ -440,18 +448,6 @@
             accumulatedEdgeWeights: function () {
                 if (!this.metricsData["clusteringQuality"]) return NotAvailableLabel;
                 return this.metricsData["clusteringQuality"]["accumulatedEdgeWeights"];
-            },
-            amountOfClusters: function () {
-                if (!this.metricsData["clusteringQuality"]) return null;
-                return this.metricsData["clusteringQuality"]["amountClusters"];
-            },
-            amountOfInterClusterEdges: function () {
-                if (!this.metricsData["clusteringQuality"]) return null;
-                return this.metricsData["clusteringQuality"]["amountInterfaceEdges"];
-            },
-            graphModularity: function () {
-                if (!this.metricsData["clusteringQuality"]) return null;
-                return this.metricsData["clusteringQuality"]["graphModularity"];
             },
             accumulatedInterClusterEdgeWeights: function () {
                 if (!this.metricsData["clusteringQuality"]) return null;
