@@ -6,5 +6,9 @@ data class ClusteringQuality(
         val amountClusters: Int,
         val amountInterfaceEdges: Int,
         val accumulatedInterfaceEdgeWeights: Int,
-        val graphModularity: Double
+        val graphModularity: Double,
+        val dynamicCouplingModularity: Double,
+        val semanticCouplingModularity: Double,
+        val logicalCouplingModularity: Double,
+        val totalCouplingModularity: Double
 )
