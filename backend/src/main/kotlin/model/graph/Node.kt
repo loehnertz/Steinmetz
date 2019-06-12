@@ -22,5 +22,10 @@ data class Node(
 }
 
 data class NodeAttributes(
-        var cluster: Int? = null
+        var cluster: Int? = null,
+        var footprint: UnitFootprint? = null
+)
+
+data class UnitFootprint(
+        val byteSize: Long
 )

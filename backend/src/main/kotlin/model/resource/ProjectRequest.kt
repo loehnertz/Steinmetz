@@ -1,12 +1,17 @@
 package model.resource
 
+import controller.analysis.extraction.Platform
+import controller.analysis.extraction.coupling.logical.VcsSystem
 import java.io.File
 
 
 data class ProjectRequest(
         val projectName: String,
-        val projectPlatform: String,
+        val projectPlatform: Platform,
+        val vcsSystem: VcsSystem,
         val basePackageIdentifier: String,
-        val staticAnalysisArchive: File,
-        val dynamicAnalysisArchive: File
+        val staticAnalysisFile: File,
+        val dynamicAnalysisFile: File,
+        val semanticAnalysisFile: File,
+        val logicalAnalysisFile: File
 )

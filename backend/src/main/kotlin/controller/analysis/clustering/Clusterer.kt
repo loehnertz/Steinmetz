@@ -8,6 +8,10 @@ import model.graph.Graph
 
 
 class Clusterer(private val graph: Graph, private val projectName: String) {
+    fun applyEdgeWeighting() {
+        graph.edges.forEach { it.attributes.couplingScore = EdgeWeightingFormulaCalculator.applyFormula(it.attributes) }
+    }
+
     fun applyClusteringAlgorithm(clusteringAlgorithm: ClusteringAlgorithm, tunableClusteringParameter: Double?): Graph {
         return when (clusteringAlgorithm) {
             ClusteringAlgorithm.MCL -> MclManager(graph).apply(tunableParameter = tunableClusteringParameter)

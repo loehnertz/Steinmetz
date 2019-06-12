@@ -12,6 +12,10 @@
     import {Network} from 'vue2vis';
 
     const DefaultColor = 'orange';
+    const DefaultUnitEdgeLength = 1000;
+    const InterfaceUnitEdgeLength = DefaultUnitEdgeLength * 10;
+    const NormalNodeShape = 'square';
+    const InterfaceNodeShape = 'diamond';
     const ClusterNodeKeyword = '$cluster';
     const LayoutSeed = 55609697;
 
@@ -32,7 +36,7 @@
                             size: 21,
                         },
                         margin: 15,
-                        shape: 'box',
+                        shape: NormalNodeShape,
                     },
                     edges: {
                         scaling: {
@@ -52,6 +56,7 @@
                         enabled: true,
                         addNode: false,
                         addEdge: false,
+                        editEdge: false,
                         deleteNode: false,
                         deleteEdge: false,
                     },
@@ -59,6 +64,8 @@
                         barnesHut: {
                             gravitationalConstant: 0,
                         },
+                        maxVelocity: 100,
+                        timestep: 1.0,
                     },
                 },
             }
@@ -81,9 +88,12 @@
                 this.graphEdges = [];
             },
             constructGraph(nodes, relationships) {
-                this.configureGravitation(relationships.length);
-                this.setNodes(nodes);
-                this.setEdges(relationships);
+                if (nodes && relationships) {
+                    this.configureGravitation(relationships.length);
+                    this.setNodes(nodes);
+                    this.setEdges(relationships);
+                    this.watchStabilization();
+                }
             },
             rerenderGraph() {
                 this.flushGraph();
@@ -91,16 +101,17 @@
             },
             rerenderGraphWithDelay() {
                 this.flushGraph();
-                setTimeout(() => this.constructGraph(this.graphData["nodes"], this.graphData["edges"]), 555);
+                setTimeout(() => this.constructGraph(this.graphData["nodes"], this.graphData["edges"]));
             },
             configureGravitation(relationshipAmount) {
-                this.graphOptions.physics.barnesHut.gravitationalConstant = -(relationshipAmount * 1000);
+                this.graphOptions.physics.barnesHut.gravitationalConstant = -(relationshipAmount * 10000);
             },
             setNodes(nodes) {
                 for (let node of nodes) {
                     let unitNode = this.buildUnitNode(
                         node["unit"]["identifier"],
                         node["unit"]["packageIdentifier"],
+                        node["attributes"]["footprint"]["byteSize"],
                         node["attributes"]["cluster"],
                         this.clusterIds.size,
                     );
@@ -145,17 +156,18 @@
             constructClusterNodeId(clusterId) {
                 return `${ClusterNodeKeyword}:${clusterId}`;
             },
-            buildUnitNode(identifier, packageIdentifier, clusterId, clusterAmount) {
+            buildUnitNode(identifier, packageIdentifier, size, clusterId, clusterAmount) {
                 return {
                     id: this.constructUnitNodeId(identifier, packageIdentifier),
                     cid: clusterId,
-                    title: this.generateGraphPopup(`${packageIdentifier}.${identifier}`),
+                    title: this.generateGraphPopup(`${packageIdentifier}.${identifier}<br>Size: ${size} Byte`),
                     label: identifier,
                     borderWidth: 5,
                     color: {
                         background: 'whitesmoke',
                         border: this.getNodeBorderColor(clusterId, clusterAmount),
                     },
+                    size: size / 100,
                 }
             },
             buildServiceNode(clusterId, hidden) {
@@ -174,11 +186,13 @@
             },
             buildUnitEdge(startNodeId, endNodeId, weight, isInterface) {
                 let color = 'green';
+                let length = DefaultUnitEdgeLength;
 
                 if (isInterface) {
                     color = 'blue';
-                    this.updateNodeShape(startNodeId, 'diamond');
-                    this.updateNodeShape(endNodeId, 'diamond');
+                    length = InterfaceUnitEdgeLength;
+                    this.updateNodeShape(startNodeId, InterfaceNodeShape);
+                    this.updateNodeShape(endNodeId, InterfaceNodeShape);
                 }
 
                 return {
@@ -186,6 +200,7 @@
                     to: endNodeId,
                     title: this.generateGraphPopup(`${weight}`),
                     value: weight,
+                    length: length,
                     color: {
                         color: color,
                         highlight: DefaultColor,
@@ -250,6 +265,14 @@
                         this.graphNodeIds.add(clusterNode.id);
                     }
                 }
+            },
+            watchStabilization() {
+                setInterval(() => {
+                    if (!this.$refs["graph"]) return;
+                    if (this.$refs["graph"].network.physics.stabilizationIterations >= this.$refs["graph"].network.physics.options.stabilization.iterations) {
+                        this.$refs["graph"].network.physics.stabilized = true;
+                    }
+                }, 1000);
             },
             updateNodeShape(nodeId, nodeShape) {
                 const nodeIndex = this.graphNodes.findIndex((node) => node.id === nodeId);

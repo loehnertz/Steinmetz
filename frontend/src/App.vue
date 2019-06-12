@@ -10,7 +10,7 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control has-icons-left tooltip"
+                                        class="control has-icons-left tooltip is-tooltip-bottom"
                                         data-tooltip="A unique project identifier for the project to add"
                                 >
                                     <input
@@ -28,7 +28,7 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control has-icons-left tooltip is-tooltip-multiline"
+                                        class="control has-icons-left tooltip is-tooltip-multiline is-tooltip-bottom"
                                         data-tooltip="The common package identifier of the project (utilized to exclude depencencies from the analysis)"
                                 >
                                     <input
@@ -46,13 +46,13 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control has-icons-left tooltip"
-                                        data-tooltip="Sets the project platform of project to be uploaded"
+                                        class="control has-icons-left tooltip is-tooltip-bottom"
+                                        data-tooltip="Sets the project platform of the project to be uploaded"
                                 >
                                     <span class="select">
                                         <label>
                                             <select v-model="uploadProjectPlatform">
-                                                <option value="jvm">JVM</option>
+                                                <option value="java">Java</option>
                                             </select>
                                         </label>
                                     </span>
@@ -65,7 +65,34 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control tooltip is-tooltip-multiline"
+                                        class="control has-icons-left tooltip is-tooltip-bottom"
+                                        data-tooltip="Sets the VCS system of the project to be uploaded"
+                                >
+                                    <span class="select">
+                                        <label>
+                                            <select v-model="uploadVcsSystem">
+                                                <option value="git2">Git</option>
+                                                <option value="hg">Mercurial</option>
+                                                <option value="svn">SVN</option>
+                                                <option value="p4">Perforce</option>
+                                                <option value="tfs">Team Foundation Server </option>
+                                            </select>
+                                        </label>
+                                    </span>
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-code-branch"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="level">
+                    <div class="level-left">
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
                                         data-tooltip="Sets the static program analysis file according to the selected platform for the upload"
                                 >
                                     <div class="file">
@@ -73,7 +100,7 @@
                                             <input
                                                     class="file-input"
                                                     type="file"
-                                                    placeholder="Static Analysis Archive"
+                                                    placeholder="Static Analysis File"
                                                     @change="onStaticAnalysisUploadFileChange"
                                             >
                                             <span class="file-cta">
@@ -92,7 +119,7 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control tooltip is-tooltip-multiline"
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
                                         data-tooltip="Sets the dynamic program analysis file according to the selected platform for the upload"
                                 >
                                     <div class="file">
@@ -100,7 +127,7 @@
                                             <input
                                                     class="file-input"
                                                     type="file"
-                                                    placeholder="Dynamic Analysis Archive"
+                                                    placeholder="Dynamic Coupling Analysis File"
                                                     @change="onDynamicAnalysisUploadFileChange"
                                             >
                                             <span class="file-cta">
@@ -116,12 +143,66 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
+                                        data-tooltip="Sets the semantic coupling analysis file according to the selected platform for the upload"
+                                >
+                                    <div class="file">
+                                        <label class="file-label">
+                                            <input
+                                                    class="file-input"
+                                                    type="file"
+                                                    placeholder="Semantic Coupling Analysis File"
+                                                    @change="onSemanticAnalysisUploadFileChange"
+                                            >
+                                            <span class="file-cta">
+                                                <span class="file-icon">
+                                                    <i class="fas fa-upload"></i>
+                                                </span>
+                                                <span class="file-label">
+                                                    {{ semanticProgramAnalyisUploadLabel }}
+                                                </span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
+                                        data-tooltip="Sets the VCS log file according to the selected VCS system for the upload"
+                                >
+                                    <div class="file">
+                                        <label class="file-label">
+                                            <input
+                                                    class="file-input"
+                                                    type="file"
+                                                    placeholder="Logical Coupling Analysis File"
+                                                    @change="onLogicalAnalysisUploadFileChange"
+                                            >
+                                            <span class="file-cta">
+                                                <span class="file-icon">
+                                                    <i class="fas fa-upload"></i>
+                                                </span>
+                                                <span class="file-label">
+                                                    {{ logicalAnalyisUploadLabel }}
+                                                </span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="level-right">
                         <div class="level-item">
                             <div class="field">
                                 <div
-                                        class="control tooltip is-tooltip-multiline"
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
                                         data-tooltip="Uploads the selected analysis files and starts the server-sided analysis"
                                 >
                                     <button class="button is-primary" @click="uploadNewProjectData">Upload</button>
@@ -151,11 +232,6 @@
                                     </span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="level-item">
-                            <p v-if="metricsData.hasOwnProperty('inputQuality')">
-                                Dynamic Analysis Quality: {{ metricsData["inputQuality"]["dynamicAnalysis"] }}%
-                            </p>
                         </div>
                     </div>
                     <div class="level-right">
@@ -197,10 +273,10 @@
                                                     v-model="selectedClusteringAlgorithm"
                                                     :disabled="!selectedProjectId"
                                             >
-                                                <option :value="mclAlgorithm">MCL</option>
-                                                <option :value="infomapAlgorithm">Infomap</option>
-                                                <option :value="louvainAlgorithm">Louvain</option>
-                                                <option :value="clausetNewmanMooreAlgorithm">Clauset-Newman-Moore</option>
+                                                <option :value="mclAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(mclAlgorithm) }}</option>
+                                                <option :value="infomapAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(infomapAlgorithm) }}</option>
+                                                <option :value="louvainAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(louvainAlgorithm) }}</option>
+                                                <option :value="clausetNewmanMooreAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(clausetNewmanMooreAlgorithm) }}</option>
                                             </select>
                                         </label>
                                     </span>
@@ -238,7 +314,7 @@
                                             type="checkbox"
                                             v-model="clusteredViewEnabled"
                                             :checked="clusteredViewEnabled"
-                                            :disabled="!selectedProjectId || !clusterAvailable"
+                                            :disabled="!selectedProjectId || !clusteringAvailable"
                                     >
                                     <label for="clusteredViewEnabled">
                                         Clustered View
@@ -258,7 +334,7 @@
                                             type="checkbox"
                                             v-model="showClusterNodes"
                                             :checked="showClusterNodes"
-                                            :disabled="!selectedProjectId || (!clusteredViewEnabled && !clusterAvailable)"
+                                            :disabled="!selectedProjectId || (!clusteredViewEnabled && !clusteringAvailable)"
                                     >
                                     <label for="showClusterNodes">
                                         Hide Inter-Cluster Edges
@@ -281,53 +357,131 @@
                 />
             </div>
         </section>
+        <section class="section" v-if="clusteringAvailable">
+            <div class="container">
+                <div class="box">
+                    <h1 class="title">Metrics</h1>
+                    <p>Dynamic Analysis Quality: {{ dynamicAnalysisQuality }}%</p>
+                    <p>Semantic Analysis Quality: {{ semanticAnalysisQuality }}%</p>
+                    <p>Logical Analysis Quality: {{ logicalAnalysisQuality }}%</p>
+                    <br>
+                    <p>Accumulated Edge Weights: {{ accumulatedEdgeWeights }}</p>
+                </div>
+                <ClusteringMetrics
+                        :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(selectedClusteringAlgorithm)"
+                        :amount-of-clusters="metricsData['clusteringQuality']['amountClusters']"
+                        :amount-of-inter-cluster-edges="metricsData['clusteringQuality']['amountInterfaceEdges']"
+                        :accumulated-inter-cluster-edge-weights="accumulatedInterClusterEdgeWeights"
+                        :percentage-inter-cluster-edge-weights="percentageInterClusterEdgeWeights"
+                        :graph-modularity="metricsData['clusteringQuality']['graphModularity']"
+                        :dynamic-coupling-modularity="metricsData['clusteringQuality']['dynamicCouplingModularity']"
+                        :semantic-coupling-modularity="metricsData['clusteringQuality']['semanticCouplingModularity']"
+                        :logical-coupling-modularity="metricsData['clusteringQuality']['logicalCouplingModularity']"
+                        :total-coupling-modularity="metricsData['clusteringQuality']['totalCouplingModularity']"
+                />
+                <div class="box level">
+                    <div
+                            class="level-item"
+                            v-for="(metrics, clusteringAlgorithm) in clusteringAlgorithmMetrics"
+                            :key="clusteringAlgorithm"
+                    >
+                        <ClusteringMetrics
+                                :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)"
+                                :amount-of-clusters="metrics['clusteringQuality']['amountClusters']"
+                                :amount-of-inter-cluster-edges="metrics['clusteringQuality']['amountInterfaceEdges']"
+                                :accumulated-inter-cluster-edge-weights="metrics['clusteringQuality']['accumulatedInterfaceEdgeWeights']"
+                                :percentage-inter-cluster-edge-weights="calculatePercentageRatioBetweenTwoNumbers(metrics['clusteringQuality']['accumulatedInterfaceEdgeWeights'], accumulatedEdgeWeights)"
+                                :graph-modularity="metrics['clusteringQuality']['graphModularity']"
+                                :dynamic-coupling-modularity="metrics['clusteringQuality']['dynamicCouplingModularity']"
+                                :semantic-coupling-modularity="metrics['clusteringQuality']['semanticCouplingModularity']"
+                                :logical-coupling-modularity="metrics['clusteringQuality']['logicalCouplingModularity']"
+                                :total-coupling-modularity="metrics['clusteringQuality']['totalCouplingModularity']"
+                        />
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 </template>
 
 <script>
+    import ClusteringMetrics from './components/ClusteringMetrics.vue';
     import Graph from './components/Graph.vue';
     import Slider from './components/Slider.vue';
     import Throbber from './components/Throbber.vue';
+
     import axios from 'axios';
 
     const MclIdentifier = 'mcl';
     const InfomapIdentifier = 'infomap';
     const LouvainIdentifier = 'louvain';
     const ClausetNewmanMooreIdentifier = 'clauset_newman_moore';
+    const NotAvailableLabel = 'N/A';
 
     export default {
         name: 'app',
         components: {
+            ClusteringMetrics,
             Graph,
             Slider,
             Throbber,
         },
         computed: {
             clusterIds: function () {
-                if (!this.clusterAvailable) return new Set();
+                if (!this.clusteringAvailable || !this.graphData["nodes"]) return new Set();
                 return new Set(this.graphData["nodes"].map((node) => {
                     return node["attributes"]["cluster"];
                 }));
+            },
+            dynamicAnalysisQuality: function () {
+                if (!this.metricsData["inputQuality"]) return NotAvailableLabel;
+                return this.metricsData["inputQuality"]["dynamicAnalysis"];
+            },
+            semanticAnalysisQuality: function () {
+                if (!this.metricsData["inputQuality"]) return NotAvailableLabel;
+                return this.metricsData["inputQuality"]["semanticAnalysis"];
+            },
+            logicalAnalysisQuality: function () {
+                if (!this.metricsData["inputQuality"]) return NotAvailableLabel;
+                return this.metricsData["inputQuality"]["logicalAnalysis"];
+            },
+            accumulatedEdgeWeights: function () {
+                if (!this.metricsData["clusteringQuality"]) return NotAvailableLabel;
+                return this.metricsData["clusteringQuality"]["accumulatedEdgeWeights"];
+            },
+            accumulatedInterClusterEdgeWeights: function () {
+                if (!this.metricsData["clusteringQuality"]) return null;
+                return this.metricsData["clusteringQuality"]["accumulatedInterfaceEdgeWeights"];
+            },
+            percentageInterClusterEdgeWeights: function () {
+                if (!this.metricsData["clusteringQuality"]) return null;
+                return this.calculatePercentageRatioBetweenTwoNumbers(this.accumulatedInterClusterEdgeWeights, this.accumulatedEdgeWeights);
             },
         },
         data() {
             return {
                 uploadProjectName: '',
-                uploadProjectPlatform: 'jvm',
+                uploadProjectPlatform: 'java',
+                uploadVcsSystem: 'git2',
                 uploadBasePackageIdentifier: '',
-                uploadStaticAnalysisArchive: null,
-                uploadDynamicAnalysisArchive: null,
+                uploadStaticAnalysisFile: null,
+                uploadDynamicAnalysisFile: null,
+                uploadSemanticAnalysisFile: null,
+                uploadLogicalAnalysisFile: null,
                 selectedProjectId: '',
                 graphData: {},
                 metricsData: {},
                 staticProgramAnalyisUploadLabel: 'Static Analysis',
                 dynamicProgramAnalyisUploadLabel: 'Dynamic Analysis',
+                semanticProgramAnalyisUploadLabel: 'Semantic Analysis',
+                logicalAnalyisUploadLabel: 'Logical Analysis',
                 mclAlgorithm: MclIdentifier,
                 infomapAlgorithm: InfomapIdentifier,
                 louvainAlgorithm: LouvainIdentifier,
                 clausetNewmanMooreAlgorithm: ClausetNewmanMooreIdentifier,
-                selectedClusteringAlgorithm: 'mcl',
-                clusterAvailable: false,
+                selectedClusteringAlgorithm: MclIdentifier,
+                clusteringAlgorithmMetrics: {},
+                clusteringAvailable: false,
                 clusteredViewEnabled: false,
                 showClusterNodes: false,
                 tunableClusteringParameter: 2.0,
@@ -360,9 +514,12 @@
 
                 data.append('projectName', this.uploadProjectName);
                 data.append('projectPlatform', this.uploadProjectPlatform);
+                data.append('vcsSystem', this.uploadVcsSystem);
                 data.append('basePackageIdentifier', this.uploadBasePackageIdentifier);
-                data.append('staticAnalysisArchive', this.uploadStaticAnalysisArchive);
-                data.append('dynamicAnalysisArchive', this.uploadDynamicAnalysisArchive);
+                data.append('staticAnalysisFile', this.uploadStaticAnalysisFile);
+                data.append('dynamicAnalysisFile', this.uploadDynamicAnalysisFile);
+                data.append('semanticAnalysisFile', this.uploadSemanticAnalysisFile);
+                data.append('logicalAnalysisFile', this.uploadLogicalAnalysisFile);
 
                 axios
                     .post(`http://localhost:5656/analysis/`, data)
@@ -396,6 +553,8 @@
                     'tunableClusteringParameter': this.tunableClusteringParameter,
                 };
 
+                this.isLoading = true;
+
                 axios
                     .get(
                         `http://localhost:5656/analysis/${this.selectedProjectId}/cluster`,
@@ -404,7 +563,7 @@
                         },
                     )
                     .then((response) => {
-                        this.clusterAvailable = true;
+                        this.clusteringAvailable = true;
                         this.clusteredViewEnabled = true;
                         this.graphData = response.data["graph"];
                         this.metricsData = response.data["metrics"];
@@ -415,23 +574,88 @@
                         console.error(error);
                         this.isLoading = false;
                     });
+
+                this.fetchClusteredGraphOfEveryGraphClusteringAlgorithm();
+            },
+            fetchClusteredGraphOfEveryGraphClusteringAlgorithm() {
+                const clusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier].filter((algo) => algo !== this.selectedClusteringAlgorithm);
+
+                this.clusteringAlgorithmMetrics = {};
+
+                for (let clusteringAlgorithm of clusteringAlgorithms) {
+                    const params = {
+                        'clusteringAlgorithm': clusteringAlgorithm,
+                        'tunableClusteringParameter': this.tunableClusteringParameter,
+                    };
+
+                    axios
+                        .get(
+                            `http://localhost:5656/analysis/${this.selectedProjectId}/cluster`,
+                            {
+                                params: params,
+                            },
+                        )
+                        .then((response) => {
+                            this.clusteringAvailable = true;
+                            this.clusteredViewEnabled = true;
+                            this.clusteringAlgorithmMetrics[clusteringAlgorithm] = response.data["metrics"];
+                            this.$forceUpdate();
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                            this.isLoading = false;
+                        });
+                }
+
+                this.scrollToRefAnchor('clustering-controls');
             },
             handleTunableClusteringParameterChange(value) {
                 this.tunableClusteringParameter = parseFloat(value);
             },
+            convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm) {
+                switch (clusteringAlgorithm) {
+                    case MclIdentifier:
+                        return 'MCL';
+                    case InfomapIdentifier:
+                        return 'Infomap';
+                    case LouvainIdentifier:
+                        return 'Louvain';
+                    case ClausetNewmanMooreIdentifier:
+                        return 'Clauset-Newman-Moore';
+                    default:
+                        return undefined
+                }
+            },
             onStaticAnalysisUploadFileChange(e) {
                 const files = e.target.files || e.dataTransfer.files;
                 if (files.length > 0) {
-                    this.uploadStaticAnalysisArchive = files[0];
+                    this.uploadStaticAnalysisFile = files[0];
                     this.staticProgramAnalyisUploadLabel = this.shortenText(files[0].name, 15);
                 }
             },
             onDynamicAnalysisUploadFileChange(e) {
                 const files = e.target.files || e.dataTransfer.files;
                 if (files.length > 0) {
-                    this.uploadDynamicAnalysisArchive = files[0];
+                    this.uploadDynamicAnalysisFile = files[0];
                     this.dynamicProgramAnalyisUploadLabel = this.shortenText(files[0].name, 15);
                 }
+            },
+            onSemanticAnalysisUploadFileChange(e) {
+                const files = e.target.files || e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.uploadSemanticAnalysisFile = files[0];
+                    this.semanticProgramAnalyisUploadLabel = this.shortenText(files[0].name, 15);
+                }
+            },
+            onLogicalAnalysisUploadFileChange(e) {
+                const files = e.target.files || e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.uploadLogicalAnalysisFile = files[0];
+                    this.logicalAnalyisUploadLabel = this.shortenText(files[0].name, 15);
+                }
+            },
+            calculatePercentageRatioBetweenTwoNumbers(first, second) {
+                return parseInt((first / second) * 100);
             },
             scrollToRefAnchor(refAnchorName) {
                 const element = this.$refs[refAnchorName];
@@ -479,6 +703,11 @@
 
     #graph {
         height: 100%;
+    }
+
+    .section {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
     }
 
     .file-cta {

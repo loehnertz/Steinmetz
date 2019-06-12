@@ -9,18 +9,38 @@ class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: MutableSet<
     }
 
     fun addOrUpdateNode(node: Node) {
+        val existingNode: Node? = nodes.firstOrNull { it == node }
         nodes.removeIf { it == node }
+
+        if (existingNode != null) {
+            if (node.attributes.footprint == null && existingNode.attributes.footprint != null) {
+                node.attributes.footprint = existingNode.attributes.footprint
+            }
+        }
+
         nodes.add(node)
     }
 
     fun addOrUpdateEdge(edge: Edge) {
         val existingEdge: Edge? = edges.find { it == edge }
+
         if (edges.removeIf { it == edge } && existingEdge != null) {
             edges.add(mergeEqualEdges(existingEdge, edge))
         } else {
             edges.add(edge)
         }
+
         inferNodesOutOfEdges()
+    }
+
+    fun updateEdge(edge: Edge) {
+        val existingEdge: Edge = edges.find { it == edge } ?: return
+        edges.remove(existingEdge)
+        edges.add(mergeEqualEdges(existingEdge, edge))
+    }
+
+    fun findNodeByUnit(unit: Unit): Node? {
+        return nodes.firstOrNull { it.unit == unit }
     }
 
     private fun mergeEqualEdges(firstEdge: Edge, secondEdge: Edge): Edge {

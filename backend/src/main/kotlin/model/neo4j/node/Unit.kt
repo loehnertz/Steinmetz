@@ -18,7 +18,7 @@ import utility.Neo4jConnector
 
 
 @NodeEntity
-class Unit(var identifier: String, var packageIdentifier: String, var projectName: String) : GraphEntity {
+class Unit(var identifier: String, var packageIdentifier: String, var projectName: String, var size: Long) : GraphEntity {
     @Id
     @GeneratedValue
     override var id: Long? = null
@@ -32,32 +32,44 @@ class Unit(var identifier: String, var packageIdentifier: String, var projectNam
     @Relationship(type = BelongsToRelation, direction = OUTGOING)
     var service: Service? = null
 
-    fun calls(callee: Unit, couplingScore: Int = 1): CallsRelationship {
-        val existingRelationship = retrieveExistingRelationship(callee)
+    fun calls(callee: Unit, dynamicCouplingScore: Int = 0, semanticCouplingScore: Int = 0, logicalCouplingScore: Int = 0): CallsRelationship {
+        val existingRelationship: CallsRelationship? = retrieveExistingRelationship(callee)
         if (existingRelationship != null) {
-            val newCouplingScore = existingRelationship.couplingScore + couplingScore
-            updateCouplingScore(existingRelationship, newCouplingScore)
+            val newDynamicCouplingScore: Int = existingRelationship.dynamiCouplingScore + dynamicCouplingScore
+            val newSemanticCouplingScore: Int = existingRelationship.semanticCouplingScore + semanticCouplingScore
+            val newLogicalCouplingScore: Int = existingRelationship.logicalCouplingScore + logicalCouplingScore
+            updateCouplingScores(existingRelationship, newDynamicCouplingScore = newDynamicCouplingScore, newSemanticCouplingScore = newSemanticCouplingScore, newLogicalCouplingScore = newLogicalCouplingScore)
             return existingRelationship
         }
 
-        val relationship = buildRelationship(callee, couplingScore)
+        val relationship: CallsRelationship = buildRelationship(callee = callee, dynamicCouplingScore = dynamicCouplingScore, semanticCouplingScore = semanticCouplingScore, logicalCouplingScore = logicalCouplingScore)
         insertRelationship(relationship)
 
         return relationship
     }
 
-    fun increaseCouplingScore(existingRelationship: CallsRelationship, addedCouplingScore: Int) {
+    private fun updateCouplingScores(existingRelationship: CallsRelationship, newDynamicCouplingScore: Int, newSemanticCouplingScore: Int, newLogicalCouplingScore: Int) {
         removeRelationship(existingRelationship)
-        insertRelationship(buildRelationship(existingRelationship.callee, (existingRelationship.couplingScore + addedCouplingScore)))
+        insertRelationship(buildRelationship(existingRelationship.callee, dynamicCouplingScore = newDynamicCouplingScore, semanticCouplingScore = newSemanticCouplingScore, logicalCouplingScore = newLogicalCouplingScore))
     }
 
-    private fun updateCouplingScore(existingRelationship: CallsRelationship, newCouplingScore: Int) {
+    private fun updateDynamicCouplingScore(existingRelationship: CallsRelationship, newDynamicCouplingScore: Int) {
         removeRelationship(existingRelationship)
-        insertRelationship(buildRelationship(existingRelationship.callee, newCouplingScore))
+        insertRelationship(buildRelationship(existingRelationship.callee, dynamicCouplingScore = newDynamicCouplingScore, semanticCouplingScore = existingRelationship.semanticCouplingScore, logicalCouplingScore = existingRelationship.logicalCouplingScore))
     }
 
-    private fun buildRelationship(callee: Unit, couplingScore: Int): CallsRelationship {
-        return CallsRelationship(caller = this, callee = callee, couplingScore = couplingScore)
+    private fun updateSemanticCouplingScore(existingRelationship: CallsRelationship, newSemanticCouplingScore: Int) {
+        removeRelationship(existingRelationship)
+        insertRelationship(buildRelationship(existingRelationship.callee, semanticCouplingScore = newSemanticCouplingScore, dynamicCouplingScore = existingRelationship.dynamiCouplingScore, logicalCouplingScore = existingRelationship.logicalCouplingScore))
+    }
+
+    private fun updateLogicalCouplingScore(existingRelationship: CallsRelationship, newLogicalCouplingScore: Int) {
+        removeRelationship(existingRelationship)
+        insertRelationship(buildRelationship(existingRelationship.callee, logicalCouplingScore = newLogicalCouplingScore, dynamicCouplingScore = existingRelationship.dynamiCouplingScore, semanticCouplingScore = existingRelationship.semanticCouplingScore))
+    }
+
+    private fun buildRelationship(callee: Unit, dynamicCouplingScore: Int, semanticCouplingScore: Int, logicalCouplingScore: Int): CallsRelationship {
+        return CallsRelationship(caller = this, callee = callee, dynamiCouplingScore = dynamicCouplingScore, semanticCouplingScore = semanticCouplingScore, logicalCouplingScore = logicalCouplingScore)
     }
 
     private fun retrieveExistingRelationship(callee: Unit): CallsRelationship? {
@@ -92,17 +104,17 @@ class Unit(var identifier: String, var packageIdentifier: String, var projectNam
 
     companion object Factory {
         @Suppress("SENSELESS_COMPARISON")
-        fun create(identifier: String, packageIdentifier: String, projectName: String): Unit {
-            val filters = buildFilters(identifier, packageIdentifier, projectName)
-            val existingEntity = Neo4jConnector.retrieveEntity(Unit::class.java, filters)
+        fun create(identifier: String, packageIdentifier: String, projectName: String, size: Long): Unit {
+            val filters: Filters = buildFilters(identifier, packageIdentifier, projectName)
+            val existingEntity: GraphEntity? = Neo4jConnector.retrieveEntity(Unit::class.java, filters)
 
             return if (existingEntity != null) {
-                val unit = existingEntity as Unit
+                val unit: Unit = existingEntity as Unit
                 if (unit.calleeRelationships == null) unit.calleeRelationships = mutableSetOf()
                 if (unit.callerRelationships == null) unit.callerRelationships = mutableSetOf()
                 unit
             } else {
-                Unit(identifier, packageIdentifier, projectName)
+                Unit(identifier, packageIdentifier, projectName, size)
             }
         }
 
