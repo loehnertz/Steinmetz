@@ -5,7 +5,7 @@
         <p>Amount Clusters: {{ nonNullAmountOfClusters }}</p>
         <br>
         <p>Total Coupling Modularity (Q): {{ nonNullTotalCouplingModularity }}</p>
-        <p>Average Coupling Modularity: {{ nonNullAverageCouplingModularity }}</p>
+        <p>Average Coupling Modularity (ØQ(C)): {{ nonNullAverageCouplingModularity }}</p>
         <p>Dynamic Coupling Modularity (Q(DC)): {{ nonNullDynamicCouplingModularity }}</p>
         <p>Semantic Coupling Modularity (Q(SC)): {{ nonNullSemanticCouplingModularity }}</p>
         <p>Logical Coupling Modularity (Q(LC)): {{ nonNullLogicalCouplingModularity }}</p>
