@@ -96,11 +96,11 @@
                 }
             },
             rerenderGraph() {
-                if (!this.liveRerenderModeActive) this.flushGraph();
+                this.flushGraph();
                 this.constructGraph(this.graphData["nodes"], this.graphData["edges"]);
             },
             rerenderGraphWithDelay() {
-                if (!this.liveRerenderModeActive) this.flushGraph();
+                this.flushGraph();
                 setTimeout(() => this.constructGraph(this.graphData["nodes"], this.graphData["edges"]));
             },
             configureGravitation(relationshipAmount) {
