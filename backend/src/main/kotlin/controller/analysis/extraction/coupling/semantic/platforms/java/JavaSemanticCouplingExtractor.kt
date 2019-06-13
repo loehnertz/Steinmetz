@@ -61,7 +61,7 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
                 programmingLanguage = JavaEnumKey,
                 naturalLanguage = EnglishLanguageEnumKey,
                 fileSimilaritiesToCalculate = buildFilePairsToCalculate()
-        ).also { it.useStemming() }
+        ).also { it.useStemming() }.also { it.doNotUseLsi() }
     }
 
     private fun buildFilePairsToCalculate(): List<Pair<String, String>> {

@@ -9,6 +9,7 @@ import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytec
 import controller.analysis.metrics.input.InputQualityAnalyzer
 import model.graph.Edge
 import model.graph.Graph
+import model.graph.Node
 import model.graph.Unit
 import model.metrics.InputQuality
 import model.metrics.Metrics
@@ -113,6 +114,12 @@ class GraphInserter(
             val newEdge = Edge(start = startUnit, end = endUnit, attributes = edge.attributes)
 
             graph.addOrUpdateEdge(newEdge)
+        }
+
+        for (node: Node in baseGraph.nodes) {
+            val newNode = Node(unit = normalizeUnit(node.unit), attributes = node.attributes)
+
+            graph.addOrUpdateNode(newNode)
         }
 
         return graph
