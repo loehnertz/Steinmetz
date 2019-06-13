@@ -597,7 +597,7 @@
                 infomapAlgorithm: InfomapIdentifier,
                 louvainAlgorithm: LouvainIdentifier,
                 clausetNewmanMooreAlgorithm: ClausetNewmanMooreIdentifier,
-                selectedClusteringAlgorithm: MclIdentifier,
+                selectedClusteringAlgorithm: ClausetNewmanMooreIdentifier,
                 clusteringAlgorithmMetrics: {},
                 clusteringAvailable: false,
                 clusteredViewEnabled: false,
