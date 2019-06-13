@@ -716,6 +716,7 @@
                     .then((response) => {
                         this.clusteringAvailable = true;
                         this.clusteredViewEnabled = true;
+                        this.showClusterNodes = true;
                         this.graphData = response.data["graph"];
                         this.metricsData = response.data["metrics"];
                         this.isLoading = false;
