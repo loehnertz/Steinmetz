@@ -277,6 +277,7 @@
                                                 <option :value="infomapAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(infomapAlgorithm) }}</option>
                                                 <option :value="louvainAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(louvainAlgorithm) }}</option>
                                                 <option :value="clausetNewmanMooreAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(clausetNewmanMooreAlgorithm) }}</option>
+                                                <option :value="walktrapAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(walktrapAlgorithm) }}</option>
                                             </select>
                                         </label>
                                     </span>
@@ -294,7 +295,11 @@
                                 >
                                     <Slider
                                             :disabled="!selectedProjectId || tunableClusteringParameterDisabled"
-                                            :value="tunableClusteringParameter"
+                                            :value="tunableClusteringParameterValue"
+                                            :min="tunableClusteringParameterMin"
+                                            :max="tunableClusteringParameterMax"
+                                            :step="tunableClusteringParameterStep"
+                                            :step-is-float="tunableClusteringParameterStepIsFloat"
                                             @value-change="handleTunableClusteringParameterChange"
                                     />
                                 </div>
@@ -452,10 +457,10 @@
                     <p>Dynamic Analysis Quality: {{ dynamicAnalysisQuality }}%</p>
                     <p>Semantic Analysis Quality: {{ semanticAnalysisQuality }}%</p>
                     <p>Logical Analysis Quality: {{ logicalAnalysisQuality }}%</p>
-                    <br>
-                    <p>Accumulated Edge Weights: {{ accumulatedEdgeWeights }}</p>
                 </div>
                 <ClusteringMetrics
+                        class="box"
+                        font-size="1em"
                         :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(selectedClusteringAlgorithm)"
                         :amount-of-clusters="metricsData['clusteringQuality']['amountClusters']"
                         :amount-of-inter-cluster-edges="metricsData['clusteringQuality']['amountInterfaceEdges']"
@@ -474,6 +479,8 @@
                             :key="clusteringAlgorithm"
                     >
                         <ClusteringMetrics
+                                class="box"
+                                font-size="0.8em"
                                 :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)"
                                 :amount-of-clusters="metrics['clusteringQuality']['amountClusters']"
                                 :amount-of-inter-cluster-edges="metrics['clusteringQuality']['amountInterfaceEdges']"
@@ -504,7 +511,17 @@
     const InfomapIdentifier = 'infomap';
     const LouvainIdentifier = 'louvain';
     const ClausetNewmanMooreIdentifier = 'clauset_newman_moore';
+    const WalktrapIdentifier = 'walktrap';
     const NotAvailableLabel = 'N/A';
+    const DefaultTunableClusteringParameterMin = 1.0;
+    const DefaultTunableClusteringParameterMax = 10.0;
+    const DefaultTunableClusteringParameterStep = 0.1;
+    const DefaultTunableClusteringParameterStepIsFloat = true;
+    const DefaultTunableClusteringParameterValue = 5.0;
+    const DefaultDynamicCouplingScoreFactor = 1;
+    const DefaultSemanticCouplingScoreFactor = 1;
+    const DefaultLogicalCouplingScoreFactor = 1;
+
 
     export default {
         name: 'app',
@@ -597,15 +614,21 @@
                 infomapAlgorithm: InfomapIdentifier,
                 louvainAlgorithm: LouvainIdentifier,
                 clausetNewmanMooreAlgorithm: ClausetNewmanMooreIdentifier,
+                walktrapAlgorithm: WalktrapIdentifier,
                 selectedClusteringAlgorithm: ClausetNewmanMooreIdentifier,
                 clusteringAlgorithmMetrics: {},
                 clusteringAvailable: false,
                 clusteredViewEnabled: false,
                 showClusterNodes: false,
-                dynamicCouplingScoreWeightAsInteger: 1,
-                semanticCouplingScoreWeightAsInteger: 1,
-                logicalCouplingScoreWeightAsInteger: 1,
-                tunableClusteringParameter: 2.0,
+                sliderFloatingPointStepEnabled: true,
+                dynamicCouplingScoreWeightAsInteger: DefaultDynamicCouplingScoreFactor,
+                semanticCouplingScoreWeightAsInteger: DefaultSemanticCouplingScoreFactor,
+                logicalCouplingScoreWeightAsInteger: DefaultLogicalCouplingScoreFactor,
+                tunableClusteringParameterMin: DefaultTunableClusteringParameterMin,
+                tunableClusteringParameterMax: DefaultTunableClusteringParameterMax,
+                tunableClusteringParameterStep: DefaultTunableClusteringParameterStep,
+                tunableClusteringParameterStepIsFloat: DefaultTunableClusteringParameterStepIsFloat,
+                tunableClusteringParameterValue: DefaultTunableClusteringParameterValue,
                 tunableClusteringParameterDisabled: false,
                 liveRerenderModeActive: false,
                 isLoading: false,
@@ -617,6 +640,18 @@
             },
             selectedClusteringAlgorithm: function (selectedClusteringAlgorithm) {
                 if (selectedClusteringAlgorithm) {
+                    if (selectedClusteringAlgorithm === WalktrapIdentifier) {
+                        this.tunableClusteringParameterMax = 100;
+                        this.tunableClusteringParameterStep = 1;
+                        this.tunableClusteringParameterStepIsFloat = false;
+                    } else {
+                        this.tunableClusteringParameterMin = DefaultTunableClusteringParameterMin;
+                        this.tunableClusteringParameterMax = DefaultTunableClusteringParameterMax;
+                        this.tunableClusteringParameterStep = DefaultTunableClusteringParameterStep;
+                        this.tunableClusteringParameterStepIsFloat = DefaultTunableClusteringParameterStepIsFloat;
+                        this.tunableClusteringParameterValue = DefaultTunableClusteringParameterValue;
+                    }
+
                     this.tunableClusteringParameterDisabled = selectedClusteringAlgorithm === LouvainIdentifier || selectedClusteringAlgorithm === ClausetNewmanMooreIdentifier;
                     this.liveRerenderModeActive = false;
                     this.fetchClusteredGraph();
@@ -646,7 +681,7 @@
                     this.fetchClusteredGraph();
                 }
             },
-            tunableClusteringParameter: function (tunableClusteringParameter) {
+            tunableClusteringParameterValue: function (tunableClusteringParameter) {
                 if (tunableClusteringParameter) {
                     this.liveRerenderModeActive = true;
                     this.fetchClusteredGraph();
@@ -703,7 +738,7 @@
                     'dynamicCouplingScoreWeight': this.dynamicCouplingScoreWeightAsInteger,
                     'semanticCouplingScoreWeight': this.semanticCouplingScoreWeightAsInteger,
                     'logicalCouplingScoreWeight': this.logicalCouplingScoreWeightAsInteger,
-                    'tunableClusteringParameter': this.tunableClusteringParameter,
+                    'tunableClusteringParameterValue': this.tunableClusteringParameterValue,
                 };
 
                 axios
@@ -731,7 +766,7 @@
                 this.fetchClusteredGraphOfEveryGraphClusteringAlgorithm();
             },
             fetchClusteredGraphOfEveryGraphClusteringAlgorithm() {
-                const clusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier].filter((algo) => algo !== this.selectedClusteringAlgorithm);
+                const clusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier, WalktrapIdentifier].filter((algo) => algo !== this.selectedClusteringAlgorithm);
 
                 this.clusteringAlgorithmMetrics = {};
 
@@ -741,7 +776,7 @@
                         'dynamicCouplingScoreWeight': this.dynamicCouplingScoreWeightAsInteger,
                         'semanticCouplingScoreWeight': this.semanticCouplingScoreWeightAsInteger,
                         'logicalCouplingScoreWeight': this.logicalCouplingScoreWeightAsInteger,
-                        'tunableClusteringParameter': this.tunableClusteringParameter,
+                        'tunableClusteringParameterValue': this.tunableClusteringParameterValue,
                     };
 
                     axios
@@ -767,7 +802,7 @@
                 this.scrollToRefAnchor('clustering-controls');
             },
             handleTunableClusteringParameterChange(value) {
-                this.tunableClusteringParameter = parseFloat(value);
+                this.tunableClusteringParameterValue = parseFloat(value);
             },
             convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm) {
                 switch (clusteringAlgorithm) {
@@ -778,7 +813,9 @@
                     case LouvainIdentifier:
                         return 'Louvain';
                     case ClausetNewmanMooreIdentifier:
-                        return 'Clauset-Newman-Moore';
+                        return 'Fast Modularity';
+                    case WalktrapIdentifier:
+                        return 'Walktrap';
                     default:
                         return undefined
                 }
