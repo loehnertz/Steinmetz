@@ -20,12 +20,3 @@ data class Node(
         return 31 * unit.hashCode()
     }
 }
-
-data class NodeAttributes(
-        var cluster: Int? = null,
-        var footprint: UnitFootprint? = null
-)
-
-data class UnitFootprint(
-        val byteSize: Long
-)
