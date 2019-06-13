@@ -4,12 +4,13 @@ import controller.analysis.clustering.clausetnewmanmoore.ClausetNewmanMooreManag
 import controller.analysis.clustering.infomap.InfomapManager
 import controller.analysis.clustering.louvain.LouvainManager
 import controller.analysis.clustering.mcl.MclManager
+import model.graph.EdgeAttributeWeights
 import model.graph.Graph
 
 
-class Clusterer(private val graph: Graph, private val projectName: String) {
+class Clusterer(private val graph: Graph, private val projectName: String, private val edgeAttributeWeights: EdgeAttributeWeights) {
     fun applyEdgeWeighting() {
-        graph.edges.forEach { it.attributes.couplingScore = EdgeWeightingFormulaCalculator.applyFormula(it.attributes) }
+        graph.edges.forEach { it.attributes.couplingScore = EdgeWeightingFormulaCalculator.applyFormula(it.attributes, edgeAttributeWeights) }
     }
 
     fun applyClusteringAlgorithm(clusteringAlgorithm: ClusteringAlgorithm, tunableClusteringParameter: Double?): Graph {

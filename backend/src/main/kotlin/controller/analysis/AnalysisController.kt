@@ -17,6 +17,7 @@ import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
+import model.graph.EdgeAttributeWeights
 import model.graph.Graph
 import model.metrics.Metrics
 import model.resource.ProjectRequest
@@ -45,9 +46,9 @@ class AnalysisController {
         return ProjectResponse(graph = retrieveGraph(projectName), metrics = retrieveMetrics(projectName))
     }
 
-    fun clusterGraph(projectName: String, clusteringAlgorithm: ClusteringAlgorithm, tunableClusteringParameter: Double?): ProjectResponse {
+    fun clusterGraph(projectName: String, clusteringAlgorithm: ClusteringAlgorithm, edgeAttributeWeights: EdgeAttributeWeights, tunableClusteringParameter: Double?): ProjectResponse {
         val projectGraph: Graph = retrieveGraph(projectName)
-        val clusterer: Clusterer = Clusterer(projectGraph, projectName).also { it.applyEdgeWeighting() }
+        val clusterer: Clusterer = Clusterer(projectGraph, projectName, edgeAttributeWeights).also { it.applyEdgeWeighting() }
         val clusteredGraph: Graph = clusterer.applyClusteringAlgorithm(clusteringAlgorithm, tunableClusteringParameter)
         val clusteredGraphMetrics: Metrics = calculateClusteredGraphMetrics(clusteredGraph)
         val existingMetrics: Metrics = retrieveMetrics(projectName)

@@ -12,6 +12,8 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
+import model.graph.EdgeAttributeWeights
+import model.graph.EdgeAttributeWeights.Companion.retrieveEdgeAttributeWeightsFromQueryParameters
 import model.resource.ProjectRequest
 
 
@@ -32,9 +34,10 @@ fun Route.analysis(controller: AnalysisController) {
         get("/{projectName}/cluster") {
             val projectName: String = call.parameters["projectName"].toString()
             val chosenClusteringAlgorithm: ClusteringAlgorithm = getClusteringAlgorithmByName(call.request.queryParameters["clusteringAlgorithm"]!!)
+            val edgeAttributeWeights: EdgeAttributeWeights = retrieveEdgeAttributeWeightsFromQueryParameters(call.request.queryParameters)
             val tunableClusteringParameter: Double? = call.request.queryParameters["tunableClusteringParameter"]?.toDoubleOrNull()
 
-            call.respond(controller.clusterGraph(projectName, chosenClusteringAlgorithm, tunableClusteringParameter))
+            call.respond(controller.clusterGraph(projectName, chosenClusteringAlgorithm, edgeAttributeWeights, tunableClusteringParameter))
         }
     }
 
