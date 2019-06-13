@@ -2,6 +2,7 @@ package controller.analysis.extraction.coupling.statically.platforms.jvm
 
 import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
+import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractorCompanion
 import controller.analysis.extraction.graph.UnitContainerExtractor
 import model.graph.Graph
 import model.graph.Node
@@ -65,9 +66,12 @@ class JvmBytecodeExtractor(private val projectName: String, private val basePack
         return basePackageIdentifier.replace('.', '/')
     }
 
-    companion object {
+    companion object : StaticAnalysisExtractorCompanion {
         private val platformIdentifier: String = Platform.JAVA.toString().toLowerCase()
         private const val unarchiverPath = "jar"
         private const val classFileExtension = "class"
+        private const val innerUnitDelimiter = '$'
+
+        override fun normalizeUnit(unit: Unit): Unit = Unit(identifier = unit.identifier.substringBeforeLast(innerUnitDelimiter), packageIdentifier = unit.packageIdentifier)
     }
 }

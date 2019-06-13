@@ -9,6 +9,7 @@ import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytec
 import controller.analysis.metrics.input.InputQualityAnalyzer
 import model.graph.Edge
 import model.graph.Graph
+import model.graph.Unit
 import model.metrics.InputQuality
 import model.metrics.Metrics
 import model.resource.ProjectResponse
@@ -100,7 +101,29 @@ class GraphInserter(
 
     private fun mergeStaticAndDynamicCouplingGraphs(): Graph {
         dynamicCouplingGraph.edges.forEach { staticAnalysisGraph.addOrUpdateEdge(it) }
-        return staticAnalysisGraph
+        return mergeInnerUnitNodesWithParentNodes(staticAnalysisGraph)
+    }
+
+    private fun mergeInnerUnitNodesWithParentNodes(baseGraph: Graph): Graph {
+        val graph = Graph()
+
+        for (edge: Edge in baseGraph.edges) {
+            val startUnit: Unit = normalizeUnit(edge.start)
+            val endUnit: Unit = normalizeUnit(edge.end)
+            val newEdge = Edge(start = startUnit, end = endUnit, attributes = edge.attributes)
+
+            graph.addOrUpdateEdge(newEdge)
+        }
+
+        return graph
+    }
+
+    @Throws(IllegalArgumentException::class)
+    private fun normalizeUnit(unit: Unit): Unit {
+        when (projectPlatform) {
+            Platform.JAVA -> return JvmBytecodeExtractor.normalizeUnit(unit)
+            else -> throw IllegalArgumentException()
+        }
     }
 
     private fun mergeSemanticAndLogicalCouplingGraphs(baseGraph: Graph): Graph {
