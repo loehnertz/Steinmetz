@@ -6,11 +6,11 @@
         <p :style="{ fontSize: fontSize }">Amount Inter-Cluster Edges: {{ nonNullAmountOfInterClusterEdges }}</p>
         <p :style="{ fontSize: fontSize }">Ratio Inter-Cluster Edge Weights: {{ nonNullPercentageInterClusterEdgeWeights }}%</p>
         <br>
-        <p :style="{ fontSize: fontSize }">Total Coupling Modularity (Q): {{ nonNullTotalCouplingModularity }}</p>
-        <p :style="{ fontSize: fontSize }">Average Coupling Modularity (ØQ(C)): {{ nonNullAverageCouplingModularity }}</p>
-        <p :style="{ fontSize: fontSize }">Dynamic Coupling Modularity (Q(DC)): {{ nonNullDynamicCouplingModularity }}</p>
-        <p :style="{ fontSize: fontSize }">Semantic Coupling Modularity (Q(SC)): {{ nonNullSemanticCouplingModularity }}</p>
-        <p :style="{ fontSize: fontSize }">Logical Coupling Modularity (Q(LC)): {{ nonNullLogicalCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize }">Total Coupling Modularity: {{ nonNullTotalCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize }">Average Coupling Modularity: {{ nonNullAverageCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize }">Dynamic Coupling Modularity: {{ nonNullDynamicCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize }">Semantic Coupling Modularity: {{ nonNullSemanticCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize }">Logical Coupling Modularity: {{ nonNullLogicalCouplingModularity }}</p>
     </div>
 </template>
 
