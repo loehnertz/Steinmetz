@@ -1,6 +1,7 @@
 package model.graph
 
 import model.graph.EdgeAttributes.Companion.mergeEdgeAttributes
+import model.graph.UnitFootprint.Companion.mergeUnitFootprints
 
 
 class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: MutableSet<Edge> = mutableSetOf()) {
@@ -15,6 +16,8 @@ class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: MutableSet<
         if (existingNode != null) {
             if (node.attributes.footprint == null && existingNode.attributes.footprint != null) {
                 node.attributes.footprint = existingNode.attributes.footprint
+            } else if (node.attributes.footprint != null && existingNode.attributes.footprint != null) {
+                node.attributes.footprint = mergeUnitFootprints(node.attributes.footprint!!, existingNode.attributes.footprint!!)
             }
         }
 
