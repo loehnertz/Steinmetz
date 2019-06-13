@@ -1,18 +1,16 @@
 <template>
-    <div class="box">
+    <div>
         <h2 class="title">{{ clusteringAlgorithm }}</h2>
         <br>
-        <p>Amount Clusters: {{ nonNullAmountOfClusters }}</p>
+        <p :style="{ fontSize: fontSize }">Amount Clusters: {{ nonNullAmountOfClusters }}</p>
+        <p :style="{ fontSize: fontSize }">Amount Inter-Cluster Edges: {{ nonNullAmountOfInterClusterEdges }}</p>
+        <p :style="{ fontSize: fontSize }">Ratio Inter-Cluster Edge Weights: {{ nonNullPercentageInterClusterEdgeWeights }}%</p>
         <br>
-        <p>Total Coupling Modularity (Q): {{ nonNullTotalCouplingModularity }}</p>
-        <p>Average Coupling Modularity (ØQ(C)): {{ nonNullAverageCouplingModularity }}</p>
-        <p>Dynamic Coupling Modularity (Q(DC)): {{ nonNullDynamicCouplingModularity }}</p>
-        <p>Semantic Coupling Modularity (Q(SC)): {{ nonNullSemanticCouplingModularity }}</p>
-        <p>Logical Coupling Modularity (Q(LC)): {{ nonNullLogicalCouplingModularity }}</p>
-        <br>
-        <p>Amount Inter-Cluster Edges: {{ nonNullAmountOfInterClusterEdges }}</p>
-        <p>Accumulated Inter-Cluster Edge Weights: {{ nonNullAccumulatedInterClusterEdgeWeights }}</p>
-        <p>Ratio Inter-Cluster Edge Weights: {{ nonNullPercentageInterClusterEdgeWeights }}%</p>
+        <p :style="{ fontSize: fontSize }">Total Coupling Modularity (Q): {{ nonNullTotalCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize }">Average Coupling Modularity (ØQ(C)): {{ nonNullAverageCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize }">Dynamic Coupling Modularity (Q(DC)): {{ nonNullDynamicCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize }">Semantic Coupling Modularity (Q(SC)): {{ nonNullSemanticCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize }">Logical Coupling Modularity (Q(LC)): {{ nonNullLogicalCouplingModularity }}</p>
     </div>
 </template>
 
@@ -70,6 +68,7 @@
             },
         },
         props: {
+            fontSize: String,
             clusteringAlgorithm: String,
             amountOfClusters: Number,
             amountOfInterClusterEdges: Number,

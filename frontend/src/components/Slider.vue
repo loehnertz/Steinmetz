@@ -2,9 +2,9 @@
     <div class="level">
         <range-slider
                 class="level-item slider"
-                min="1"
-                max="10"
-                step="0.1"
+                :min="min"
+                :max="max"
+                :step="step"
                 v-model="boundValue"
                 :disabled="disabled"
                 @change="$emit('value-change', boundValue)"
@@ -27,7 +27,11 @@
                     return this.roundedBoundValue;
                 },
                 set: function (newBoundValue) {
-                    this.roundedBoundValue = parseFloat(newBoundValue).toFixed(1);
+                    if (this.stepIsFloat) {
+                        this.roundedBoundValue = parseFloat(newBoundValue).toFixed(1);
+                    } else {
+                        this.roundedBoundValue = newBoundValue;
+                    }
                 }
             },
         },
@@ -39,6 +43,10 @@
         props: {
             disabled: Boolean,
             value: Number,
+            min: Number,
+            max: Number,
+            step: Number,
+            stepIsFloat: Boolean,
         },
     }
 </script>
