@@ -96,11 +96,11 @@
                 }
             },
             rerenderGraph() {
-                this.flushGraph();
+                if (!this.liveRerenderModeActive) this.flushGraph();
                 this.constructGraph(this.graphData["nodes"], this.graphData["edges"]);
             },
             rerenderGraphWithDelay() {
-                this.flushGraph();
+                if (!this.liveRerenderModeActive) this.flushGraph();
                 setTimeout(() => this.constructGraph(this.graphData["nodes"], this.graphData["edges"]));
             },
             configureGravitation(relationshipAmount) {
@@ -326,7 +326,11 @@
             showClusterNodes: {
                 type: Boolean,
                 default: () => (false),
-            }
+            },
+            liveRerenderModeActive: {
+                type: Boolean,
+                default: () => (false),
+            },
         },
     }
 </script>

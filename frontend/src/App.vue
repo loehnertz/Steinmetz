@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <div id="throbber" v-show="isLoading">
+        <div id="throbber" v-show="isLoading && !liveRerenderModeActive">
             <Throbber :is-loading="isLoading"/>
         </div>
         <section class="section">
@@ -345,6 +345,93 @@
                     </div>
                 </div>
             </div>
+            <div class="container box" ref="edge-weighting-formula-controls">
+                <div class="level">
+                    <div class="level-right">
+                        <div class="level-item">
+                            <p>Coupling Score</p>
+                        </div>
+                        <div class="level-item">
+                            <p>=</p>
+                        </div>
+                        <div class="level-item">
+                            <p>(</p>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-bottom edge-weighting-formula-factor"
+                                        data-tooltip="Sets the factor of the dynamic coupling score for edge weighting"
+                                >
+                                    <label>
+                                        <input class="input" type="number" step="1"
+                                               v-model="dynamicCouplingScoreFactor">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <p>&times;</p>
+                        </div>
+                        <div class="level-item">
+                            <p>Dynamic Coupling Score</p>
+                        </div>
+                        <div class="level-item">
+                            <p>+</p>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-bottom edge-weighting-formula-factor"
+                                        data-tooltip="Sets the factor of the semantic coupling score for edge weighting"
+                                >
+                                    <label>
+                                        <input class="input" type="number" step="1"
+                                               v-model="semanticCouplingScoreFactor">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <p>&times;</p>
+                        </div>
+                        <div class="level-item">
+                            <p>Semantic Coupling Score</p>
+                        </div>
+                        <div class="level-item">
+                            <p>+</p>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-bottom edge-weighting-formula-factor"
+                                        data-tooltip="Sets the factor of the semantic coupling score for edge weighting"
+                                >
+                                    <label>
+                                        <input class="input" type="number" step="1"
+                                               v-model="logicalCouplingScoreFactor">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <p>&times;</p>
+                        </div>
+                        <div class="level-item">
+                            <p>Logical Coupling Score</p>
+                        </div>
+                        <div class="level-item">
+                            <p>)</p>
+                        </div>
+                        <div class="level-item">
+                            <p>&divide;</p>
+                        </div>
+                        <div class="level-item">
+                            <p>{{ couplingScoreFactorSum }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
         <section class="section">
             <div class="container box" id="graph-container">
@@ -354,6 +441,7 @@
                         :cluster-ids="clusterIds"
                         :is-clustered="clusteredViewEnabled"
                         :show-cluster-nodes="showClusterNodes"
+                        :live-rerender-mode-active="liveRerenderModeActive"
                 />
             </div>
         </section>
@@ -427,6 +515,36 @@
             Throbber,
         },
         computed: {
+            dynamicCouplingScoreFactor: {
+                get: function () {
+                    return this.dynamicCouplingScoreWeightAsInteger;
+                },
+                set: function (newValue) {
+                    if (!newValue) return;
+                    this.dynamicCouplingScoreWeightAsInteger = parseInt(newValue);
+                },
+            },
+            semanticCouplingScoreFactor: {
+                get: function () {
+                    return this.semanticCouplingScoreWeightAsInteger;
+                },
+                set: function (newValue) {
+                    if (!newValue) return;
+                    this.semanticCouplingScoreWeightAsInteger = parseInt(newValue);
+                },
+            },
+            logicalCouplingScoreFactor: {
+                get: function () {
+                    return this.logicalCouplingScoreWeightAsInteger;
+                },
+                set: function (newValue) {
+                    if (!newValue) return;
+                    this.logicalCouplingScoreWeightAsInteger = parseInt(newValue);
+                },
+            },
+            couplingScoreFactorSum: function () {
+                return (this.dynamicCouplingScoreFactor + this.semanticCouplingScoreFactor + this.logicalCouplingScoreFactor);
+            },
             clusterIds: function () {
                 if (!this.clusteringAvailable || !this.graphData["nodes"]) return new Set();
                 return new Set(this.graphData["nodes"].map((node) => {
@@ -484,8 +602,12 @@
                 clusteringAvailable: false,
                 clusteredViewEnabled: false,
                 showClusterNodes: false,
+                dynamicCouplingScoreWeightAsInteger: 1,
+                semanticCouplingScoreWeightAsInteger: 1,
+                logicalCouplingScoreWeightAsInteger: 1,
                 tunableClusteringParameter: 2.0,
                 tunableClusteringParameterDisabled: false,
+                liveRerenderModeActive: false,
                 isLoading: false,
             }
         },
@@ -496,14 +618,39 @@
             selectedClusteringAlgorithm: function (selectedClusteringAlgorithm) {
                 if (selectedClusteringAlgorithm) {
                     this.tunableClusteringParameterDisabled = selectedClusteringAlgorithm === LouvainIdentifier || selectedClusteringAlgorithm === ClausetNewmanMooreIdentifier;
+                    this.liveRerenderModeActive = false;
                     this.fetchClusteredGraph();
                 }
             },
             clusteredViewEnabled: function (clusteredViewEnabled) {
-                if (!clusteredViewEnabled) this.showClusterNodes = false;
+                if (!clusteredViewEnabled) {
+                    this.liveRerenderModeActive = false;
+                    this.showClusterNodes = false;
+                }
+            },
+            dynamicCouplingScoreWeightAsInteger: function (dynamicCouplingScoreWeightAsInteger) {
+                if (dynamicCouplingScoreWeightAsInteger) {
+                    this.liveRerenderModeActive = true;
+                    this.fetchClusteredGraph();
+                }
+            },
+            semanticCouplingScoreWeightAsInteger: function (semanticCouplingScoreWeightAsInteger) {
+                if (semanticCouplingScoreWeightAsInteger) {
+                    this.liveRerenderModeActive = true;
+                    this.fetchClusteredGraph();
+                }
+            },
+            logicalCouplingScoreWeightAsInteger: function (logicalCouplingScoreWeightAsInteger) {
+                if (logicalCouplingScoreWeightAsInteger) {
+                    this.liveRerenderModeActive = true;
+                    this.fetchClusteredGraph();
+                }
             },
             tunableClusteringParameter: function (tunableClusteringParameter) {
-                if (tunableClusteringParameter) this.fetchClusteredGraph();
+                if (tunableClusteringParameter) {
+                    this.liveRerenderModeActive = true;
+                    this.fetchClusteredGraph();
+                }
             },
         },
         methods: {
@@ -544,22 +691,26 @@
                     })
                     .catch((error) => {
                         console.error(error);
+                        this.liveRerenderModeActive = false;
                         this.isLoading = false;
                     });
             },
             fetchClusteredGraph() {
-                const params = {
+                this.isLoading = true;
+
+                const parameters = {
                     'clusteringAlgorithm': this.selectedClusteringAlgorithm,
+                    'dynamicCouplingScoreWeight': this.dynamicCouplingScoreWeightAsInteger,
+                    'semanticCouplingScoreWeight': this.semanticCouplingScoreWeightAsInteger,
+                    'logicalCouplingScoreWeight': this.logicalCouplingScoreWeightAsInteger,
                     'tunableClusteringParameter': this.tunableClusteringParameter,
                 };
-
-                this.isLoading = true;
 
                 axios
                     .get(
                         `http://localhost:5656/analysis/${this.selectedProjectId}/cluster`,
                         {
-                            params: params,
+                            params: parameters,
                         },
                     )
                     .then((response) => {
@@ -572,6 +723,7 @@
                     })
                     .catch((error) => {
                         console.error(error);
+                        this.liveRerenderModeActive = false;
                         this.isLoading = false;
                     });
 
@@ -583,8 +735,11 @@
                 this.clusteringAlgorithmMetrics = {};
 
                 for (let clusteringAlgorithm of clusteringAlgorithms) {
-                    const params = {
+                    const parameters = {
                         'clusteringAlgorithm': clusteringAlgorithm,
+                        'dynamicCouplingScoreWeight': this.dynamicCouplingScoreWeightAsInteger,
+                        'semanticCouplingScoreWeight': this.semanticCouplingScoreWeightAsInteger,
+                        'logicalCouplingScoreWeight': this.logicalCouplingScoreWeightAsInteger,
                         'tunableClusteringParameter': this.tunableClusteringParameter,
                     };
 
@@ -592,7 +747,7 @@
                         .get(
                             `http://localhost:5656/analysis/${this.selectedProjectId}/cluster`,
                             {
-                                params: params,
+                                params: parameters,
                             },
                         )
                         .then((response) => {
@@ -603,6 +758,7 @@
                         })
                         .catch((error) => {
                             console.error(error);
+                            this.liveRerenderModeActive = false;
                             this.isLoading = false;
                         });
                 }
@@ -716,6 +872,14 @@
 
     .file-icon {
         color: #dbdbdb;
+    }
+
+    .edge-weighting-formula-factor {
+        width: 4em;
+    }
+
+    .edge-weighting-formula-factor > input {
+        text-align: center;
     }
 
     .range-slider-fill {
