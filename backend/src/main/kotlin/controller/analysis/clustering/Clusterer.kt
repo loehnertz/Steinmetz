@@ -4,6 +4,7 @@ import controller.analysis.clustering.clausetnewmanmoore.ClausetNewmanMooreManag
 import controller.analysis.clustering.infomap.InfomapManager
 import controller.analysis.clustering.louvain.LouvainManager
 import controller.analysis.clustering.mcl.MclManager
+import controller.analysis.clustering.walktrap.WalktrapManager
 import model.graph.EdgeAttributeWeights
 import model.graph.Graph
 
@@ -19,6 +20,7 @@ class Clusterer(private val graph: Graph, private val projectName: String, priva
             ClusteringAlgorithm.INFOMAP -> InfomapManager(graph, projectName).apply(tunableParameter = tunableClusteringParameter)
             ClusteringAlgorithm.LOUVAIN -> LouvainManager(graph, projectName).apply(tunableParameter = tunableClusteringParameter)
             ClusteringAlgorithm.CLAUSET_NEWMAN_MOORE -> ClausetNewmanMooreManager(graph, projectName).apply(tunableParameter = tunableClusteringParameter)
+            ClusteringAlgorithm.WALKTRAP -> WalktrapManager(graph, projectName).apply(tunableParameter = tunableClusteringParameter)
         }
     }
 }
