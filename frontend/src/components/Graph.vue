@@ -111,7 +111,7 @@
                     let unitNode = this.buildUnitNode(
                         node["unit"]["identifier"],
                         node["unit"]["packageIdentifier"],
-                        1,  // Change later to: node["attributes"]["footprint"]["byteSize"]
+                        node["attributes"]["footprint"]["byteSize"],
                         node["attributes"]["cluster"],
                         this.clusterIds.size,
                     );
