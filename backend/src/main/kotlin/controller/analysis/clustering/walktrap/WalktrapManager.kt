@@ -1,10 +1,14 @@
 package controller.analysis.clustering.walktrap
 
 import controller.analysis.clustering.ClusteringAlgorithmManager
+import controller.analysis.metrics.clustering.ClusteringQualityAnalyzer
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import model.graph.*
 import model.graph.Unit
 import java.io.File
-import java.nio.charset.StandardCharsets
 import java.util.*
 
 
@@ -12,12 +16,16 @@ class WalktrapManager(private val graph: Graph, private val projectName: String)
     private val unit2IdMap: HashMap<Unit, Int> = hashMapOf()
     private val id2UnitMap: HashMap<Int, Unit> = hashMapOf()
 
-    override fun apply(tunableParameter: Double?): Graph {
+    override fun apply(iterations: Int): Graph {
         val inputFile: File = createInputFile()
-        val process: Process = Runtime.getRuntime().exec(buildCommand(inputFile, tunableParameter?.toInt()
-                ?: DefaultTunableParameter)).also { it.waitFor() }
-        val output: String = Scanner(process.inputStream, StandardCharsets.UTF_8.name()).useDelimiter("\\A").next()
-        return convertOutputToGraph(output)
+
+        val deferredExecutions: ArrayList<Deferred<String>> = arrayListOf()
+        for (clusterAmount: Int in (1..iterations)) deferredExecutions.add(GlobalScope.async { WalktrapExecutor(inputFile, clusterAmount).execute() })
+
+        return runBlocking {
+            val clusteredGraphs: List<Graph> = deferredExecutions.map { it.await() }.map { convertOutputToGraph(it, Graph(nodes = graph.nodes.map { node -> node.copy() }.toMutableSet(), edges = graph.edges)) }
+            return@runBlocking clusteredGraphs.sortedByDescending { ClusteringQualityAnalyzer(it).calculateClusteringQualityMetrics().totalCouplingModularity }.first()
+        }
     }
 
     private fun createInputFile(): File {
@@ -39,7 +47,7 @@ class WalktrapManager(private val graph: Graph, private val projectName: String)
         return writeInputFile(inputFileString)
     }
 
-    private fun convertOutputToGraph(output: String): Graph {
+    private fun convertOutputToGraph(output: String, graph: Graph): Graph {
         var clusterId = 0
 
         val outputLines: List<String> = output.substringAfterLast(OutputPartitionKeyword).split("\n")
@@ -79,18 +87,7 @@ class WalktrapManager(private val graph: Graph, private val projectName: String)
         return "$InputOutputPath/$projectName/$InputFileName"
     }
 
-    private fun buildCommand(inputFile: File, amountOfClusters: Int): String {
-        return "${retrieveExecutablePath()} ${inputFile.absolutePath} $WalktrapBaseCommand -p$amountOfClusters"
-    }
-
-    private fun retrieveExecutablePath(): String {
-        return "backend/src/main/resources/$ExecutableName"
-    }
-
     companion object {
-        private const val DefaultTunableParameter = 5
-        private const val ExecutableName = "walktrap"
-        private const val WalktrapBaseCommand = "-s"
         private const val InputOutputPath = "/tmp/steinmetz/walktrap"
         private const val InputFileName = "steinmetz"
         private const val InputFileExtension = "net"
