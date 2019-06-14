@@ -9,7 +9,7 @@ import utility.Neo4jConnector
 
 
 class LouvainManager(private val graph: Graph, private val projectName: String) : ClusteringAlgorithmManager {
-    override fun apply(tunableParameter: Double?): Graph {
+    override fun apply(iterations: Int): Graph {
         addNecessaryLabels()
         val result: Result = executeGraphAlgorithm()
         removeNecessaryLabels()

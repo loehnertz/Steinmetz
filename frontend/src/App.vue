@@ -295,12 +295,11 @@
                                         data-tooltip="Sets the tunable parameter of the selected graph clustering algorithm"
                                 >
                                     <Slider
-                                            :disabled="!selectedProjectId || tunableClusteringParameterDisabled"
-                                            :value="tunableClusteringParameterValue"
+                                            :disabled="!selectedProjectId"
+                                            :value="maxClusteringIterations"
                                             :min="tunableClusteringParameterMin"
                                             :max="tunableClusteringParameterMax"
-                                            :step="tunableClusteringParameterStep"
-                                            :step-is-float="tunableClusteringParameterStepIsFloat"
+                                            :step="1"
                                             @value-change="handleTunableClusteringParameterChange"
                                     />
                                 </div>
@@ -515,11 +514,9 @@
     const WalktrapIdentifier = 'walktrap';
     const ChineseWhispersIdentifier = 'chinese_whispers';
     const NotAvailableLabel = 'N/A';
-    const DefaultTunableClusteringParameterMin = 1.0;
-    const DefaultTunableClusteringParameterMax = 10.0;
-    const DefaultTunableClusteringParameterStep = 0.1;
-    const DefaultTunableClusteringParameterStepIsFloat = true;
-    const DefaultTunableClusteringParameterValue = 5.0;
+    const DefaultMaxClusteringIterations = 100;
+    const DefaultTunableClusteringParameterMin = 1;
+    const DefaultTunableClusteringParameterMax = 100;
     const DefaultDynamicCouplingScoreFactor = 1;
     const DefaultSemanticCouplingScoreFactor = 1;
     const DefaultLogicalCouplingScoreFactor = 1;
@@ -631,12 +628,9 @@
                 dynamicCouplingScoreWeightAsInteger: DefaultDynamicCouplingScoreFactor,
                 semanticCouplingScoreWeightAsInteger: DefaultSemanticCouplingScoreFactor,
                 logicalCouplingScoreWeightAsInteger: DefaultLogicalCouplingScoreFactor,
+                maxClusteringIterations: DefaultMaxClusteringIterations,
                 tunableClusteringParameterMin: DefaultTunableClusteringParameterMin,
                 tunableClusteringParameterMax: DefaultTunableClusteringParameterMax,
-                tunableClusteringParameterStep: DefaultTunableClusteringParameterStep,
-                tunableClusteringParameterStepIsFloat: DefaultTunableClusteringParameterStepIsFloat,
-                tunableClusteringParameterValue: DefaultTunableClusteringParameterValue,
-                tunableClusteringParameterDisabled: false,
                 liveRerenderModeActive: false,
                 isLoading: false,
             }
@@ -647,19 +641,6 @@
             },
             selectedClusteringAlgorithm: function (selectedClusteringAlgorithm) {
                 if (selectedClusteringAlgorithm) {
-                    if (selectedClusteringAlgorithm === WalktrapIdentifier || selectedClusteringAlgorithm === ChineseWhispersIdentifier) {
-                        this.tunableClusteringParameterMax = 100;
-                        this.tunableClusteringParameterStep = 1;
-                        this.tunableClusteringParameterStepIsFloat = false;
-                    } else {
-                        this.tunableClusteringParameterMin = DefaultTunableClusteringParameterMin;
-                        this.tunableClusteringParameterMax = DefaultTunableClusteringParameterMax;
-                        this.tunableClusteringParameterStep = DefaultTunableClusteringParameterStep;
-                        this.tunableClusteringParameterStepIsFloat = DefaultTunableClusteringParameterStepIsFloat;
-                        this.tunableClusteringParameterValue = DefaultTunableClusteringParameterValue;
-                    }
-
-                    this.tunableClusteringParameterDisabled = selectedClusteringAlgorithm === LouvainIdentifier || selectedClusteringAlgorithm === ClausetNewmanMooreIdentifier;
                     this.liveRerenderModeActive = false;
                     this.fetchClusteredGraph();
                 }
@@ -688,8 +669,8 @@
                     this.fetchClusteredGraph();
                 }
             },
-            tunableClusteringParameterValue: function (tunableClusteringParameter) {
-                if (tunableClusteringParameter) {
+            maxClusteringIterations: function (maxClusteringIterations) {
+                if (maxClusteringIterations) {
                     this.liveRerenderModeActive = true;
                     this.fetchClusteredGraph();
                 }
@@ -745,7 +726,7 @@
                     'dynamicCouplingScoreWeight': this.dynamicCouplingScoreWeightAsInteger,
                     'semanticCouplingScoreWeight': this.semanticCouplingScoreWeightAsInteger,
                     'logicalCouplingScoreWeight': this.logicalCouplingScoreWeightAsInteger,
-                    'tunableClusteringParameterValue': this.tunableClusteringParameterValue,
+                    'maxClusteringIterations': this.maxClusteringIterations,
                 };
 
                 axios
@@ -783,7 +764,7 @@
                         'dynamicCouplingScoreWeight': this.dynamicCouplingScoreWeightAsInteger,
                         'semanticCouplingScoreWeight': this.semanticCouplingScoreWeightAsInteger,
                         'logicalCouplingScoreWeight': this.logicalCouplingScoreWeightAsInteger,
-                        'tunableClusteringParameterValue': this.tunableClusteringParameterValue,
+                        'maxClusteringIterations': this.maxClusteringIterations,
                     };
 
                     axios
@@ -809,7 +790,7 @@
                 this.scrollToRefAnchor('clustering-controls');
             },
             handleTunableClusteringParameterChange(value) {
-                this.tunableClusteringParameterValue = parseFloat(value);
+                this.maxClusteringIterations = parseInt(value);
             },
             convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm) {
                 switch (clusteringAlgorithm) {

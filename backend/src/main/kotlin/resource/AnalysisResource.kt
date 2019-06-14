@@ -35,9 +35,9 @@ fun Route.analysis(controller: AnalysisController) {
             val projectName: String = call.parameters["projectName"].toString()
             val chosenClusteringAlgorithm: ClusteringAlgorithm = getClusteringAlgorithmByName(call.request.queryParameters["clusteringAlgorithm"]!!)
             val edgeAttributeWeights: EdgeAttributeWeights = retrieveEdgeAttributeWeightsFromQueryParameters(call.request.queryParameters)
-            val tunableClusteringParameter: Double? = call.request.queryParameters["tunableClusteringParameterValue"]?.toDoubleOrNull()
+            val maxIterations: Int = call.request.queryParameters["maxClusteringIterations"]?.toInt() ?: 100
 
-            call.respond(controller.clusterGraph(projectName, chosenClusteringAlgorithm, edgeAttributeWeights, tunableClusteringParameter))
+            call.respond(controller.clusterGraph(projectName, chosenClusteringAlgorithm, edgeAttributeWeights, maxIterations))
         }
     }
 

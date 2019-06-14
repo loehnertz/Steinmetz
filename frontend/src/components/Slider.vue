@@ -22,23 +22,9 @@
         components: {
             RangeSlider,
         },
-        computed: {
-            boundValue: {
-                get: function () {
-                    return this.roundedBoundValue;
-                },
-                set: function (newBoundValue) {
-                    if (this.stepIsFloat) {
-                        this.roundedBoundValue = parseFloat(newBoundValue).toFixed(1);
-                    } else {
-                        this.roundedBoundValue = newBoundValue;
-                    }
-                }
-            },
-        },
         data() {
             return {
-                roundedBoundValue: this.value,
+                boundValue: this.value,
             }
         },
         props: {
@@ -47,7 +33,6 @@
             min: Number,
             max: Number,
             step: Number,
-            stepIsFloat: Boolean,
         },
     }
 </script>

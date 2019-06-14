@@ -14,11 +14,11 @@ import java.util.*
 
 
 class ChineseWhispersManager(private val graph: Graph) : ClusteringAlgorithmManager {
-    override fun apply(tunableParameter: Double?): Graph {
+    override fun apply(iterations: Int): Graph {
         val inputReader = StringReader(convertGraphToInput())
         val outputWriter = StringWriter()
 
-        CWGlobal.findAndWriteClusters(inputReader, BufferedWriter(outputWriter), 0.0F, DefaultNValue, Random(), CW.Option.TOP)
+        CWGlobal.findAndWriteClusters(inputReader, BufferedWriter(outputWriter), 0.0F, iterations, Random(), CW.Option.TOP)
 
         return convertOutputToGraph(outputWriter.toString())
     }
@@ -51,9 +51,5 @@ class ChineseWhispersManager(private val graph: Graph) : ClusteringAlgorithmMana
 
     private fun buildNodeIdentifier(identifier: String, packageIdentifier: String): String {
         return "$packageIdentifier.$identifier"
-    }
-
-    companion object {
-        private const val DefaultNValue = 100
     }
 }

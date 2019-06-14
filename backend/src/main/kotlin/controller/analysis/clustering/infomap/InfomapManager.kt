@@ -13,10 +13,10 @@ class InfomapManager(private val graph: Graph, private val projectName: String) 
     private val unit2IdMap: HashMap<Unit, Int> = hashMapOf()
     private val id2UnitMap: HashMap<Int, Unit> = hashMapOf()
 
-    override fun apply(tunableParameter: Double?): Graph {
+    override fun apply(iterations: Int): Graph {
         createInputFile()
 
-        Runtime.getRuntime().exec(buildCommand(tunableParameter?.toInt())).waitFor()
+        Runtime.getRuntime().exec(buildCommand(iterations)).waitFor()
 
         val outputLines: List<String> = readOutputFileLines()
         return convertOutputToGraph(outputLines)
@@ -63,7 +63,7 @@ class InfomapManager(private val graph: Graph, private val projectName: String) 
         return File("$InputOutputPath/$projectName/$OutputDirectory/$OutputFileName").bufferedReader().readLines()
     }
 
-    private fun buildCommand(iterationAmount: Int? = 10): String {
+    private fun buildCommand(iterationAmount: Int): String {
         return "${retrieveExecutablePath()} $InputOutputPath/$projectName/$InputFileName $InputOutputPath/$projectName/$OutputDirectory/ -i link-list -N $iterationAmount --directed --clu"
     }
 

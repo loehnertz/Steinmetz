@@ -4,7 +4,7 @@ import model.graph.EdgeAttributes.Companion.mergeEdgeAttributes
 import model.graph.UnitFootprint.Companion.mergeUnitFootprints
 
 
-class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: MutableSet<Edge> = mutableSetOf()) {
+data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: MutableSet<Edge> = mutableSetOf()) {
     init {
         if (this.nodes.isEmpty()) inferNodesOutOfEdges()
     }
