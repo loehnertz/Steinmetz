@@ -278,6 +278,7 @@
                                                 <option :value="louvainAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(louvainAlgorithm) }}</option>
                                                 <option :value="clausetNewmanMooreAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(clausetNewmanMooreAlgorithm) }}</option>
                                                 <option :value="walktrapAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(walktrapAlgorithm) }}</option>
+                                                <option :value="chineseWhispersAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(chineseWhispersAlgorithm) }}</option>
                                             </select>
                                         </label>
                                     </span>
@@ -460,7 +461,7 @@
                 </div>
                 <ClusteringMetrics
                         class="box"
-                        font-size="1em"
+                        font-size="1.0"
                         :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(selectedClusteringAlgorithm)"
                         :amount-of-clusters="metricsData['clusteringQuality']['amountClusters']"
                         :amount-of-inter-cluster-edges="metricsData['clusteringQuality']['amountInterfaceEdges']"
@@ -480,7 +481,7 @@
                     >
                         <ClusteringMetrics
                                 class="box"
-                                font-size="0.8em"
+                                font-size="0.7"
                                 :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)"
                                 :amount-of-clusters="metrics['clusteringQuality']['amountClusters']"
                                 :amount-of-inter-cluster-edges="metrics['clusteringQuality']['amountInterfaceEdges']"
@@ -512,6 +513,7 @@
     const LouvainIdentifier = 'louvain';
     const ClausetNewmanMooreIdentifier = 'clauset_newman_moore';
     const WalktrapIdentifier = 'walktrap';
+    const ChineseWhispersIdentifier = 'chinese_whispers';
     const NotAvailableLabel = 'N/A';
     const DefaultTunableClusteringParameterMin = 1.0;
     const DefaultTunableClusteringParameterMax = 10.0;
@@ -615,6 +617,7 @@
                 louvainAlgorithm: LouvainIdentifier,
                 clausetNewmanMooreAlgorithm: ClausetNewmanMooreIdentifier,
                 walktrapAlgorithm: WalktrapIdentifier,
+                chineseWhispersAlgorithm: ChineseWhispersIdentifier,
                 selectedClusteringAlgorithm: ClausetNewmanMooreIdentifier,
                 clusteringAlgorithmMetrics: {},
                 clusteringAvailable: false,
@@ -640,7 +643,7 @@
             },
             selectedClusteringAlgorithm: function (selectedClusteringAlgorithm) {
                 if (selectedClusteringAlgorithm) {
-                    if (selectedClusteringAlgorithm === WalktrapIdentifier) {
+                    if (selectedClusteringAlgorithm === WalktrapIdentifier || selectedClusteringAlgorithm === ChineseWhispersIdentifier) {
                         this.tunableClusteringParameterMax = 100;
                         this.tunableClusteringParameterStep = 1;
                         this.tunableClusteringParameterStepIsFloat = false;
@@ -766,7 +769,7 @@
                 this.fetchClusteredGraphOfEveryGraphClusteringAlgorithm();
             },
             fetchClusteredGraphOfEveryGraphClusteringAlgorithm() {
-                const clusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier, WalktrapIdentifier].filter((algo) => algo !== this.selectedClusteringAlgorithm);
+                const clusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier, WalktrapIdentifier, ChineseWhispersIdentifier].filter((algo) => algo !== this.selectedClusteringAlgorithm);
 
                 this.clusteringAlgorithmMetrics = {};
 
@@ -816,6 +819,8 @@
                         return 'Fast Modularity';
                     case WalktrapIdentifier:
                         return 'Walktrap';
+                    case ChineseWhispersIdentifier:
+                        return 'Chinese Whispers';
                     default:
                         return undefined
                 }

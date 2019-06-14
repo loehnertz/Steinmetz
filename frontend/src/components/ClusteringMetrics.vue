@@ -1,16 +1,16 @@
 <template>
     <div>
-        <h2 class="title">{{ clusteringAlgorithm }}</h2>
+        <h2 class="title" :style="{ fontSize: (fontSize * 2) + 'em' }">{{ clusteringAlgorithm }}</h2>
         <br>
-        <p :style="{ fontSize: fontSize }">Amount Clusters: {{ nonNullAmountOfClusters }}</p>
-        <p :style="{ fontSize: fontSize }">Amount Inter-Cluster Edges: {{ nonNullAmountOfInterClusterEdges }}</p>
-        <p :style="{ fontSize: fontSize }">Ratio Inter-Cluster Edge Weights: {{ nonNullPercentageInterClusterEdgeWeights }}%</p>
+        <p :style="{ fontSize: fontSize + 'em' }">Amount Clusters: {{ nonNullAmountOfClusters }}</p>
+        <p :style="{ fontSize: fontSize + 'em' }">Amount Inter-Cluster Edges: {{ nonNullAmountOfInterClusterEdges }}</p>
+        <p :style="{ fontSize: fontSize + 'em' }">Ratio Inter-Cluster Edge Weights: {{ nonNullPercentageInterClusterEdgeWeights }}%</p>
         <br>
-        <p :style="{ fontSize: fontSize }">Total Coupling Modularity: {{ nonNullTotalCouplingModularity }}</p>
-        <p :style="{ fontSize: fontSize }">Average Coupling Modularity: {{ nonNullAverageCouplingModularity }}</p>
-        <p :style="{ fontSize: fontSize }">Dynamic Coupling Modularity: {{ nonNullDynamicCouplingModularity }}</p>
-        <p :style="{ fontSize: fontSize }">Semantic Coupling Modularity: {{ nonNullSemanticCouplingModularity }}</p>
-        <p :style="{ fontSize: fontSize }">Logical Coupling Modularity: {{ nonNullLogicalCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize + 'em' }">Total Coupling Modularity: {{ nonNullTotalCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize + 'em' }">Average Coupling Modularity: {{ nonNullAverageCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize + 'em' }">Dynamic Coupling Modularity: {{ nonNullDynamicCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize + 'em' }">Semantic Coupling Modularity: {{ nonNullSemanticCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize + 'em' }">Logical Coupling Modularity: {{ nonNullLogicalCouplingModularity }}</p>
     </div>
 </template>
 
@@ -68,7 +68,7 @@
             },
         },
         props: {
-            fontSize: String,
+            fontSize: Number,
             clusteringAlgorithm: String,
             amountOfClusters: Number,
             amountOfInterClusterEdges: Number,
