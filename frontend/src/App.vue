@@ -273,7 +273,11 @@
                                                     v-model="selectedClusteringAlgorithm"
                                                     :disabled="!selectedProjectId"
                                             >
-                                                <option v-for="algorithm in graphClusteringAlgorithms" :value="algorithm" :key="algorithm">
+                                                <option
+                                                        v-for="algorithm in graphClusteringAlgorithms"
+                                                        :value="algorithm"
+                                                        :key="algorithm"
+                                                >
                                                     {{ convertClusteringAlgorithmIdentifierToLabel(algorithm) }}
                                                 </option>
                                             </select>
@@ -314,7 +318,11 @@
                                                     v-model="selectedClusteringMetric"
                                                     :disabled="!selectedProjectId"
                                             >
-                                                <option v-for="metric in graphClusteringMetrics" :value="metric" :key="metric">
+                                                <option
+                                                        v-for="metric in graphClusteringMetrics"
+                                                        :value="metric"
+                                                        :key="metric"
+                                                >
                                                     {{ convertClusteringMetricIdentifierToLabel(metric) }}
                                                 </option>
                                             </select>
