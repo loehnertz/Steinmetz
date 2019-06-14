@@ -17,6 +17,7 @@
 <script>
     const NotAvailableLabel = 'N/A';
 
+
     export default {
         computed: {
             nonNullAmountOfClusters: function () {

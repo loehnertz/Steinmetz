@@ -7,6 +7,7 @@
 <script>
     import ScaleLoader from 'vue-spinner/src/ScaleLoader.vue';
 
+
     export default {
         components: {
             ScaleLoader,

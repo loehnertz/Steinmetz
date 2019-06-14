@@ -17,6 +17,7 @@
 <script>
     import RangeSlider from 'vue-range-slider';
 
+
     export default {
         components: {
             RangeSlider,

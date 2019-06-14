@@ -19,6 +19,7 @@
     const ClusterNodeKeyword = '$cluster';
     const LayoutSeed = 55609697;
 
+
     export default {
         name: 'Graph',
         components: {
@@ -111,7 +112,7 @@
                     let unitNode = this.buildUnitNode(
                         node["unit"]["identifier"],
                         node["unit"]["packageIdentifier"],
-                        node["attributes"]["footprint"]["byteSize"],
+                        this.unnullifyUnitByteSize(node["attributes"]),
                         node["attributes"]["cluster"],
                         this.clusterIds.size,
                     );
@@ -265,6 +266,10 @@
                         this.graphNodeIds.add(clusterNode.id);
                     }
                 }
+            },
+            unnullifyUnitByteSize(unitAttributes) {
+                if (!unitAttributes["footprint"] || !unitAttributes["footprint"]["byteSize"]) return 1;
+                return unitAttributes["footprint"]["byteSize"];
             },
             watchStabilization() {
                 setInterval(() => {
