@@ -273,12 +273,9 @@
                                                     v-model="selectedClusteringAlgorithm"
                                                     :disabled="!selectedProjectId"
                                             >
-                                                <option :value="mclAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(mclAlgorithm) }}</option>
-                                                <option :value="infomapAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(infomapAlgorithm) }}</option>
-                                                <option :value="louvainAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(louvainAlgorithm) }}</option>
-                                                <option :value="clausetNewmanMooreAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(clausetNewmanMooreAlgorithm) }}</option>
-                                                <option :value="walktrapAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(walktrapAlgorithm) }}</option>
-                                                <option :value="chineseWhispersAlgorithm">{{ convertClusteringAlgorithmIdentifierToLabel(chineseWhispersAlgorithm) }}</option>
+                                                <option v-for="algorithm in graphClusteringAlgorithms" :value="algorithm" :key="algorithm">
+                                                    {{ convertClusteringAlgorithmIdentifierToLabel(algorithm) }}
+                                                </option>
                                             </select>
                                         </label>
                                     </span>
@@ -302,6 +299,30 @@
                                             :step="1"
                                             @value-change="handleTunableClusteringParameterChange"
                                     />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control has-icons-left tooltip is-tooltip-bottom"
+                                        data-tooltip="Selects the metric to optimize toward"
+                                >
+                                    <span class="select">
+                                        <label>
+                                            <select
+                                                    v-model="selectedClusteringMetric"
+                                                    :disabled="!selectedProjectId"
+                                            >
+                                                <option v-for="metric in graphClusteringMetrics" :value="metric" :key="metric">
+                                                    {{ convertClusteringMetricIdentifierToLabel(metric) }}
+                                                </option>
+                                            </select>
+                                        </label>
+                                    </span>
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-sort-numeric-up"></i>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -482,6 +503,7 @@
                                 class="box"
                                 :font-size="0.7"
                                 :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)"
+                                :highlight-background="clusteringAlgorithm === bestScoringClusteringAlgorithm"
                                 :amount-of-clusters="metrics['clusteringQuality']['amountClusters']"
                                 :amount-of-inter-cluster-edges="metrics['clusteringQuality']['amountInterfaceEdges']"
                                 :accumulated-inter-cluster-edge-weights="metrics['clusteringQuality']['accumulatedInterfaceEdgeWeights']"
@@ -507,13 +529,21 @@
 
     import axios from 'axios';
 
+    const NotAvailableLabel = 'N/A';
     const MclIdentifier = 'mcl';
     const InfomapIdentifier = 'infomap';
     const LouvainIdentifier = 'louvain';
     const ClausetNewmanMooreIdentifier = 'clauset_newman_moore';
     const WalktrapIdentifier = 'walktrap';
     const ChineseWhispersIdentifier = 'chinese_whispers';
-    const NotAvailableLabel = 'N/A';
+    const GraphClusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier, WalktrapIdentifier, ChineseWhispersIdentifier];
+    const MetricAmountClusters = 'amountClusters';
+    const MetricInterClusterEdges = 'amountInterfaceEdges';
+    const MetricDynamicCouplingModularity = 'dynamicCouplingModularity';
+    const MetricSemanticCouplingModularity = 'semanticCouplingModularity';
+    const MetricLogicalCouplingModularity = 'logicalCouplingModularity';
+    const MetricTotalCouplingModularity = 'totalCouplingModularity';
+    const GraphClusteringMetrics = [MetricDynamicCouplingModularity, MetricSemanticCouplingModularity, MetricLogicalCouplingModularity, MetricTotalCouplingModularity];
     const DefaultMaxClusteringIterations = 100;
     const DefaultTunableClusteringParameterMin = 1;
     const DefaultTunableClusteringParameterMax = 100;
@@ -613,13 +643,11 @@
                 dynamicProgramAnalyisUploadLabel: 'Dynamic Analysis',
                 semanticProgramAnalyisUploadLabel: 'Semantic Analysis',
                 logicalAnalyisUploadLabel: 'Logical Analysis',
-                mclAlgorithm: MclIdentifier,
-                infomapAlgorithm: InfomapIdentifier,
-                louvainAlgorithm: LouvainIdentifier,
-                clausetNewmanMooreAlgorithm: ClausetNewmanMooreIdentifier,
-                walktrapAlgorithm: WalktrapIdentifier,
-                chineseWhispersAlgorithm: ChineseWhispersIdentifier,
+                graphClusteringAlgorithms: GraphClusteringAlgorithms,
+                graphClusteringMetrics: GraphClusteringMetrics,
                 selectedClusteringAlgorithm: ClausetNewmanMooreIdentifier,
+                selectedClusteringMetric: MetricTotalCouplingModularity,
+                bestScoringClusteringAlgorithm: undefined,
                 clusteringAlgorithmMetrics: {},
                 clusteringAvailable: false,
                 clusteredViewEnabled: false,
@@ -641,6 +669,12 @@
             },
             selectedClusteringAlgorithm: function (selectedClusteringAlgorithm) {
                 if (selectedClusteringAlgorithm) {
+                    this.liveRerenderModeActive = false;
+                    this.fetchClusteredGraph();
+                }
+            },
+            selectedClusteringMetric: function (selectedClusteringMetric) {
+                if (selectedClusteringMetric) {
                     this.liveRerenderModeActive = false;
                     this.fetchClusteredGraph();
                 }
@@ -723,6 +757,7 @@
 
                 const parameters = {
                     'clusteringAlgorithm': this.selectedClusteringAlgorithm,
+                    'clusteringMetric': this.selectedClusteringMetric,
                     'dynamicCouplingScoreWeight': this.dynamicCouplingScoreWeightAsInteger,
                     'semanticCouplingScoreWeight': this.semanticCouplingScoreWeightAsInteger,
                     'logicalCouplingScoreWeight': this.logicalCouplingScoreWeightAsInteger,
@@ -754,13 +789,14 @@
                 this.fetchClusteredGraphOfEveryGraphClusteringAlgorithm();
             },
             fetchClusteredGraphOfEveryGraphClusteringAlgorithm() {
-                const clusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier, WalktrapIdentifier, ChineseWhispersIdentifier].filter((algo) => algo !== this.selectedClusteringAlgorithm);
+                const clusteringAlgorithms = this.graphClusteringAlgorithms.filter((algo) => algo !== this.selectedClusteringAlgorithm);
 
                 this.clusteringAlgorithmMetrics = {};
 
                 for (let clusteringAlgorithm of clusteringAlgorithms) {
                     const parameters = {
                         'clusteringAlgorithm': clusteringAlgorithm,
+                        'clusteringMetric': this.selectedClusteringMetric,
                         'dynamicCouplingScoreWeight': this.dynamicCouplingScoreWeightAsInteger,
                         'semanticCouplingScoreWeight': this.semanticCouplingScoreWeightAsInteger,
                         'logicalCouplingScoreWeight': this.logicalCouplingScoreWeightAsInteger,
@@ -806,6 +842,24 @@
                         return 'Walktrap';
                     case ChineseWhispersIdentifier:
                         return 'Chinese Whispers';
+                    default:
+                        return undefined
+                }
+            },
+            convertClusteringMetricIdentifierToLabel(clusteringMetric) {
+                switch (clusteringMetric) {
+                    case MetricAmountClusters:
+                        return 'Amount Clusters';
+                    case MetricInterClusterEdges:
+                        return 'Amount Inter-Cluster Edges';
+                    case MetricDynamicCouplingModularity:
+                        return 'Dynamic Coupling Modularity';
+                    case MetricSemanticCouplingModularity:
+                        return 'Semantic Coupling Modularity';
+                    case MetricLogicalCouplingModularity:
+                        return 'Logical Coupling Modularity';
+                    case MetricTotalCouplingModularity:
+                        return 'Total Coupling Modularity';
                     default:
                         return undefined
                 }
