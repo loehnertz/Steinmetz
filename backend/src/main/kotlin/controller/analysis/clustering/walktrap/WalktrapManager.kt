@@ -8,11 +8,13 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import model.graph.*
 import model.graph.Unit
+import model.metrics.ClusteringQuality
 import java.io.File
 import java.util.*
+import kotlin.reflect.KProperty1
 
 
-class WalktrapManager(private val graph: Graph, private val projectName: String) : ClusteringAlgorithmManager {
+class WalktrapManager(private val graph: Graph, private val chosenClusteringMetric: KProperty1<ClusteringQuality, *>, private val projectName: String) : ClusteringAlgorithmManager {
     private val unit2IdMap: HashMap<Unit, Int> = hashMapOf()
     private val id2UnitMap: HashMap<Int, Unit> = hashMapOf()
 
@@ -24,7 +26,7 @@ class WalktrapManager(private val graph: Graph, private val projectName: String)
 
         return runBlocking {
             val clusteredGraphs: List<Graph> = deferredExecutions.map { it.await() }.map { convertOutputToGraph(it, Graph(nodes = graph.nodes.map { node -> node.copy() }.toMutableSet(), edges = graph.edges)) }
-            return@runBlocking clusteredGraphs.sortedByDescending { ClusteringQualityAnalyzer(it).calculateClusteringQualityMetrics().totalCouplingModularity }.first()
+            return@runBlocking clusteredGraphs.sortedByDescending { (chosenClusteringMetric.get(ClusteringQualityAnalyzer(it).calculateClusteringQualityMetrics()) as Number).toDouble() }.first()
         }
     }
 
