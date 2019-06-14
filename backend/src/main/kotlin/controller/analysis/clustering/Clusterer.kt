@@ -15,14 +15,14 @@ class Clusterer(private val graph: Graph, private val projectName: String, priva
         graph.edges.forEach { it.attributes.couplingScore = EdgeWeightingFormulaCalculator.applyFormula(it.attributes, edgeAttributeWeights) }
     }
 
-    fun applyClusteringAlgorithm(clusteringAlgorithm: ClusteringAlgorithm, tunableClusteringParameter: Double?): Graph {
+    fun applyClusteringAlgorithm(clusteringAlgorithm: ClusteringAlgorithm, maxIterations: Int): Graph {
         return when (clusteringAlgorithm) {
-            ClusteringAlgorithm.MCL -> MclManager(graph).apply(tunableParameter = tunableClusteringParameter)
-            ClusteringAlgorithm.INFOMAP -> InfomapManager(graph, projectName).apply(tunableParameter = tunableClusteringParameter)
-            ClusteringAlgorithm.LOUVAIN -> LouvainManager(graph, projectName).apply(tunableParameter = tunableClusteringParameter)
-            ClusteringAlgorithm.CLAUSET_NEWMAN_MOORE -> ClausetNewmanMooreManager(graph, projectName).apply(tunableParameter = tunableClusteringParameter)
-            ClusteringAlgorithm.WALKTRAP -> WalktrapManager(graph, projectName).apply(tunableParameter = tunableClusteringParameter)
-            ClusteringAlgorithm.CHINESE_WHISPERS -> ChineseWhispersManager(graph).apply(tunableParameter = tunableClusteringParameter)
+            ClusteringAlgorithm.MCL -> MclManager(graph).apply(iterations = maxIterations)
+            ClusteringAlgorithm.INFOMAP -> InfomapManager(graph, projectName).apply(iterations = maxIterations)
+            ClusteringAlgorithm.LOUVAIN -> LouvainManager(graph, projectName).apply(iterations = maxIterations)
+            ClusteringAlgorithm.CLAUSET_NEWMAN_MOORE -> ClausetNewmanMooreManager(graph, projectName).apply(iterations = maxIterations)
+            ClusteringAlgorithm.WALKTRAP -> WalktrapManager(graph, projectName).apply(iterations = maxIterations)
+            ClusteringAlgorithm.CHINESE_WHISPERS -> ChineseWhispersManager(graph).apply(iterations = maxIterations)
         }
     }
 }

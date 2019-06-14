@@ -4,5 +4,5 @@ import model.graph.Graph
 
 
 interface ClusteringAlgorithmManager {
-    fun apply(tunableParameter: Double?): Graph
+    fun apply(iterations: Int): Graph
 }

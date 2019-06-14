@@ -11,7 +11,7 @@ class ClausetNewmanMooreManager(private val graph: Graph, private val projectNam
     private val unit2IdMap: HashMap<Unit, Int> = hashMapOf()
     private val id2UnitMap: HashMap<Int, Unit> = hashMapOf()
 
-    override fun apply(tunableParameter: Double?): Graph {
+    override fun apply(iterations: Int): Graph {
         createInputFile()
 
         Runtime.getRuntime().exec(buildFirstRunCommand()).waitFor()

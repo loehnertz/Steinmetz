@@ -46,10 +46,10 @@ class AnalysisController {
         return ProjectResponse(graph = retrieveGraph(projectName), metrics = retrieveMetrics(projectName))
     }
 
-    fun clusterGraph(projectName: String, clusteringAlgorithm: ClusteringAlgorithm, edgeAttributeWeights: EdgeAttributeWeights, tunableClusteringParameter: Double?): ProjectResponse {
+    fun clusterGraph(projectName: String, clusteringAlgorithm: ClusteringAlgorithm, edgeAttributeWeights: EdgeAttributeWeights, maxIterations: Int): ProjectResponse {
         val projectGraph: Graph = retrieveGraph(projectName)
         val clusterer: Clusterer = Clusterer(projectGraph, projectName, edgeAttributeWeights).also { it.applyEdgeWeighting() }
-        val clusteredGraph: Graph = clusterer.applyClusteringAlgorithm(clusteringAlgorithm, tunableClusteringParameter)
+        val clusteredGraph: Graph = clusterer.applyClusteringAlgorithm(clusteringAlgorithm, maxIterations)
         val clusteredGraphMetrics: Metrics = calculateClusteredGraphMetrics(clusteredGraph)
         val existingMetrics: Metrics = retrieveMetrics(projectName)
 
