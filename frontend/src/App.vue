@@ -497,12 +497,21 @@
                 </div>
             </div>
         </section>
+        <section class="section">
+            <div class="container box" id="tree-container">
+                <UnitTree
+                        :graph-data="graphData"
+                        :cluster-ids="clusterIds"
+                />
+            </div>
+        </section>
     </div>
 </template>
 
 <script>
     import ClusteringMetrics from './components/ClusteringMetrics.vue';
     import Graph from './components/Graph.vue';
+    import UnitTree from './components/UnitTree.vue';
     import Slider from './components/Slider.vue';
     import Throbber from './components/Throbber.vue';
 
@@ -530,6 +539,7 @@
         components: {
             ClusteringMetrics,
             Graph,
+            UnitTree,
             Slider,
             Throbber,
         },
