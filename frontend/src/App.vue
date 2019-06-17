@@ -293,15 +293,15 @@
                             <div class="field">
                                 <div
                                         class="control tooltip is-tooltip-multiline is-tooltip-bottom"
-                                        data-tooltip="Sets the tunable parameter of the selected graph clustering algorithm"
+                                        data-tooltip="Sets how many iterations should be run for the clustering algorithms"
                                 >
                                     <Slider
                                             :disabled="!selectedProjectId"
                                             :value="maxClusteringIterations"
-                                            :min="tunableClusteringParameterMin"
-                                            :max="tunableClusteringParameterMax"
+                                            :min="iterationsClusteringParameterMin"
+                                            :max="iterationsClusteringParameterMax"
                                             :step="1"
-                                            @value-change="handleTunableClusteringParameterChange"
+                                            @value-change="handleIterationsClusteringParameterChange"
                                     />
                                 </div>
                             </div>
@@ -483,9 +483,9 @@
             <div class="container">
                 <div class="box">
                     <h1 class="title">Metrics</h1>
-                    <p>Dynamic Analysis Quality: {{ dynamicAnalysisQuality }}%</p>
-                    <p>Semantic Analysis Quality: {{ semanticAnalysisQuality }}%</p>
-                    <p>Logical Analysis Quality: {{ logicalAnalysisQuality }}%</p>
+                    <p>Dynamic Analysis Fidelity: {{ dynamicAnalysisQuality }}%</p>
+                    <p>Semantic Analysis Fidelity: {{ semanticAnalysisQuality }}%</p>
+                    <p>Logical Analysis Fidelity: {{ logicalAnalysisQuality }}%</p>
                 </div>
                 <ClusteringMetrics
                         class="box"
@@ -554,8 +554,8 @@
     const MetricTotalCouplingModularity = 'totalCouplingModularity';
     const GraphClusteringMetrics = [MetricDynamicCouplingModularity, MetricSemanticCouplingModularity, MetricLogicalCouplingModularity, MetricTotalCouplingModularity];
     const DefaultMaxClusteringIterations = 100;
-    const DefaultTunableClusteringParameterMin = 1;
-    const DefaultTunableClusteringParameterMax = 100;
+    const DefaultIterationsClusteringParameterMin = 1;
+    const DefaultIterationsClusteringParameterMax = 100;
     const DefaultDynamicCouplingScoreFactor = 1;
     const DefaultSemanticCouplingScoreFactor = 1;
     const DefaultLogicalCouplingScoreFactor = 1;
@@ -666,8 +666,8 @@
                 semanticCouplingScoreWeightAsInteger: DefaultSemanticCouplingScoreFactor,
                 logicalCouplingScoreWeightAsInteger: DefaultLogicalCouplingScoreFactor,
                 maxClusteringIterations: DefaultMaxClusteringIterations,
-                tunableClusteringParameterMin: DefaultTunableClusteringParameterMin,
-                tunableClusteringParameterMax: DefaultTunableClusteringParameterMax,
+                iterationsClusteringParameterMin: DefaultIterationsClusteringParameterMin,
+                iterationsClusteringParameterMax: DefaultIterationsClusteringParameterMax,
                 liveRerenderModeActive: false,
                 isLoading: false,
             }
@@ -849,7 +849,7 @@
                     }
                 }
             },
-            handleTunableClusteringParameterChange(value) {
+            handleIterationsClusteringParameterChange(value) {
                 this.maxClusteringIterations = parseInt(value);
             },
             convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm) {
