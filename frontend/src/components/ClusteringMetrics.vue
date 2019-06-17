@@ -109,6 +109,6 @@
     }
 
     .green-background {
-        background-color: green;
+        background-color: #00d1b2;
     }
 </style>

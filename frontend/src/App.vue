@@ -490,6 +490,7 @@
                 <ClusteringMetrics
                         class="box"
                         :font-size="1.0"
+                        :highlight-background="selectedClusteringAlgorithm === bestScoringClusteringAlgorithm"
                         :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(selectedClusteringAlgorithm)"
                         :amount-of-clusters="clusteringQuality['amountClusters']"
                         :amount-of-inter-cluster-edges="clusteringQuality['amountInterfaceEdges']"
@@ -510,8 +511,8 @@
                         <ClusteringMetrics
                                 class="box"
                                 :font-size="0.7"
-                                :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)"
                                 :highlight-background="clusteringAlgorithm === bestScoringClusteringAlgorithm"
+                                :clustering-algorithm="convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)"
                                 :amount-of-clusters="metrics['clusteringQuality']['amountClusters']"
                                 :amount-of-inter-cluster-edges="metrics['clusteringQuality']['amountInterfaceEdges']"
                                 :accumulated-inter-cluster-edge-weights="metrics['clusteringQuality']['accumulatedInterfaceEdgeWeights']"
@@ -655,7 +656,7 @@
                 graphClusteringMetrics: GraphClusteringMetrics,
                 selectedClusteringAlgorithm: ClausetNewmanMooreIdentifier,
                 selectedClusteringMetric: MetricTotalCouplingModularity,
-                bestScoringClusteringAlgorithm: undefined,
+                bestScoringClusteringAlgorithm: null,
                 clusteringAlgorithmMetrics: {},
                 clusteringAvailable: false,
                 clusteredViewEnabled: false,
@@ -822,6 +823,7 @@
                             this.clusteringAvailable = true;
                             this.clusteredViewEnabled = true;
                             this.clusteringAlgorithmMetrics[clusteringAlgorithm] = response.data["metrics"];
+                            this.reevaluateMetrics();
                             this.$forceUpdate();
                         })
                         .catch((error) => {
@@ -832,6 +834,20 @@
                 }
 
                 this.scrollToRefAnchor('clustering-controls');
+            },
+            reevaluateMetrics() {
+                let currentBestScore = 0;
+
+                const clusteringAlgorithmMetrics = {...{[this.selectedClusteringAlgorithm]: this.metricsData}, ...this.clusteringAlgorithmMetrics};
+                for (let clusteringAlgorithm of Object.keys(clusteringAlgorithmMetrics)) {
+                    if (!clusteringAlgorithmMetrics[clusteringAlgorithm]["clusteringQuality"]) continue;
+                    const score = clusteringAlgorithmMetrics[clusteringAlgorithm]["clusteringQuality"][this.selectedClusteringMetric];
+
+                    if (score >= currentBestScore) {
+                        currentBestScore = score;
+                        this.bestScoringClusteringAlgorithm = clusteringAlgorithm;
+                    }
+                }
             },
             handleTunableClusteringParameterChange(value) {
                 this.maxClusteringIterations = parseInt(value);
