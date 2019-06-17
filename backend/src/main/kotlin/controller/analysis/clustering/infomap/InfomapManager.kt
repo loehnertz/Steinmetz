@@ -1,9 +1,7 @@
 package controller.analysis.clustering.infomap
 
 import controller.analysis.clustering.ClusteringAlgorithmManager
-import model.graph.Graph
-import model.graph.Node
-import model.graph.NodeAttributes
+import model.graph.*
 import model.graph.Unit
 import java.io.File
 import java.util.*
@@ -26,14 +24,14 @@ class InfomapManager(private val graph: Graph, private val projectName: String) 
         var inputFileString = ""
         var currentNodeId = 1
 
-        for (node in graph.nodes) {
+        for (node: Node in graph.nodes) {
             unit2IdMap[node.unit] = currentNodeId
             id2UnitMap[currentNodeId] = node.unit
             currentNodeId++
         }
 
-        for (edge in graph.edges) {
-            val inputLine = buildInputLine(startUnit = edge.start, endUnit = edge.end, weight = edge.attributes.couplingScore)
+        for (edge: Edge in graph.edges) {
+            val inputLine: String = buildInputLine(startUnit = edge.start, endUnit = edge.end, weight = edge.attributes.couplingScore)
             inputFileString += "$inputLine\n"
         }
 
@@ -41,10 +39,10 @@ class InfomapManager(private val graph: Graph, private val projectName: String) 
     }
 
     private fun convertOutputToGraph(outputLines: List<String>): Graph {
-        for (line in outputLines.filter { !it.startsWith('#') }) {
+        for (line: String in outputLines.filter { !it.startsWith('#') }) {
             val (nodeId, clusterId, _) = line.split(' ')
 
-            val clusteredUnit = id2UnitMap[nodeId.toInt()]
+            val clusteredUnit: Unit = id2UnitMap[nodeId.toInt()]
                     ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
             graph.addOrUpdateNode(Node(unit = clusteredUnit, attributes = NodeAttributes(cluster = clusterId.toInt())))
         }
@@ -64,7 +62,7 @@ class InfomapManager(private val graph: Graph, private val projectName: String) 
     }
 
     private fun buildCommand(iterationAmount: Int): String {
-        return "${retrieveExecutablePath()} $InputOutputPath/$projectName/$InputFileName $InputOutputPath/$projectName/$OutputDirectory/ -i link-list -N $iterationAmount --directed --clu"
+        return "${retrieveExecutablePath()} $InputOutputPath/$projectName/$InputFileName $InputOutputPath/$projectName/$OutputDirectory/ -i link-list -N ${if (iterationAmount <= MaxIterations) iterationAmount else MaxIterations} --directed --clu"
     }
 
     private fun buildInputLine(startUnit: Unit, endUnit: Unit, weight: Int): String {
@@ -80,5 +78,6 @@ class InfomapManager(private val graph: Graph, private val projectName: String) 
         private const val InputFileName = "steinmetz.txt"
         private const val OutputDirectory = "."
         private const val OutputFileName = "steinmetz.clu"
+        private const val MaxIterations = 55
     }
 }
