@@ -1,10 +1,10 @@
 package controller.analysis.extraction.graph
 
 import controller.analysis.extraction.Platform
-import controller.analysis.extraction.coupling.dynamic.platforms.jvm.JfrRecordingAnalyzer
-import controller.analysis.extraction.coupling.logical.VcsSystem
-import controller.analysis.extraction.coupling.logical.platforms.jvm.JvmLogicalCouplingExtractor
-import controller.analysis.extraction.coupling.semantic.platforms.java.JavaSemanticCouplingExtractor
+import controller.analysis.extraction.coupling.dynamically.platforms.jvm.JfrRecordingAnalyzer
+import controller.analysis.extraction.coupling.logically.VcsSystem
+import controller.analysis.extraction.coupling.logically.platforms.jvm.JvmLogicalCouplingExtractor
+import controller.analysis.extraction.coupling.semantically.platforms.java.JavaSemanticCouplingExtractor
 import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import controller.analysis.metrics.input.InputQualityAnalyzer
 import model.graph.Edge

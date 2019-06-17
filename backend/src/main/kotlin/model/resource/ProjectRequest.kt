@@ -1,7 +1,7 @@
 package model.resource
 
 import controller.analysis.extraction.Platform
-import controller.analysis.extraction.coupling.logical.VcsSystem
+import controller.analysis.extraction.coupling.logically.VcsSystem
 import java.io.File
 
 

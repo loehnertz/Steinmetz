@@ -1,7 +1,7 @@
-package controller.analysis.extraction.coupling.logical.platforms.jvm
+package controller.analysis.extraction.coupling.logically.platforms.jvm
 
-import controller.analysis.extraction.coupling.logical.LogicalCouplingExtractor
-import controller.analysis.extraction.coupling.logical.VcsSystem
+import controller.analysis.extraction.coupling.logically.LogicalCouplingExtractor
+import controller.analysis.extraction.coupling.logically.VcsSystem
 import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph

@@ -1,4 +1,4 @@
-package controller.analysis.extraction.coupling.dynamic
+package controller.analysis.extraction.coupling.dynamically
 
 import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.ExtractorCompanion

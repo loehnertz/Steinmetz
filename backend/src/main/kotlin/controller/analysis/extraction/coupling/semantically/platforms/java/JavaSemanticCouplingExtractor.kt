@@ -1,9 +1,9 @@
-package controller.analysis.extraction.coupling.semantic.platforms.java
+package controller.analysis.extraction.coupling.semantically.platforms.java
 
 import codes.jakob.semanticcoupling.SemanticCouplingCalculator
 import codes.jakob.semanticcoupling.model.NaturalLanguage
 import codes.jakob.semanticcoupling.model.ProgrammingLanguage
-import controller.analysis.extraction.coupling.semantic.SemanticCouplingExtractor
+import controller.analysis.extraction.coupling.semantically.SemanticCouplingExtractor
 import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph

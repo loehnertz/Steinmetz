@@ -4,11 +4,11 @@ import controller.analysis.clustering.Clusterer
 import controller.analysis.clustering.ClusteringAlgorithm
 import controller.analysis.extraction.Platform
 import controller.analysis.extraction.Platform.Companion.getPlatformByName
-import controller.analysis.extraction.coupling.dynamic.DynamicAnalysisExtractor
-import controller.analysis.extraction.coupling.logical.LogicalCouplingExtractor
-import controller.analysis.extraction.coupling.logical.VcsSystem
-import controller.analysis.extraction.coupling.logical.VcsSystem.Companion.getVcsSystemByName
-import controller.analysis.extraction.coupling.semantic.SemanticCouplingExtractor
+import controller.analysis.extraction.coupling.dynamically.DynamicAnalysisExtractor
+import controller.analysis.extraction.coupling.logically.LogicalCouplingExtractor
+import controller.analysis.extraction.coupling.logically.VcsSystem
+import controller.analysis.extraction.coupling.logically.VcsSystem.Companion.getVcsSystemByName
+import controller.analysis.extraction.coupling.semantically.SemanticCouplingExtractor
 import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
 import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
