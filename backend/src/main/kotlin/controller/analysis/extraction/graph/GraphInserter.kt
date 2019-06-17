@@ -1,7 +1,7 @@
 package controller.analysis.extraction.graph
 
 import controller.analysis.extraction.Platform
-import controller.analysis.extraction.coupling.dynamically.platforms.jvm.JfrRecordingAnalyzer
+import controller.analysis.extraction.coupling.dynamically.platforms.jvm.JvmDynamicAnalysisExtractor
 import controller.analysis.extraction.coupling.logically.VcsSystem
 import controller.analysis.extraction.coupling.logically.platforms.jvm.JvmLogicalCouplingExtractor
 import controller.analysis.extraction.coupling.semantically.platforms.java.JavaSemanticCouplingExtractor
@@ -69,7 +69,7 @@ class GraphInserter(
     @Throws(IllegalArgumentException::class)
     private fun processDynamicCouplingData(): Graph {
         when (projectPlatform) {
-            Platform.JAVA -> return JfrRecordingAnalyzer(projectName, basePackageIdentifier, dynamicAnalysisFile).extract()
+            Platform.JAVA -> return JvmDynamicAnalysisExtractor(projectName, basePackageIdentifier, dynamicAnalysisFile).extract()
             else -> throw IllegalArgumentException()
         }
     }
