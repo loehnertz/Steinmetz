@@ -8,8 +8,6 @@ data class EdgeAttributeWeights(
         val semanticCouplingScoreWeight: Int = 1,
         val logicalCouplingScoreWeight: Int = 1
 ) {
-    fun calculateWeightSum(): Int = (dynamicCouplingScoreWeight + semanticCouplingScoreWeight + logicalCouplingScoreWeight)
-
     companion object {
         fun retrieveEdgeAttributeWeightsFromQueryParameters(queryParameters: Parameters): EdgeAttributeWeights {
             return EdgeAttributeWeights(

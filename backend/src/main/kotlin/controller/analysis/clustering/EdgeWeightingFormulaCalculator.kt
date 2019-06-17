@@ -6,11 +6,13 @@ import model.graph.EdgeAttributes
 
 object EdgeWeightingFormulaCalculator {
     fun applyFormula(edgeAttributes: EdgeAttributes, edgeAttributeWeights: EdgeAttributeWeights): Int {
-        val weightedDynamicCouplingScore: Int = (edgeAttributeWeights.dynamicCouplingScoreWeight * edgeAttributes.dynamicCouplingScore)
-        val weightedSemanticCouplingScore: Int = (edgeAttributeWeights.semanticCouplingScoreWeight * edgeAttributes.semanticCouplingScore)
-        val weightedLogicalCouplingScore: Int = (edgeAttributeWeights.logicalCouplingScoreWeight * edgeAttributes.logicalCouplingScore)
+        val weightedDynamicCouplingScore: Pair<Int, Int> = Pair(edgeAttributeWeights.dynamicCouplingScoreWeight, edgeAttributes.dynamicCouplingScore)
+        val weightedSemanticCouplingScore: Pair<Int, Int> = Pair(edgeAttributeWeights.semanticCouplingScoreWeight, edgeAttributes.semanticCouplingScore)
+        val weightedLogicalCouplingScore: Pair<Int, Int> = Pair(edgeAttributeWeights.logicalCouplingScoreWeight, edgeAttributes.logicalCouplingScore)
 
-        // Add 1 to the final coupling score so that there are no edges that have a score of 0 which let's some graph clustering algorithms fail
-        return 1 + ((weightedDynamicCouplingScore + weightedSemanticCouplingScore + weightedLogicalCouplingScore).toDouble() / edgeAttributeWeights.calculateWeightSum()).toInt()
+        // Filter out the non-zero scores as the final, weighted coupling score is otherwise skewed
+        val nonZeroCouplingScores: List<Pair<Int, Int>> = listOf(weightedDynamicCouplingScore, weightedSemanticCouplingScore, weightedLogicalCouplingScore).filter { it.second != 0 }
+
+        return (nonZeroCouplingScores.sumBy { it.first * it.second }.toDouble() / nonZeroCouplingScores.sumBy { it.first }).toInt()
     }
 }
