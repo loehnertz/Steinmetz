@@ -9,4 +9,8 @@ object Utilities {
         if (!path.startsWith('/')) fullPath = "/$fullPath"
         return File(object {}.javaClass.getResource(fullPath).file)
     }
+
+    fun extractTsv(tsvFile: File): List<List<String>> {
+        return tsvFile.readLines().map { it.split("\t") }
+    }
 }
