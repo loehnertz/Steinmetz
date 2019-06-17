@@ -6,6 +6,7 @@ import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
 import model.graph.Unit
+import utility.Utilities
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -17,7 +18,7 @@ class JvmLogicalCouplingExtractor(private val vcsSystem: VcsSystem, private val 
 
     override fun extract(): Graph {
         val output: ArrayList<String> = arrayListOf()
-        val processBuilder: ProcessBuilder = ProcessBuilder("java", "-jar", "backend/src/main/resources/code-maat.jar", "-l", vcsLogFile.absolutePath, "-c", vcsSystem.toString().toLowerCase(), "-a", "coupling", "-n", MinRevisions.toString(), "-m", MinSharedRevisions.toString(), "-i", MinCouplingScore.toString(), "-t", DaysToCombineCommits.toString()).also { it.redirectErrorStream(true) }
+        val processBuilder: ProcessBuilder = ProcessBuilder("java", "-jar", Utilities.getResourceAsText(ExecutableName).absolutePath, "-l", vcsLogFile.absolutePath, "-c", vcsSystem.toString().toLowerCase(), "-a", "coupling", "-n", MinRevisions.toString(), "-m", MinSharedRevisions.toString(), "-i", MinCouplingScore.toString(), "-t", DaysToCombineCommits.toString()).also { it.redirectErrorStream(true) }
         val process: Process = processBuilder.start()
         val reader = BufferedReader(InputStreamReader(process.inputStream))
         var line: String = reader.readLine()
@@ -66,6 +67,7 @@ class JvmLogicalCouplingExtractor(private val vcsSystem: VcsSystem, private val 
     }
 
     companion object {
+        private const val ExecutableName = "executables/code-maat.jar"
         private const val FileExtension = ".java"
         private const val MinRevisions = 2
         private const val MinSharedRevisions = 2
