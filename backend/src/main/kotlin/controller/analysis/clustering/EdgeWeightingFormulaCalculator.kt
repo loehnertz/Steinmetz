@@ -12,7 +12,8 @@ object EdgeWeightingFormulaCalculator {
 
         val weightedCouplingScores: List<Int> = listOf(weightedDynamicCouplingScore, weightedSemanticCouplingScore, weightedLogicalCouplingScore)
 
-        return (weightedCouplingScores.sum().toDouble() / sumEdgeWeightAttributes(edgeAttributeWeights)).toInt()
+        // Add 1 to the final coupling score so that there are no edges that have a score of 0 which let's some graph clustering algorithms fail
+        return 1 + (weightedCouplingScores.sum().toDouble() / sumEdgeWeightAttributes(edgeAttributeWeights)).toInt()
     }
 
     private fun sumEdgeWeightAttributes(edgeAttributeWeights: EdgeAttributeWeights): Int {
