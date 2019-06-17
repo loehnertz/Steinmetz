@@ -6,13 +6,16 @@ import model.graph.EdgeAttributes
 
 object EdgeWeightingFormulaCalculator {
     fun applyFormula(edgeAttributes: EdgeAttributes, edgeAttributeWeights: EdgeAttributeWeights): Int {
-        val weightedDynamicCouplingScore: Pair<Int, Int> = Pair(edgeAttributeWeights.dynamicCouplingScoreWeight, edgeAttributes.dynamicCouplingScore)
-        val weightedSemanticCouplingScore: Pair<Int, Int> = Pair(edgeAttributeWeights.semanticCouplingScoreWeight, edgeAttributes.semanticCouplingScore)
-        val weightedLogicalCouplingScore: Pair<Int, Int> = Pair(edgeAttributeWeights.logicalCouplingScoreWeight, edgeAttributes.logicalCouplingScore)
+        val weightedDynamicCouplingScore: Int = edgeAttributeWeights.dynamicCouplingScoreWeight * edgeAttributes.dynamicCouplingScore
+        val weightedSemanticCouplingScore: Int = edgeAttributeWeights.semanticCouplingScoreWeight * edgeAttributes.semanticCouplingScore
+        val weightedLogicalCouplingScore: Int = edgeAttributeWeights.logicalCouplingScoreWeight * edgeAttributes.logicalCouplingScore
 
-        // Filter out the non-zero scores as the final, weighted coupling score is otherwise skewed
-        val nonZeroCouplingScores: List<Pair<Int, Int>> = listOf(weightedDynamicCouplingScore, weightedSemanticCouplingScore, weightedLogicalCouplingScore).filter { it.second != 0 }
+        val weightedCouplingScores: List<Int> = listOf(weightedDynamicCouplingScore, weightedSemanticCouplingScore, weightedLogicalCouplingScore)
 
-        return (nonZeroCouplingScores.sumBy { it.first * it.second }.toDouble() / nonZeroCouplingScores.sumBy { it.first }).toInt()
+        return (weightedCouplingScores.sum().toDouble() / sumEdgeWeightAttributes(edgeAttributeWeights)).toInt()
+    }
+
+    private fun sumEdgeWeightAttributes(edgeAttributeWeights: EdgeAttributeWeights): Int {
+        return (edgeAttributeWeights.dynamicCouplingScoreWeight + edgeAttributeWeights.semanticCouplingScoreWeight + edgeAttributeWeights.logicalCouplingScoreWeight)
     }
 }
