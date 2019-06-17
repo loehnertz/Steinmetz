@@ -19,6 +19,7 @@ import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
 import model.graph.EdgeAttributeWeights
 import model.graph.Graph
+import model.metrics.ClusteringQuality
 import model.metrics.Metrics
 import model.resource.ProjectRequest
 import model.resource.ProjectResponse
@@ -26,6 +27,7 @@ import org.neo4j.ogm.cypher.ComparisonOperator
 import org.neo4j.ogm.cypher.Filter
 import utility.Neo4jConnector
 import java.io.File
+import kotlin.reflect.KProperty1
 
 
 class AnalysisController {
@@ -46,9 +48,9 @@ class AnalysisController {
         return ProjectResponse(graph = retrieveGraph(projectName), metrics = retrieveMetrics(projectName))
     }
 
-    fun clusterGraph(projectName: String, clusteringAlgorithm: ClusteringAlgorithm, edgeAttributeWeights: EdgeAttributeWeights, maxIterations: Int): ProjectResponse {
+    fun clusterGraph(projectName: String, clusteringAlgorithm: ClusteringAlgorithm, chosenClusteringMetric: KProperty1<ClusteringQuality, *>, edgeAttributeWeights: EdgeAttributeWeights, maxIterations: Int): ProjectResponse {
         val projectGraph: Graph = retrieveGraph(projectName)
-        val clusterer: Clusterer = Clusterer(projectGraph, projectName, edgeAttributeWeights).also { it.applyEdgeWeighting() }
+        val clusterer: Clusterer = Clusterer(projectGraph, projectName, chosenClusteringMetric, edgeAttributeWeights).also { it.applyEdgeWeighting() }
         val clusteredGraph: Graph = clusterer.applyClusteringAlgorithm(clusteringAlgorithm, maxIterations)
         val clusteredGraphMetrics: Metrics = calculateClusteredGraphMetrics(clusteredGraph)
         val existingMetrics: Metrics = retrieveMetrics(projectName)

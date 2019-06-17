@@ -1,7 +1,8 @@
 <template>
-    <div class="level">
+    <div class="level" id="slider-container">
         <range-slider
-                class="level-item slider"
+                class="level-item"
+                id="slider"
                 :min="min"
                 :max="max"
                 :step="step"
@@ -40,7 +41,11 @@
 <style scoped>
     @import '~vue-range-slider/dist/vue-range-slider.css';
 
-    .slider {
+    #slider {
         width: 255px;
+    }
+
+    #slider-container {
+        padding-right: 10px;
     }
 </style>

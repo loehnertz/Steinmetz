@@ -10,10 +10,12 @@ import model.graph.Graph
 import model.graph.Node
 import model.graph.NodeAttributes
 import model.graph.Unit
+import model.metrics.ClusteringQuality
 import java.math.RoundingMode
+import kotlin.reflect.KProperty1
 
 
-class MclManager(private val graph: Graph) : ClusteringAlgorithmManager {
+class MclManager(private val graph: Graph, private val chosenClusteringMetric: KProperty1<ClusteringQuality, *>) : ClusteringAlgorithmManager {
     override fun apply(iterations: Int): Graph {
         val clusteringInflationValues: List<Double> = buildClusteringInflationValuesList()
 
@@ -24,7 +26,7 @@ class MclManager(private val graph: Graph) : ClusteringAlgorithmManager {
 
         return runBlocking {
             val clusteredGraphs: List<Graph> = deferredExecutions.map { it.await() }.map { convertOutputToGraph(it, Graph(nodes = graph.nodes.map { node -> node.copy() }.toMutableSet(), edges = graph.edges)) }
-            return@runBlocking clusteredGraphs.sortedByDescending { ClusteringQualityAnalyzer(it).calculateClusteringQualityMetrics().totalCouplingModularity }.first()
+            return@runBlocking clusteredGraphs.sortedByDescending { (chosenClusteringMetric.get(ClusteringQualityAnalyzer(it).calculateClusteringQualityMetrics()) as Number).toDouble() }.first()
         }
     }
 

@@ -1,16 +1,34 @@
 <template>
-    <div>
-        <h2 class="title" :style="{ fontSize: (fontSize * 2) + 'em' }">{{ clusteringAlgorithm }}</h2>
+    <div :class="{ 'green-background': highlightBackground }">
+        <h2 class="title" :style="{ fontSize: (fontSize * 2) + 'em' }">
+            {{ clusteringAlgorithm }}
+        </h2>
         <br>
-        <p :style="{ fontSize: fontSize + 'em' }">Amount Clusters: {{ nonNullAmountOfClusters }}</p>
-        <p :style="{ fontSize: fontSize + 'em' }">Amount Inter-Cluster Edges: {{ nonNullAmountOfInterClusterEdges }}</p>
-        <p :style="{ fontSize: fontSize + 'em' }">Ratio Inter-Cluster Edge Weights: {{ nonNullPercentageInterClusterEdgeWeights }}%</p>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Amount Clusters: {{ nonNullAmountOfClusters }}
+        </p>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Amount Inter-Cluster Edges: {{ nonNullAmountOfInterClusterEdges }}
+        </p>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Ratio Inter-Cluster Edge Weights: {{ nonNullPercentageInterClusterEdgeWeights }}%
+        </p>
         <br>
-        <p :style="{ fontSize: fontSize + 'em' }">Total Coupling Modularity: {{ nonNullTotalCouplingModularity }}</p>
-        <p :style="{ fontSize: fontSize + 'em' }">Average Coupling Modularity: {{ nonNullAverageCouplingModularity }}</p>
-        <p :style="{ fontSize: fontSize + 'em' }">Dynamic Coupling Modularity: {{ nonNullDynamicCouplingModularity }}</p>
-        <p :style="{ fontSize: fontSize + 'em' }">Semantic Coupling Modularity: {{ nonNullSemanticCouplingModularity }}</p>
-        <p :style="{ fontSize: fontSize + 'em' }">Logical Coupling Modularity: {{ nonNullLogicalCouplingModularity }}</p>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Total Coupling Modularity: {{ nonNullTotalCouplingModularity }}
+        </p>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Average Coupling Modularity: {{ nonNullAverageCouplingModularity }}
+        </p>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Dynamic Coupling Modularity: {{ nonNullDynamicCouplingModularity }}
+        </p>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Semantic Coupling Modularity: {{ nonNullSemanticCouplingModularity }}
+        </p>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Logical Coupling Modularity: {{ nonNullLogicalCouplingModularity }}
+        </p>
     </div>
 </template>
 
@@ -71,6 +89,7 @@
         props: {
             fontSize: Number,
             clusteringAlgorithm: String,
+            highlightBackground: Boolean,
             amountOfClusters: Number,
             amountOfInterClusterEdges: Number,
             accumulatedInterClusterEdgeWeights: Number,
@@ -87,5 +106,9 @@
 <style scoped>
     .title {
         margin: 0 !important;
+    }
+
+    .green-background {
+        background-color: #00d1b2;
     }
 </style>
