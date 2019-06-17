@@ -137,7 +137,7 @@
         <dependency>
             <groupId>gr.gousiosg.javacg</groupId>
             <artifactId>stat</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>0.2-SNAPSHOT</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/javacg-static.jar</systemPath>
         </dependency>
