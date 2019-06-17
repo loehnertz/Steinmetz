@@ -5,8 +5,10 @@ import controller.analysis.extraction.coupling.statically.StaticAnalysisExtracto
 import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractorCompanion
 import gr.gousiosg.javacg.stat.ClassVisitor
 import gr.gousiosg.javacg.stat.JCallGraph
-import model.graph.*
+import model.graph.Graph
+import model.graph.Node
 import model.graph.Unit
+import model.graph.UnitFootprint
 import utility.ArchiveExtractor
 import java.io.File
 import java.util.regex.Pattern
@@ -23,24 +25,10 @@ class JvmBytecodeExtractor(projectName: String, private val basePackageIdentifie
         val jcallGraph: JCallGraph = JCallGraph(listOf(archive), listOf(Pattern.compile("$basePackageIdentifier.*"))).also { it.analyze() }
         val invokations: List<Pair<String, String>> = jcallGraph.classVisitors.flatMap { it.classInvokations }.map { it.split(' ') }.map { Pair(it.first().replace(ClassVisitor.PREFIX, ""), it.last()) }
 
-        val graph: Graph = convertInvokationsPairsToGraph(invokations)
+        val graph: Graph = convertInvokationPairsToGraph(invokations)
         graph.nodes.map { attachUnitFootprint(it) }.forEach { graph.addOrUpdateNode(it) }
 
         cleanup(staticAnalysisBasePath)
-
-        return graph
-    }
-
-    private fun convertInvokationsPairsToGraph(invokations: List<Pair<String, String>>): Graph {
-        val graph = Graph()
-
-        for (invokation: Pair<String, String> in invokations) {
-            val startUnit = Unit(identifier = invokation.first.substringAfterLast('.'), packageIdentifier = invokation.first.substringBeforeLast('.'))
-            val endUnit = Unit(identifier = invokation.second.substringAfterLast('.'), packageIdentifier = invokation.second.substringBeforeLast('.'))
-            val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes())
-
-            graph.addOrUpdateEdge(edge)
-        }
 
         return graph
     }
