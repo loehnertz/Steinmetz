@@ -548,11 +548,11 @@
     const GraphClusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier, WalktrapIdentifier, ChineseWhispersIdentifier];
     const MetricAmountClusters = 'amountClusters';
     const MetricInterClusterEdges = 'amountInterfaceEdges';
+    const MetricTotalCouplingModularity = 'totalCouplingModularity';
     const MetricDynamicCouplingModularity = 'dynamicCouplingModularity';
     const MetricSemanticCouplingModularity = 'semanticCouplingModularity';
     const MetricLogicalCouplingModularity = 'logicalCouplingModularity';
-    const MetricTotalCouplingModularity = 'totalCouplingModularity';
-    const GraphClusteringMetrics = [MetricDynamicCouplingModularity, MetricSemanticCouplingModularity, MetricLogicalCouplingModularity, MetricTotalCouplingModularity];
+    const GraphClusteringMetrics = [MetricTotalCouplingModularity, MetricDynamicCouplingModularity, MetricSemanticCouplingModularity, MetricLogicalCouplingModularity];
     const DefaultMaxClusteringIterations = 100;
     const DefaultIterationsClusteringParameterMin = 1;
     const DefaultIterationsClusteringParameterMax = 100;

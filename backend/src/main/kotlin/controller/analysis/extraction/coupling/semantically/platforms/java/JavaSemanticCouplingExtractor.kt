@@ -34,7 +34,7 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
         for (similarity: Triple<String, String, Double> in similarities) {
             val start: String = similarity.first
             val end: String = similarity.second
-            val semanticCouplingScore: Int = (similarity.third * 100).toInt()
+            val semanticCouplingScore: Int = ((if (similarity.third < 0.0) 0.0 else similarity.third) * 100).toInt()
 
             val startUnit = Unit(identifier = start.substringAfterLast('.'), packageIdentifier = start.substringBeforeLast('.'))
             val endUnit = Unit(identifier = end.substringAfterLast('.'), packageIdentifier = end.substringBeforeLast('.'))
