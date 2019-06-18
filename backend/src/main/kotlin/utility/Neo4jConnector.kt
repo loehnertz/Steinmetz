@@ -9,11 +9,10 @@ import org.neo4j.ogm.session.Session
 import org.neo4j.ogm.session.SessionFactory
 
 
-const val Neo4jBoltConnectionUri = "bolt://localhost"
-const val NodeModelPackageIdentifier = "model.neo4j.node"
-const val RelationshipModelPackageIdentifier = "model.neo4j.relationship"
-
 object Neo4jConnector {
+    private const val Neo4jBoltConnectionUri = "bolt://localhost"
+    private const val NodeModelPackageIdentifier = "model.neo4j.node"
+    private const val RelationshipModelPackageIdentifier = "model.neo4j.relationship"
     private val configuration: Configuration = Configuration.Builder().uri(Neo4jBoltConnectionUri).build()!!
     private val sessionFactory: SessionFactory = SessionFactory(configuration, NodeModelPackageIdentifier, RelationshipModelPackageIdentifier)
 

@@ -54,12 +54,8 @@
                 if (!this.percentageInterClusterEdgeWeights) return NotAvailableLabel;
                 return this.percentageInterClusterEdgeWeights;
             },
-            nonNullGraphModularity: function () {
-                if (!this.graphModularity) return NotAvailableLabel;
-                return Number(this.graphModularity).toFixed(2);
-            },
             nonNullTotalCouplingModularity: function () {
-                if (!this.graphModularity) return NotAvailableLabel;
+                if (!this.totalCouplingModularity) return NotAvailableLabel;
                 return Number(this.totalCouplingModularity).toFixed(2);
             },
             nonNullAverageCouplingModularity: function () {
@@ -68,15 +64,15 @@
                 return Number(this.calculateAverage(couplingModularityValues)).toFixed(2);
             },
             nonNullDynamicCouplingModularity: function () {
-                if (!this.graphModularity) return NotAvailableLabel;
+                if (!this.totalCouplingModularity) return NotAvailableLabel;
                 return Number(this.dynamicCouplingModularity).toFixed(2);
             },
             nonNullSemanticCouplingModularity: function () {
-                if (!this.graphModularity) return NotAvailableLabel;
+                if (!this.totalCouplingModularity) return NotAvailableLabel;
                 return Number(this.semanticCouplingModularity).toFixed(2);
             },
             nonNullLogicalCouplingModularity: function () {
-                if (!this.graphModularity) return NotAvailableLabel;
+                if (!this.totalCouplingModularity) return NotAvailableLabel;
                 return Number(this.logicalCouplingModularity).toFixed(2);
             },
         },
@@ -94,7 +90,6 @@
             amountOfInterClusterEdges: Number,
             accumulatedInterClusterEdgeWeights: Number,
             percentageInterClusterEdgeWeights: Number,
-            graphModularity: Number,
             dynamicCouplingModularity: Number,
             semanticCouplingModularity: Number,
             logicalCouplingModularity: Number,

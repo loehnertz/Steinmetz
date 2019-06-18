@@ -1,6 +1,5 @@
 package controller.analysis.metrics.input
 
-import controller.analysis.metrics.MetricsManager
 import model.graph.Edge
 import model.graph.Graph
 import model.graph.Unit
@@ -13,7 +12,7 @@ class InputQualityAnalyzer(
         private val mergedStaticAndDynamicAnalysisGraph: Graph,
         private val semanticAnalysisGraph: Graph,
         private val logicalAnalysisGraph: Graph
-) : MetricsManager() {
+) {
     fun calculateInputQualityMetrics(): InputQuality {
         val dynamicAnalysisQuality: Int = calculateNodeQuality(baseGraph = staticAnalysisGraph, comparisonGraph = dynamicAnalysisGraph)
         val semanticAnalysisQuality: Int = calculateEdgeQuality(baseGraph = mergedStaticAndDynamicAnalysisGraph, comparisonGraph = semanticAnalysisGraph)

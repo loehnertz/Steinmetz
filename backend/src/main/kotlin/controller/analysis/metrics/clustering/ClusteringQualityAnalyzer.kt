@@ -1,19 +1,17 @@
 package controller.analysis.metrics.clustering
 
-import controller.analysis.metrics.MetricsManager
 import model.graph.*
 import model.graph.Unit
 import model.metrics.ClusteringQuality
 import kotlin.reflect.KMutableProperty1
 
 
-class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) : MetricsManager() {
+class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
     fun calculateClusteringQualityMetrics(): ClusteringQuality {
         val accumulatedEdgeWeights: Int = clusteredGraph.edges.sumBy { it.attributes.couplingScore }
         val amountOfClusters: Int = clusteredGraph.nodes.map { it.attributes.cluster }.toSet().size
         val interClusterEdges: Set<Edge> = clusteredGraph.edges.filter { isInterClusterEdge(clusteredGraph, it) }.toSet()
         val accumulatedInterfaceEdgeWeights: Int = interClusterEdges.sumBy { it.attributes.couplingScore }
-        val graphModularity: Double = calculateGraphModularity(clusteredGraph)
         val dynamicCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::dynamicCouplingScore)
         val semanticCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::semanticCouplingScore)
         val logicalCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::logicalCouplingScore)
@@ -25,7 +23,6 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) : MetricsMana
                 amountClusters = amountOfClusters,
                 amountInterfaceEdges = interClusterEdges.size,
                 accumulatedInterfaceEdgeWeights = accumulatedInterfaceEdgeWeights,
-                graphModularity = graphModularity,
                 dynamicCouplingModularity = dynamicCouplingModularity,
                 semanticCouplingModularity = semanticCouplingModularity,
                 logicalCouplingModularity = logicalCouplingModularity,
@@ -52,5 +49,26 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) : MetricsMana
         }
 
         return modularitySummands.sum()
+    }
+
+    private fun buildClusterMap(clusteredGraph: Graph): Map<Int, List<Node>> {
+        val clusterMap: MutableMap<Int, ArrayList<Node>> = mutableMapOf()
+
+        for (node: Node in clusteredGraph.nodes) {
+            var clusterList: ArrayList<Node>? = clusterMap[node.attributes.cluster!!]
+            if (clusterList == null) clusterList = arrayListOf()
+            clusterList.add(node)
+            clusterMap[node.attributes.cluster!!] = clusterList
+        }
+
+        return clusterMap.toMap()
+    }
+
+    private fun isInterClusterEdge(clusteredGraph: Graph, edge: Edge): Boolean {
+        return findNodeInClusteredGraph(clusteredGraph, edge.start).attributes.cluster != findNodeInClusteredGraph(clusteredGraph, edge.end).attributes.cluster
+    }
+
+    private fun findNodeInClusteredGraph(clusteredGraph: Graph, unit: Unit): Node {
+        return clusteredGraph.nodes.first { it.unit == unit }
     }
 }
