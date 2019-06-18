@@ -6,9 +6,9 @@ import model.graph.Graph
 
 
 abstract class DynamicAnalysisExtractor : AbstractExtractor() {
-    internal fun weightDynamicCouplingScores(graph: Graph): Graph {
-        val totalDynamicCoupling: Int = graph.edges.sumBy { it.attributes.dynamicCouplingScore }
-        graph.edges.forEach { it.attributes.dynamicCouplingScore = ((it.attributes.dynamicCouplingScore.toDouble() / totalDynamicCoupling) * 100).toInt() }
+    internal fun scaleDynamicCouplingScores(graph: Graph): Graph {
+        val maximumDynamicCouplingScore: Int = graph.edges.map { it.attributes.dynamicCouplingScore }.max()!!
+        graph.edges.forEach { it.attributes.dynamicCouplingScore = ((it.attributes.dynamicCouplingScore.toDouble() / maximumDynamicCouplingScore) * 100).toInt() }
         return graph
     }
 

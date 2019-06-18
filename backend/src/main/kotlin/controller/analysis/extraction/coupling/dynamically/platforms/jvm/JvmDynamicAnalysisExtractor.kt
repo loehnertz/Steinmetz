@@ -8,7 +8,7 @@ import java.io.File
 class JvmDynamicAnalysisExtractor(private val projectName: String, private val basePackageIdentifier: String, private val recordingFile: File) : DynamicAnalysisExtractor() {
     override fun extract(): Graph {
         val graph: Graph = retrieveGraph()
-        return weightDynamicCouplingScores(graph)
+        return scaleDynamicCouplingScores(graph)
     }
 
     private fun retrieveGraph(): Graph {
