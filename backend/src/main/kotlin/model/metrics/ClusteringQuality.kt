@@ -13,6 +13,7 @@ data class ClusteringQuality(
         val dynamicCouplingModularity: Double,
         val semanticCouplingModularity: Double,
         val logicalCouplingModularity: Double,
+        val averageCouplingModularity: Double,
         val totalCouplingModularity: Double
 ) {
     companion object {
