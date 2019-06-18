@@ -1,11 +1,12 @@
-package controller.analysis.extraction.coupling.logical.platforms.jvm
+package controller.analysis.extraction.coupling.logically.platforms.jvm
 
-import controller.analysis.extraction.coupling.logical.LogicalCouplingExtractor
-import controller.analysis.extraction.coupling.logical.VcsSystem
+import controller.analysis.extraction.coupling.logically.LogicalCouplingExtractor
+import controller.analysis.extraction.coupling.logically.VcsSystem
 import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
 import model.graph.Unit
+import utility.Utilities
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -17,7 +18,7 @@ class JvmLogicalCouplingExtractor(private val vcsSystem: VcsSystem, private val 
 
     override fun extract(): Graph {
         val output: ArrayList<String> = arrayListOf()
-        val processBuilder: ProcessBuilder = ProcessBuilder("java", "-jar", "backend/src/main/resources/code-maat.jar", "-l", vcsLogFile.absolutePath, "-c", vcsSystem.toString().toLowerCase(), "-a", "coupling", "-n", MinRevisions.toString(), "-m", MinSharedRevisions.toString(), "-i", MinCouplingScore.toString(), "-t", DaysToCombineCommits.toString()).also { it.redirectErrorStream(true) }
+        val processBuilder: ProcessBuilder = ProcessBuilder("java", "-jar", Utilities.getResourceAsText(ExecutableName).absolutePath, "-l", vcsLogFile.absolutePath, "-c", vcsSystem.toString().toLowerCase(), "-a", "coupling", "-n", MinRevisions.toString(), "-m", MinSharedRevisions.toString(), "-i", MinCouplingScore.toString(), "-t", DaysToCombineCommits.toString()).also { it.redirectErrorStream(true) }
         val process: Process = processBuilder.start()
         val reader = BufferedReader(InputStreamReader(process.inputStream))
         var line: String = reader.readLine()
@@ -58,17 +59,19 @@ class JvmLogicalCouplingExtractor(private val vcsSystem: VcsSystem, private val 
 
     private fun convertPathToUnit(path: String): Unit {
         val identifier: String = path.replace('/', '.').removeSuffix(FileExtension)
-        return Unit(identifier = identifier.substringAfterLast('.'), packageIdentifier = "$basePackageIdentifier.${identifier.substringBeforeLast('.')}")
+        return Unit(identifier = identifier.substringAfterLast('.'), packageIdentifier = identifier.substringBeforeLast('.'))
     }
 
     private fun stripAwayBasePath(path: String): String {
-        return path.substringAfter("$pathBasedBasePackageIdentifier/")
+        val basePath: String = path.substringBefore(pathBasedBasePackageIdentifier)
+        return path.substringAfter(basePath)
     }
 
     companion object {
+        private const val ExecutableName = "executables/code-maat.jar"
         private const val FileExtension = ".java"
-        private const val MinRevisions = 2
-        private const val MinSharedRevisions = 2
+        private const val MinRevisions = 1
+        private const val MinSharedRevisions = 1
         private const val MinCouplingScore = 1
         private const val DaysToCombineCommits = 1
     }

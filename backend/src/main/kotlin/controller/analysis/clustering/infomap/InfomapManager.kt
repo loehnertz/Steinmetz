@@ -3,6 +3,7 @@ package controller.analysis.clustering.infomap
 import controller.analysis.clustering.ClusteringAlgorithmManager
 import model.graph.*
 import model.graph.Unit
+import utility.Utilities
 import java.io.File
 import java.util.*
 
@@ -70,14 +71,15 @@ class InfomapManager(private val graph: Graph, private val projectName: String) 
     }
 
     private fun retrieveExecutablePath(): String {
-        return "backend/src/main/resources/Infomap"
+        return Utilities.getResourceAsText(ExecutableName).absolutePath
     }
 
     companion object {
+        private const val ExecutableName = "executables/Infomap"
         private const val InputOutputPath = "/tmp/steinmetz/infomap"
         private const val InputFileName = "steinmetz.txt"
         private const val OutputDirectory = "."
         private const val OutputFileName = "steinmetz.clu"
-        private const val MaxIterations = 55
+        private const val MaxIterations = 60
     }
 }

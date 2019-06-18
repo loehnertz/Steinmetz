@@ -1,4 +1,4 @@
-package controller.analysis.extraction.coupling.semantic
+package controller.analysis.extraction.coupling.semantically
 
 import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.ExtractorCompanion

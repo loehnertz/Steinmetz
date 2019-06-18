@@ -1,4 +1,4 @@
-package controller.analysis.extraction.coupling.logical
+package controller.analysis.extraction.coupling.logically
 
 
 enum class VcsSystem {

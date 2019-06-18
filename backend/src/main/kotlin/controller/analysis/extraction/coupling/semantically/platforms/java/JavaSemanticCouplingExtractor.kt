@@ -1,9 +1,9 @@
-package controller.analysis.extraction.coupling.semantic.platforms.java
+package controller.analysis.extraction.coupling.semantically.platforms.java
 
 import codes.jakob.semanticcoupling.SemanticCouplingCalculator
 import codes.jakob.semanticcoupling.model.NaturalLanguage
 import codes.jakob.semanticcoupling.model.ProgrammingLanguage
-import controller.analysis.extraction.coupling.semantic.SemanticCouplingExtractor
+import controller.analysis.extraction.coupling.semantically.SemanticCouplingExtractor
 import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
@@ -34,7 +34,7 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
         for (similarity: Triple<String, String, Double> in similarities) {
             val start: String = similarity.first
             val end: String = similarity.second
-            val semanticCouplingScore: Int = (similarity.third * 100).toInt()
+            val semanticCouplingScore: Int = ((if (similarity.third < 0.0) 0.0 else similarity.third) * 100).toInt()
 
             val startUnit = Unit(identifier = start.substringAfterLast('.'), packageIdentifier = start.substringBeforeLast('.'))
             val endUnit = Unit(identifier = end.substringAfterLast('.'), packageIdentifier = end.substringBeforeLast('.'))

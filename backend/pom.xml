@@ -134,6 +134,13 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/chinese-whispers.jar</systemPath>
         </dependency>
+        <dependency>
+            <groupId>gr.gousiosg.javacg</groupId>
+            <artifactId>stat</artifactId>
+            <version>0.2-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/javacg-static.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <build>

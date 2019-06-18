@@ -76,10 +76,10 @@
                 if (graphData) this.rerenderGraphWithDelay();
             },
             isClustered: function () {
-                this.rerenderGraph();
+                this.rerenderGraphWithDelay();
             },
             showClusterNodes: function () {
-                this.rerenderGraph();
+                this.rerenderGraphWithDelay();
             },
         },
         methods: {

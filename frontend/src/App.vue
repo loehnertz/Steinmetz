@@ -548,11 +548,12 @@
     const GraphClusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier, WalktrapIdentifier, ChineseWhispersIdentifier];
     const MetricAmountClusters = 'amountClusters';
     const MetricInterClusterEdges = 'amountInterfaceEdges';
+    const MetricTotalCouplingModularity = 'totalCouplingModularity';
+    const MetricAverageCouplingModularity = 'averageCouplingModularity';
     const MetricDynamicCouplingModularity = 'dynamicCouplingModularity';
     const MetricSemanticCouplingModularity = 'semanticCouplingModularity';
     const MetricLogicalCouplingModularity = 'logicalCouplingModularity';
-    const MetricTotalCouplingModularity = 'totalCouplingModularity';
-    const GraphClusteringMetrics = [MetricDynamicCouplingModularity, MetricSemanticCouplingModularity, MetricLogicalCouplingModularity, MetricTotalCouplingModularity];
+    const GraphClusteringMetrics = [MetricTotalCouplingModularity, MetricAverageCouplingModularity, MetricDynamicCouplingModularity, MetricSemanticCouplingModularity, MetricLogicalCouplingModularity];
     const DefaultMaxClusteringIterations = 100;
     const DefaultIterationsClusteringParameterMin = 1;
     const DefaultIterationsClusteringParameterMax = 100;
@@ -876,14 +877,16 @@
                         return 'Amount Clusters';
                     case MetricInterClusterEdges:
                         return 'Amount Inter-Cluster Edges';
+                    case MetricTotalCouplingModularity:
+                        return 'Total Coupling Modularity';
+                    case MetricAverageCouplingModularity:
+                        return 'Average Coupling Modularity';
                     case MetricDynamicCouplingModularity:
                         return 'Dynamic Coupling Modularity';
                     case MetricSemanticCouplingModularity:
                         return 'Semantic Coupling Modularity';
                     case MetricLogicalCouplingModularity:
                         return 'Logical Coupling Modularity';
-                    case MetricTotalCouplingModularity:
-                        return 'Total Coupling Modularity';
                     default:
                         return undefined
                 }

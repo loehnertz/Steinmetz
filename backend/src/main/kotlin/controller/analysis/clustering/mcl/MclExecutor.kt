@@ -1,5 +1,6 @@
 package controller.analysis.clustering.mcl
 
+import utility.Utilities
 import java.io.BufferedWriter
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
@@ -19,11 +20,11 @@ class MclExecutor(private val input: String, private val inflationValue: Double)
     }
 
     private fun retrieveExecutablePath(): String {
-        return "backend/src/main/resources/$ExecutableName"
+        return Utilities.getResourceAsText(ExecutableName).absolutePath
     }
 
     companion object {
-        private const val ExecutableName = "mcl"
+        private const val ExecutableName = "executables/mcl"
         private const val MclBaseCommand = "- --abc -o -"
     }
 }

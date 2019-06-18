@@ -3,6 +3,7 @@ package controller.analysis.clustering.clausetnewmanmoore
 import controller.analysis.clustering.ClusteringAlgorithmManager
 import model.graph.*
 import model.graph.Unit
+import utility.Utilities
 import java.io.File
 import java.util.*
 
@@ -91,11 +92,11 @@ class ClausetNewmanMooreManager(private val graph: Graph, private val projectNam
     }
 
     private fun retrieveExecutablePath(): String {
-        return "backend/src/main/resources/$ExecutableName"
+        return Utilities.getResourceAsText(ExecutableName).absolutePath
     }
 
     companion object {
-        private const val ExecutableName = "FastCommunity_wMH"
+        private const val ExecutableName = "executables/FastCommunity_wMH"
         private const val InputOutputPath = "/tmp/steinmetz/clausetnewmanmoore"
         private const val InputFileName = "steinmetz"
         private const val InputFileExtension = "wpairs"
