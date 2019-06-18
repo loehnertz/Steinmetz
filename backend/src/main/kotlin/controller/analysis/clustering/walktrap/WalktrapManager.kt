@@ -25,7 +25,7 @@ class WalktrapManager(private val graph: Graph, private val chosenClusteringMetr
         for (clusterAmount: Int in (1..iterations)) deferredExecutions.add(GlobalScope.async { WalktrapExecutor(inputFile, clusterAmount).execute() })
 
         return runBlocking {
-            val clusteredGraphs: List<Graph> = deferredExecutions.map { it.await() }.map { convertOutputToGraph(it, Graph(nodes = graph.nodes.map { node -> node.copy() }.toMutableSet(), edges = graph.edges)) }
+            val clusteredGraphs: List<Graph> = deferredExecutions.map { it.await() }.mapNotNull { convertOutputToGraph(it, Graph(nodes = graph.nodes.map { node -> node.copy() }.toMutableSet(), edges = graph.edges)) }
             return@runBlocking clusteredGraphs.sortedByDescending { (chosenClusteringMetric.get(ClusteringQualityAnalyzer(it).calculateClusteringQualityMetrics()) as Number).toDouble() }.first()
         }
     }
@@ -49,12 +49,12 @@ class WalktrapManager(private val graph: Graph, private val chosenClusteringMetr
         return writeInputFile(inputFileString)
     }
 
-    private fun convertOutputToGraph(output: String, graph: Graph): Graph {
-        var clusterId = 0
+    private fun convertOutputToGraph(output: String, graph: Graph): Graph? {
+        var clusterId = 1
 
         val outputLines: List<String> = output.substringAfterLast(OutputPartitionKeyword).split("\n")
         for (line: String in outputLines) {
-            if (!line.startsWith(OutputLinePrefix)) continue
+            if (!line.startsWith(OutputLinePrefix) || !line.contains(" = ")) continue
 
             for (unitId: Int in convertOutputClusterLineToListOfUnitIds(line)) {
                 val clusteredUnit: Unit = id2UnitMap[unitId]
@@ -64,6 +64,8 @@ class WalktrapManager(private val graph: Graph, private val chosenClusteringMetr
 
             clusterId++
         }
+
+        if (graph.nodes.map { it.attributes.cluster }.contains(null)) return null
 
         return graph
     }

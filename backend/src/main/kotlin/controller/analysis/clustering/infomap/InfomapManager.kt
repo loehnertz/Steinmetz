@@ -80,6 +80,6 @@ class InfomapManager(private val graph: Graph, private val projectName: String) 
         private const val InputFileName = "steinmetz.txt"
         private const val OutputDirectory = "."
         private const val OutputFileName = "steinmetz.clu"
-        private const val MaxIterations = 55
+        private const val MaxIterations = 60
     }
 }

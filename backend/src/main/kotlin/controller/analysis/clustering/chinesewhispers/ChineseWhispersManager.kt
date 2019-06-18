@@ -18,7 +18,7 @@ class ChineseWhispersManager(private val graph: Graph) : ClusteringAlgorithmMana
         val inputReader = StringReader(convertGraphToInput())
         val outputWriter = StringWriter()
 
-        CWGlobal.findAndWriteClusters(inputReader, BufferedWriter(outputWriter), 0.0F, iterations, Random(), CW.Option.TOP)
+        CWGlobal.findAndWriteClusters(inputReader, BufferedWriter(outputWriter), 0.0F, if (iterations <= MaxIterations) iterations else MaxIterations, Random(), CW.Option.TOP)
 
         return convertOutputToGraph(outputWriter.toString())
     }
@@ -51,5 +51,9 @@ class ChineseWhispersManager(private val graph: Graph) : ClusteringAlgorithmMana
 
     private fun buildNodeIdentifier(identifier: String, packageIdentifier: String): String {
         return "$packageIdentifier.$identifier"
+    }
+
+    companion object {
+        private const val MaxIterations = 55
     }
 }
