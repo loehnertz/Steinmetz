@@ -59,18 +59,19 @@ class JvmLogicalCouplingExtractor(private val vcsSystem: VcsSystem, private val 
 
     private fun convertPathToUnit(path: String): Unit {
         val identifier: String = path.replace('/', '.').removeSuffix(FileExtension)
-        return Unit(identifier = identifier.substringAfterLast('.'), packageIdentifier = "$basePackageIdentifier.${identifier.substringBeforeLast('.')}")
+        return Unit(identifier = identifier.substringAfterLast('.'), packageIdentifier = identifier.substringBeforeLast('.'))
     }
 
     private fun stripAwayBasePath(path: String): String {
-        return path.substringAfter("$pathBasedBasePackageIdentifier/")
+        val basePath: String = path.substringBefore(pathBasedBasePackageIdentifier)
+        return path.substringAfter(basePath)
     }
 
     companion object {
         private const val ExecutableName = "executables/code-maat.jar"
         private const val FileExtension = ".java"
-        private const val MinRevisions = 2
-        private const val MinSharedRevisions = 2
+        private const val MinRevisions = 1
+        private const val MinSharedRevisions = 1
         private const val MinCouplingScore = 1
         private const val DaysToCombineCommits = 1
     }

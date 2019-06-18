@@ -5,10 +5,8 @@ import controller.analysis.extraction.coupling.statically.StaticAnalysisExtracto
 import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractorCompanion
 import gr.gousiosg.javacg.stat.ClassVisitor
 import gr.gousiosg.javacg.stat.JCallGraph
-import model.graph.Graph
-import model.graph.Node
+import model.graph.*
 import model.graph.Unit
-import model.graph.UnitFootprint
 import utility.ArchiveExtractor
 import java.io.File
 import java.util.regex.Pattern
@@ -29,6 +27,22 @@ class JvmBytecodeExtractor(projectName: String, private val basePackageIdentifie
         graph.nodes.map { attachUnitFootprint(it) }.forEach { graph.addOrUpdateNode(it) }
 
         cleanup(staticAnalysisBasePath)
+
+        return graph
+    }
+
+    private fun convertInvokationPairsToGraph(invokations: List<Pair<String, String>>): Graph {
+        val graph = Graph()
+
+        for (invokation: Pair<String, String> in invokations) {
+            val startUnit = Unit(identifier = invokation.first.substringAfterLast('.'), packageIdentifier = invokation.first.substringBeforeLast('.'))
+            val endUnit = Unit(identifier = invokation.second.substringAfterLast('.'), packageIdentifier = invokation.second.substringBeforeLast('.'))
+            val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes())
+
+            if (startUnit == endUnit) continue
+
+            graph.addOrUpdateEdge(edge)
+        }
 
         return graph
     }

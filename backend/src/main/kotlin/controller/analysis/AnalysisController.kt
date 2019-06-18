@@ -115,25 +115,25 @@ class AnalysisController {
                     val file: File
                     when (part.name) {
                         ProjectRequest::staticAnalysisFile.name -> {
-                            file = File("${StaticAnalysisExtractor.getWorkingDirectory()}/$projectName")
+                            file = File("${StaticAnalysisExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
                             file.createNewFile()
                             staticAnalysisFile = file
                         }
                         ProjectRequest::dynamicAnalysisFile.name -> {
-                            file = File("${DynamicAnalysisExtractor.getWorkingDirectory()}/$projectName")
+                            file = File("${DynamicAnalysisExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
                             file.createNewFile()
                             dynamicAnalysisFile = file
                         }
                         ProjectRequest::semanticAnalysisFile.name -> {
-                            file = File("${SemanticCouplingExtractor.getWorkingDirectory()}/$projectName")
+                            file = File("${SemanticCouplingExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
                             file.createNewFile()
                             semanticAnalysisFile = file
                         }
                         ProjectRequest::logicalAnalysisFile.name -> {
-                            file = File("${LogicalCouplingExtractor.getWorkingDirectory()}/$projectName")
+                            file = File("${LogicalCouplingExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
                             file.createNewFile()
                             logicalAnalysisFile = file
