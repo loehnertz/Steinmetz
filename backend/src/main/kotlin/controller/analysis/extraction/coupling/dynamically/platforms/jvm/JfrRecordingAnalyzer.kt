@@ -2,6 +2,7 @@ package controller.analysis.extraction.coupling.dynamically.platforms.jvm
 
 import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.dynamically.DynamicAnalysisExtractor
+import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import jdk.jfr.consumer.RecordedEvent
 import jdk.jfr.consumer.RecordedFrame
 import jdk.jfr.consumer.RecordedStackTrace
@@ -21,8 +22,10 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
     override fun extract(): Graph {
         val dynamicAnalysisGraph: Graph = analyzeRecording()
         cleanup(basePath, dynamicAnalysisBasePath)
-        return dynamicAnalysisGraph
+        return mergeInnerUnitNodesWithParentNodes(dynamicAnalysisGraph)
     }
+
+    override fun normalizeUnit(unit: Unit): Unit = JvmBytecodeExtractor.normalizeUnit(unit)
 
     private fun analyzeRecording(): Graph {
         val graph = Graph()

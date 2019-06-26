@@ -1,6 +1,7 @@
 package controller.analysis.extraction.coupling.dynamically.platforms.jvm
 
 import controller.analysis.extraction.coupling.dynamically.DynamicAnalysisExtractor
+import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
@@ -12,8 +13,11 @@ import java.io.File
 class InstrumentationRecordingAnalyzer(private val instrumentationRecordingFile: File) : DynamicAnalysisExtractor() {
     override fun extract(): Graph {
         val invokations: List<Pair<String, String>> = retrieveInvokations()
-        return convertInvokationPairsToGraph(invokations)
+        val graph: Graph = convertInvokationPairsToGraph(invokations)
+        return mergeInnerUnitNodesWithParentNodes(graph)
     }
+
+    override fun normalizeUnit(unit: Unit): Unit = JvmBytecodeExtractor.normalizeUnit(unit)
 
     private fun convertInvokationPairsToGraph(invokations: List<Pair<String, String>>): Graph {
         val graph = Graph()

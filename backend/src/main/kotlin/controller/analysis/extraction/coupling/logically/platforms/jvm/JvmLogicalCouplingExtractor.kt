@@ -2,6 +2,7 @@ package controller.analysis.extraction.coupling.logically.platforms.jvm
 
 import controller.analysis.extraction.coupling.logically.LogicalCouplingExtractor
 import controller.analysis.extraction.coupling.logically.VcsSystem
+import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
@@ -31,8 +32,10 @@ class JvmLogicalCouplingExtractor(private val vcsSystem: VcsSystem, private val 
 
         cleanup(vcsLogFile.absolutePath)
 
-        return convertOutputToGraph(output)
+        return mergeInnerUnitNodesWithParentNodes(convertOutputToGraph(output))
     }
+
+    override fun normalizeUnit(unit: Unit): Unit = JvmBytecodeExtractor.normalizeUnit(unit)
 
     private fun convertOutputToGraph(output: ArrayList<String>): Graph {
         val edges: List<Edge> = output.mapNotNull { parseOutputLine(it) }

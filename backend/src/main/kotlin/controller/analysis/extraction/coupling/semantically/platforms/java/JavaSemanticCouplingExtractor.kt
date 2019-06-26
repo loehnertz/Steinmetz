@@ -4,6 +4,7 @@ import codes.jakob.semanticcoupling.SemanticCouplingCalculator
 import codes.jakob.semanticcoupling.model.NaturalLanguage
 import codes.jakob.semanticcoupling.model.ProgrammingLanguage
 import controller.analysis.extraction.coupling.semantically.SemanticCouplingExtractor
+import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
@@ -25,8 +26,10 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
 
         cleanup(unarchiverPath, sourceCodeFilesArchive.absolutePath)
 
-        return Graph(edges = buildEdgesOutOfSimilarities(similarities).toMutableSet())
+        return mergeInnerUnitNodesWithParentNodes(Graph(edges = buildEdgesOutOfSimilarities(similarities).toMutableSet()))
     }
+
+    override fun normalizeUnit(unit: Unit): Unit = JvmBytecodeExtractor.normalizeUnit(unit)
 
     private fun buildEdgesOutOfSimilarities(similarities: List<Triple<String, String, Double>>): List<Edge> {
         val edges: ArrayList<Edge> = arrayListOf()

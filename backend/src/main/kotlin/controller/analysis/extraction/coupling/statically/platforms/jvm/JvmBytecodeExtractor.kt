@@ -28,8 +28,10 @@ class JvmBytecodeExtractor(projectName: String, private val basePackageIdentifie
 
         cleanup(staticAnalysisBasePath)
 
-        return graph
+        return mergeInnerUnitNodesWithParentNodes(graph)
     }
+
+    override fun normalizeUnit(unit: Unit): Unit = JvmBytecodeExtractor.normalizeUnit(unit)
 
     private fun convertInvokationPairsToGraph(invokations: List<Pair<String, String>>): Graph {
         val graph = Graph()
