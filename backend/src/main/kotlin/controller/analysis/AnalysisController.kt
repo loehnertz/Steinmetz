@@ -13,6 +13,8 @@ import controller.analysis.extraction.coupling.statically.StaticAnalysisExtracto
 import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
 import controller.analysis.metrics.clustering.ClusteringQualityAnalyzer
+import controller.analysis.optimization.genetic.EvolutionManager
+import controller.analysis.optimization.genetic.Specimen
 import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
@@ -21,13 +23,17 @@ import model.graph.EdgeAttributeWeights
 import model.graph.Graph
 import model.metrics.ClusteringQuality
 import model.metrics.Metrics
+import model.resource.OptimizationResponse
 import model.resource.ProjectRequest
 import model.resource.ProjectResponse
 import org.neo4j.ogm.cypher.ComparisonOperator
 import org.neo4j.ogm.cypher.Filter
 import utility.Neo4jConnector
 import java.io.File
+import kotlin.math.ceil
+import kotlin.math.sqrt
 import kotlin.reflect.KProperty1
+import kotlin.reflect.full.declaredMemberProperties
 
 
 class AnalysisController {
@@ -56,6 +62,25 @@ class AnalysisController {
         val existingMetrics: Metrics = retrieveMetrics(projectName)
 
         return ProjectResponse(graph = clusteredGraph, metrics = mergeMetrics(existingMetrics, clusteredGraphMetrics))
+    }
+
+    fun optimizeClusteringParameters(projectName: String, clusteringAlgorithm: ClusteringAlgorithm, chosenClusteringMetric: KProperty1<ClusteringQuality, *>, maxIterations: Int): OptimizationResponse {
+        val projectGraph: Graph = retrieveGraph(projectName)
+        val fitnessFunction: (Specimen) -> Double = buildOptimizationFitnessFunction(projectName, projectGraph.clone(), clusteringAlgorithm, chosenClusteringMetric, maxIterations)
+        val geneAmount: Int = EdgeAttributeWeights::class.declaredMemberProperties.size
+
+        val bestSpecimen: Specimen = EvolutionManager(
+                maxGenerations = maxIterations,
+                populationSize = (EdgeAttributeWeights.UpperBound * 2),
+                geneLength = ceil(sqrt(EdgeAttributeWeights.UpperBound.toDouble())).toInt(),
+                geneAmount = geneAmount,
+                fitnessFunction = fitnessFunction
+        ).start()
+
+        val parameterList: List<Int> = EvolutionManager.convertBinaryChromosomeToIntegerList(bestSpecimen.chromosome, geneAmount)
+        val edgeAttributeWeights: EdgeAttributeWeights = EdgeAttributeWeights(parameterList[0], parameterList[1], parameterList[2]).also { println(it) }
+
+        return OptimizationResponse(edgeAttributeWeights)
     }
 
     private fun retrieveGraph(projectName: String): Graph {
@@ -89,6 +114,17 @@ class AnalysisController {
         }
 
         return mergedMetrics
+    }
+
+    private fun buildOptimizationFitnessFunction(projectName: String, projectGraph: Graph, clusteringAlgorithm: ClusteringAlgorithm, chosenClusteringMetric: KProperty1<ClusteringQuality, *>, maxIterations: Int): (Specimen) -> Double {
+        return ({ specimen: Specimen ->
+            val parameters: List<Int> = EvolutionManager.convertBinaryChromosomeToIntegerList(specimen.chromosome, EdgeAttributeWeights::class.declaredMemberProperties.size)
+            val edgeAttributeWeights = EdgeAttributeWeights(parameters[0], parameters[1], parameters[2])
+            val clusterer: Clusterer = Clusterer(projectGraph, projectName, chosenClusteringMetric, edgeAttributeWeights).also { it.applyEdgeWeighting() }
+            val clusteredGraph: Graph = clusterer.applyClusteringAlgorithm(clusteringAlgorithm, maxIterations)
+            val clusteredGraphMetrics: ClusteringQuality = ClusteringQualityAnalyzer(clusteredGraph).calculateClusteringQualityMetrics()
+            chosenClusteringMetric.get(clusteredGraphMetrics) as Double
+        })
     }
 
     suspend fun handleNewProjectUploads(multipart: MultiPartData): ProjectRequest {
