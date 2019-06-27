@@ -85,40 +85,12 @@ class EvolutionManager(
         val parentA: Specimen = selectRandomSpecimenViaTournament()
         val parentB: Specimen = selectRandomSpecimenViaTournament()
         return Pair(parentA, parentB)
-
-//        val parentPairs: ArrayList<Pair<Specimen, Specimen>> = arrayListOf()
-//
-//        var index = 0
-//        val sortedPopulation: List<Specimen> = population.sortedByDescending { it.fitness!! }
-//        for (_specimen in sortedPopulation) {
-//            if (index + 1 > sortedPopulation.size - 1) break
-//            parentPairs.add(Pair(sortedPopulation[index], sortedPopulation[index + 1]))
-//            index += 2
-//        }
-//
-//        return parentPairs.toList()
     }
 
     private fun selectRandomSpecimenViaTournament(): Specimen {
         val tournamentParticipants: List<Specimen> = population.shuffled().filter { it.fitness != null }.take((populationSize / SelectionPercentage) + 1)
         return tournamentParticipants.maxBy { it.fitness!! }!!
     }
-
-//    private fun selectRandomSpecimenProportionally(proportionalSpecimenList: List<Pair<Double, Specimen>>): Specimen {
-//        val randomNumber: Int = randomizer.nextInt(100)
-//
-//        var totalPercentage = 0.0
-//        var specimenIndex = 0
-//        for (specimen: Pair<Double, Specimen> in proportionalSpecimenList) {
-//            if (totalPercentage >= randomNumber) break
-//            totalPercentage += specimen.first
-//            specimenIndex++
-//        }
-//
-//        if (specimenIndex >= proportionalSpecimenList.size) specimenIndex = proportionalSpecimenList.size - 1
-//
-//        return proportionalSpecimenList[specimenIndex].second
-//    }
 
     private fun crossoverParents(parentPair: Pair<Specimen, Specimen>): Specimen {
         val parentA: Specimen = parentPair.first
@@ -143,11 +115,6 @@ class EvolutionManager(
 
         return Specimen(childChromosome.flatten().toIntArray())
     }
-
-//    private fun buildProportionalSpecimenList(): List<Pair<Double, Specimen>> {
-//        val accumulatedFitness: Double = population.sumByDouble { it.fitness!! }
-//        return population.map { Pair(((it.fitness!! / accumulatedFitness) * 100), it) }.shuffled(randomizer)
-//    }
 
     private fun updateBestSpecimen() {
         val currentBestSpecimen: Specimen = population.maxBy { it.fitness!! }!!
