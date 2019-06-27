@@ -74,6 +74,7 @@ class AnalysisController {
                 populationSize = (EdgeAttributeWeights.UpperBound * 2),
                 geneLength = ceil(sqrt(EdgeAttributeWeights.UpperBound.toDouble())).toInt(),
                 geneAmount = geneAmount,
+                illegalValues = listOf(0),
                 fitnessFunction = fitnessFunction
         ).start()
 
