@@ -381,7 +381,7 @@
             </div>
             <div class="container box" ref="edge-weighting-formula-controls">
                 <div class="level">
-                    <div class="level-right">
+                    <div class="level-left">
                         <div class="level-item">
                             <p>Coupling Score</p>
                         </div>
@@ -462,6 +462,18 @@
                         </div>
                         <div class="level-item">
                             <p>{{ couplingScoreFactorSum }}</p>
+                        </div>
+                    </div>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
+                                        data-tooltip="Optimizes the parameters automatically toward the selected metric"
+                                >
+                                    <button class="button is-primary" @click="fetchOptimizedClusteringParameters">Optimize</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -675,46 +687,10 @@
             uploadProjectName: function (uploadProjectName) {
                 this.selectedProjectId = uploadProjectName;
             },
-            selectedClusteringAlgorithm: function (selectedClusteringAlgorithm) {
-                if (selectedClusteringAlgorithm) {
-                    this.liveRerenderModeActive = false;
-                    this.fetchClusteredGraph();
-                }
-            },
-            selectedClusteringMetric: function (selectedClusteringMetric) {
-                if (selectedClusteringMetric) {
-                    this.liveRerenderModeActive = false;
-                    this.fetchClusteredGraph();
-                }
-            },
             clusteredViewEnabled: function (clusteredViewEnabled) {
                 if (!clusteredViewEnabled) {
                     this.liveRerenderModeActive = false;
                     this.showClusterNodes = false;
-                }
-            },
-            dynamicCouplingScoreWeightAsInteger: function (dynamicCouplingScoreWeightAsInteger) {
-                if (dynamicCouplingScoreWeightAsInteger) {
-                    this.liveRerenderModeActive = true;
-                    this.fetchClusteredGraph();
-                }
-            },
-            semanticCouplingScoreWeightAsInteger: function (semanticCouplingScoreWeightAsInteger) {
-                if (semanticCouplingScoreWeightAsInteger) {
-                    this.liveRerenderModeActive = true;
-                    this.fetchClusteredGraph();
-                }
-            },
-            logicalCouplingScoreWeightAsInteger: function (logicalCouplingScoreWeightAsInteger) {
-                if (logicalCouplingScoreWeightAsInteger) {
-                    this.liveRerenderModeActive = true;
-                    this.fetchClusteredGraph();
-                }
-            },
-            maxClusteringIterations: function (maxClusteringIterations) {
-                if (maxClusteringIterations) {
-                    this.liveRerenderModeActive = true;
-                    this.fetchClusteredGraph();
                 }
             },
         },
@@ -834,6 +810,34 @@
 
                 this.scrollToRefAnchor('clustering-controls');
             },
+            fetchOptimizedClusteringParameters() {
+                this.isLoading = true;
+
+                const parameters = {
+                    'clusteringAlgorithm': this.selectedClusteringAlgorithm,
+                    'clusteringMetric': this.selectedClusteringMetric,
+                    'maxClusteringIterations': this.maxClusteringIterations,
+                };
+
+                axios
+                    .get(
+                        `http://localhost:5656/analysis/${this.selectedProjectId}/optimize`,
+                        {
+                            params: parameters,
+                        },
+                    )
+                    .then((response) => {
+                        this.dynamicCouplingScoreFactor = response.data["edgeAttributeWeights"]["dynamicCouplingScoreWeight"];
+                        this.semanticCouplingScoreFactor = response.data["edgeAttributeWeights"]["semanticCouplingScoreWeight"];
+                        this.logicalCouplingScoreFactor = response.data["edgeAttributeWeights"]["logicalCouplingScoreWeight"];
+                        this.isLoading = false;
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        this.liveRerenderModeActive = false;
+                        this.isLoading = false;
+                    });
+            },
             reevaluateMetrics() {
                 let currentBestScore = 0;
 
@@ -860,7 +864,7 @@
                     case LouvainIdentifier:
                         return 'Louvain';
                     case ClausetNewmanMooreIdentifier:
-                        return 'Fast Modularity';
+                        return 'Clauset et al.';
                     case WalktrapIdentifier:
                         return 'Walktrap';
                     case ChineseWhispersIdentifier:
