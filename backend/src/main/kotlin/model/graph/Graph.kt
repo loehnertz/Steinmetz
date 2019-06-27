@@ -9,6 +9,13 @@ data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: Mutabl
         if (this.nodes.isEmpty()) inferNodesOutOfEdges()
     }
 
+    fun clone(): Graph {
+        return Graph(
+                nodes = this.nodes.map { node -> node.copy() }.toMutableSet(),
+                edges = this.edges.map { edge -> edge.copy() }.toMutableSet()
+        )
+    }
+
     fun addOrUpdateNode(node: Node) {
         val existingNode: Node? = nodes.firstOrNull { it == node }
         nodes.removeIf { it == node }
