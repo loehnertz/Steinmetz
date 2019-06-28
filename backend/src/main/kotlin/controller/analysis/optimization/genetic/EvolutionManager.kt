@@ -33,7 +33,6 @@ class EvolutionManager(
             select()
             crossover()
             mutate()
-            sanitize()
 
             evaluate()
         }
@@ -42,6 +41,7 @@ class EvolutionManager(
     }
 
     private fun evaluate() {
+        sanitize()
         population.forEach { it.fitness = fitnessFunction(it) }
         updateBestSpecimen()
 
@@ -130,13 +130,7 @@ class EvolutionManager(
     }
 
     private fun initializePopulation() {
-        val initialPopulation: ArrayList<Specimen> = arrayListOf()
-
-        for (n: Int in (1..populationSize)) {
-            initialPopulation.add(generateRandomSpecimen())
-        }
-
-        population = initialPopulation
+        population = ArrayList((1..populationSize).map { generateRandomSpecimen() })
         evaluate()
     }
 
