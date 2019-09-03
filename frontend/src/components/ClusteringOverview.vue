@@ -13,7 +13,7 @@
 
 <script>
     export default {
-        name: 'UnitTree',
+        name: 'ClusteringOverview',
         computed: {
             cluster2UnitsMap: function () {
                 return this.computeCluster2UnitsMap();
@@ -37,16 +37,7 @@
                 return this.graphData.nodes.filter((node) => node.attributes.cluster === clusterId);
             },
             transformNodesToUnits(nodes) {
-                const units = nodes.map((node) => `${node.unit["packageIdentifier"]}.${node.unit["identifier"]}`);
-                const unitPackagesList = units.map((unit) => unit.split('.'));
-
-                const tree = {};
-                for (let unitPackages in unitPackagesList[0]) {
-                    tree[unitPackagesList[0][unitPackages]] = {};
-                }
-                console.log(tree);
-
-                return units;
+                return nodes.map((node) => `${node.unit["packageIdentifier"]}.${node.unit["identifier"]}`);
             },
         },
         props: {
