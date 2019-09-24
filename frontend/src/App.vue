@@ -238,6 +238,64 @@
                         <div class="level-item">
                             <div class="field">
                                 <div
+                                        class="control tooltip is-tooltip-bottom"
+                                        data-tooltip="Toggles the graph view"
+                                >
+                                    <input
+                                            class="switch"
+                                            id="graphViewEnabled"
+                                            type="checkbox"
+                                            v-model="graphEnabled"
+                                            :checked="graphEnabled"
+                                    >
+                                    <label for="graphViewEnabled">
+                                        Graph View
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-bottom"
+                                        data-tooltip="Toggles the textual view"
+                                >
+                                    <input
+                                            class="switch"
+                                            id="textualViewEnabled"
+                                            type="checkbox"
+                                            v-model="overviewEnabled"
+                                            :checked="overviewEnabled"
+                                    >
+                                    <label for="textualViewEnabled">
+                                        Textual View
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-bottom"
+                                        data-tooltip="Toggles the metrics view"
+                                >
+                                    <input
+                                            class="switch"
+                                            id="metricsViewEnabled"
+                                            type="checkbox"
+                                            v-model="metricsEnabled"
+                                            :checked="metricsEnabled"
+                                    >
+                                    <label for="metricsViewEnabled">
+                                        Metrics View
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">&nbsp;</div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
                                         class="control tooltip"
                                         data-tooltip="Retrieves the analysis data of a previously added project"
                                 >
@@ -468,7 +526,7 @@
             </div>
         </section>
         <section class="section">
-            <div class="container box" id="graph-container">
+            <div class="container box" id="graph-container" v-if="graphData && graphEnabled">
                 <Graph
                         id="graph"
                         :graph-data="graphData"
@@ -479,7 +537,15 @@
                 />
             </div>
         </section>
-        <section class="section" v-if="clusteringAvailable">
+        <section class="section" v-if="clusteringAvailable && overviewEnabled">
+            <div class="container box" id="overview-container">
+                <ClusteringOverview
+                        :graph-data="graphData"
+                        :cluster-ids="clusterIds"
+                />
+            </div>
+        </section>
+        <section class="section" id="metrics-container" v-if="clusteringAvailable && metricsEnabled">
             <div class="container">
                 <div class="box">
                     <h1 class="title">Metrics</h1>
@@ -531,6 +597,7 @@
 <script>
     import ClusteringMetrics from './components/ClusteringMetrics.vue';
     import Graph from './components/Graph.vue';
+    import ClusteringOverview from './components/ClusteringOverview.vue';
     import Slider from './components/Slider.vue';
     import Throbber from './components/Throbber.vue';
 
@@ -564,6 +631,7 @@
         name: 'app',
         components: {
             ClusteringMetrics,
+            ClusteringOverview,
             Graph,
             Slider,
             Throbber,
@@ -661,6 +729,9 @@
                 clusteredViewEnabled: false,
                 showClusterNodes: false,
                 sliderFloatingPointStepEnabled: true,
+                graphEnabled: true,
+                overviewEnabled: false,
+                metricsEnabled: true,
                 dynamicCouplingScoreWeightAsInteger: DefaultDynamicCouplingScoreFactor,
                 semanticCouplingScoreWeightAsInteger: DefaultSemanticCouplingScoreFactor,
                 logicalCouplingScoreWeightAsInteger: DefaultLogicalCouplingScoreFactor,
