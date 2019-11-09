@@ -7,25 +7,25 @@ services:
     environment:
       NEO4J_HOST: "neo4j"
       REDIS_HOST: "redis"
+    depends_on:
+      - neo4j
   frontend:
     build: frontend/
     ports:
-      - 8080:8080
+      - 8056:80
     volumes:
       - data:/app
+    depends_on:
+      - backend
   neo4j:
     build: database/
     ports:
-      - 7474:7474
-      - 7687:7687
+      - 7474
+      - 7687
     environment:
       NEO4J_AUTH: "none"
     volumes:
       - data:/data
       - data:/logs
-  redis:
-    image: redis:alpine
-    ports:
-      - 6379
 volumes:
   data:
