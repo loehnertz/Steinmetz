@@ -30,7 +30,7 @@ class GraphConverter(private val units: List<Unit>) {
         for (relationship: CallsRelationship in relationships) {
             val start = model.graph.Unit(identifier = relationship.caller.identifier, packageIdentifier = relationship.caller.packageIdentifier)
             val end = model.graph.Unit(identifier = relationship.callee.identifier, packageIdentifier = relationship.callee.packageIdentifier)
-            val attributes = EdgeAttributes(dynamicCouplingScore = relationship.dynamiCouplingScore, semanticCouplingScore = relationship.semanticCouplingScore, logicalCouplingScore = relationship.logicalCouplingScore)
+            val attributes = EdgeAttributes(dynamicCouplingScore = relationship.dynamiCouplingScore, semanticCouplingScore = relationship.semanticCouplingScore, evolutionaryCouplingScore = relationship.evolutionaryCouplingScore)
 
             edges.add(Edge(start = start, end = end, attributes = attributes))
         }

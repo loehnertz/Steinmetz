@@ -1,7 +1,7 @@
 package model.resource
 
 import controller.analysis.extraction.Platform
-import controller.analysis.extraction.coupling.logically.VcsSystem
+import controller.analysis.extraction.coupling.evolutionary.VcsSystem
 import java.io.File
 
 
@@ -13,5 +13,5 @@ data class ProjectRequest(
     val staticAnalysisFile: File,
     val dynamicAnalysisFile: File,
     val semanticAnalysisFile: File,
-    val logicalAnalysisFile: File
+    val evolutionaryAnalysisFile: File
 )

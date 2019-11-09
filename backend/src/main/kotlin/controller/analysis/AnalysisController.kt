@@ -5,9 +5,9 @@ import controller.analysis.clustering.ClusteringAlgorithm
 import controller.analysis.extraction.Platform
 import controller.analysis.extraction.Platform.Companion.getPlatformByName
 import controller.analysis.extraction.coupling.dynamically.DynamicAnalysisExtractor
-import controller.analysis.extraction.coupling.logically.LogicalCouplingExtractor
-import controller.analysis.extraction.coupling.logically.VcsSystem
-import controller.analysis.extraction.coupling.logically.VcsSystem.Companion.getVcsSystemByName
+import controller.analysis.extraction.coupling.evolutionary.EvolutionaryCouplingExtractor
+import controller.analysis.extraction.coupling.evolutionary.VcsSystem
+import controller.analysis.extraction.coupling.evolutionary.VcsSystem.Companion.getVcsSystemByName
 import controller.analysis.extraction.coupling.semantically.SemanticCouplingExtractor
 import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
 import controller.analysis.extraction.graph.GraphConverter
@@ -42,7 +42,7 @@ class AnalysisController {
             staticAnalysisFile = projectRequest.staticAnalysisFile,
             dynamicAnalysisFile = projectRequest.dynamicAnalysisFile,
             semanticAnalysisFile = projectRequest.semanticAnalysisFile,
-            logicalAnalysisFile = projectRequest.logicalAnalysisFile
+            evolutionaryAnalysisFile = projectRequest.evolutionaryAnalysisFile
         ).insert()
     }
 
@@ -101,7 +101,7 @@ class AnalysisController {
         var staticAnalysisFile: File? = null
         var dynamicAnalysisFile: File? = null
         var semanticAnalysisFile: File? = null
-        var logicalAnalysisFile: File? = null
+        var evolutionaryAnalysisFile: File? = null
 
         multipart.forEachPart { part ->
             when (part) {
@@ -134,13 +134,13 @@ class AnalysisController {
                             withContext(Dispatchers.IO) { file.createNewFile() }
                             semanticAnalysisFile = file
                         }
-                        ProjectRequest::logicalAnalysisFile.name -> {
-                            file = File("${LogicalCouplingExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
+                        ProjectRequest::evolutionaryAnalysisFile.name -> {
+                            file = File("${EvolutionaryCouplingExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
                             withContext(Dispatchers.IO) { file.createNewFile() }
-                            logicalAnalysisFile = file
+                            evolutionaryAnalysisFile = file
                         }
-                        else -> throw IllegalArgumentException("File keys must be in ${listOf(ProjectRequest::staticAnalysisFile.name, ProjectRequest::dynamicAnalysisFile.name, ProjectRequest::semanticAnalysisFile.name, ProjectRequest::logicalAnalysisFile.name)}")
+                        else -> throw IllegalArgumentException("File keys must be in ${listOf(ProjectRequest::staticAnalysisFile.name, ProjectRequest::dynamicAnalysisFile.name, ProjectRequest::semanticAnalysisFile.name, ProjectRequest::evolutionaryAnalysisFile.name)}")
                     }
 
                     part.streamProvider().use { uploadStream ->
@@ -164,7 +164,7 @@ class AnalysisController {
             staticAnalysisFile = staticAnalysisFile!!,
             dynamicAnalysisFile = dynamicAnalysisFile!!,
             semanticAnalysisFile = semanticAnalysisFile!!,
-            logicalAnalysisFile = logicalAnalysisFile!!
+            evolutionaryAnalysisFile = evolutionaryAnalysisFile!!
         )
     }
 }

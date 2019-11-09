@@ -11,7 +11,7 @@ data class ClusteringQuality(
     val accumulatedInterfaceEdgeWeights: Int,
     val dynamicCouplingModularity: Double,
     val semanticCouplingModularity: Double,
-    val logicalCouplingModularity: Double,
+    val evolutionaryCouplingModularity: Double,
     val averageCouplingModularity: Double,
     val totalCouplingModularity: Double
 ) {

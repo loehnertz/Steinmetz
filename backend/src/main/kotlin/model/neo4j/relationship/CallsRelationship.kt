@@ -11,7 +11,7 @@ class CallsRelationship(
     @EndNode var callee: Unit,
     @Property var dynamiCouplingScore: Int = 0,
     @Property var semanticCouplingScore: Int = 0,
-    @Property var logicalCouplingScore: Int = 0
+    @Property var evolutionaryCouplingScore: Int = 0
 ) : GraphEntity {
     @Id
     @GeneratedValue

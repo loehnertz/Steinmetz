@@ -8,7 +8,7 @@ import org.neo4j.ogm.annotation.NodeEntity
 
 
 @NodeEntity
-class Metrics(var projectName: String, var dynamicAnalysisQuality: Int?, var semanticAnalysisQuality: Int?, var logicalAnalysisQuality: Int?) : GraphEntity {
+class Metrics(var projectName: String, var dynamicAnalysisQuality: Int?, var semanticAnalysisQuality: Int?, var evolutionaryAnalysisQuality: Int?) : GraphEntity {
     @Id
     @GeneratedValue
     override var id: Long? = null
@@ -19,7 +19,7 @@ class Metrics(var projectName: String, var dynamicAnalysisQuality: Int?, var sem
                 projectName = projectName,
                 dynamicAnalysisQuality = metrics.inputQuality?.dynamicAnalysis,
                 semanticAnalysisQuality = metrics.inputQuality?.semanticAnalysis,
-                logicalAnalysisQuality = metrics.inputQuality?.logicalAnalysis
+                evolutionaryAnalysisQuality = metrics.inputQuality?.evolutionaryAnalysis
             )
         }
 
@@ -28,7 +28,7 @@ class Metrics(var projectName: String, var dynamicAnalysisQuality: Int?, var sem
                 inputQuality = InputQuality(
                     dynamicAnalysis = metricsNode.dynamicAnalysisQuality!!,
                     semanticAnalysis = metricsNode.semanticAnalysisQuality!!,
-                    logicalAnalysis = metricsNode.logicalAnalysisQuality!!
+                    evolutionaryAnalysis = metricsNode.evolutionaryAnalysisQuality!!
                 )
             )
         }

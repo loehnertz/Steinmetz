@@ -1,7 +1,7 @@
-package controller.analysis.extraction.coupling.logically.platforms.jvm
+package controller.analysis.extraction.coupling.evolutionary.platforms.jvm
 
-import controller.analysis.extraction.coupling.logically.LogicalCouplingExtractor
-import controller.analysis.extraction.coupling.logically.VcsSystem
+import controller.analysis.extraction.coupling.evolutionary.EvolutionaryCouplingExtractor
+import controller.analysis.extraction.coupling.evolutionary.VcsSystem
 import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import model.graph.Edge
 import model.graph.EdgeAttributes
@@ -14,7 +14,7 @@ import java.io.InputStreamReader
 import java.util.*
 
 
-class JvmLogicalCouplingExtractor(private val vcsSystem: VcsSystem, private val basePackageIdentifier: String, private val vcsLogFile: File) : LogicalCouplingExtractor() {
+class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private val basePackageIdentifier: String, private val vcsLogFile: File) : EvolutionaryCouplingExtractor() {
     private val pathBasedBasePackageIdentifier: String = basePackageIdentifier.replace('.', '/')
 
     override fun extract(): Graph {
@@ -54,7 +54,7 @@ class JvmLogicalCouplingExtractor(private val vcsSystem: VcsSystem, private val 
 
             if (!startUnit.packageIdentifier.startsWith(basePackageIdentifier) || !endUnit.packageIdentifier.startsWith(basePackageIdentifier)) return null
 
-            return Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(logicalCouplingScore = degree.toInt()))
+            return Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(evolutionaryCouplingScore = degree.toInt()))
         } catch (exception: Exception) {
             return null
         }

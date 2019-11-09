@@ -2,8 +2,8 @@ package controller.analysis.extraction.graph
 
 import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.dynamically.platforms.jvm.JvmDynamicAnalysisExtractor
-import controller.analysis.extraction.coupling.logically.VcsSystem
-import controller.analysis.extraction.coupling.logically.platforms.jvm.JvmLogicalCouplingExtractor
+import controller.analysis.extraction.coupling.evolutionary.VcsSystem
+import controller.analysis.extraction.coupling.evolutionary.platforms.jvm.JvmEvolutionaryCouplingExtractor
 import controller.analysis.extraction.coupling.semantically.platforms.java.JavaSemanticCouplingExtractor
 import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import controller.analysis.metrics.input.InputQualityAnalyzer
@@ -26,7 +26,7 @@ class GraphInserter(
     private val staticAnalysisFile: File,
     private val dynamicAnalysisFile: File,
     private val semanticAnalysisFile: File,
-    private val logicalAnalysisFile: File
+    private val evolutionaryAnalysisFile: File
 ) {
     init {
         if (projectAlreadyExists()) throw ProjectAlreadyExistsException()
@@ -35,7 +35,7 @@ class GraphInserter(
     private lateinit var staticAnalysisGraph: Graph
     private lateinit var dynamicCouplingGraph: Graph
     private lateinit var semanticCouplingGraph: Graph
-    private lateinit var logicalCouplingGraph: Graph
+    private lateinit var evolutionaryCouplingGraph: Graph
 
     fun insert(): ProjectResponse {
         staticAnalysisGraph = processStaticAnalysisData()
@@ -44,9 +44,9 @@ class GraphInserter(
         val baseGraph: Graph = mergeStaticAndDynamicCouplingGraphs()
 
         semanticCouplingGraph = processSemanticCouplingData(baseGraph.edges)
-        logicalCouplingGraph = processLogicalCouplingData()
+        evolutionaryCouplingGraph = processEvolutionaryCouplingData()
 
-        val finalGraph: Graph = mergeSemanticAndLogicalCouplingGraphs(baseGraph)
+        val finalGraph: Graph = mergeSemanticAndEvolutionaryCouplingGraphs(baseGraph)
 
         val metrics: Metrics = calculateMetrics(baseGraph = baseGraph)
 
@@ -81,9 +81,9 @@ class GraphInserter(
     }
 
     @Throws(IllegalArgumentException::class)
-    private fun processLogicalCouplingData(): Graph {
+    private fun processEvolutionaryCouplingData(): Graph {
         when (projectPlatform) {
-            Platform.JAVA -> return JvmLogicalCouplingExtractor(vcsSystem, basePackageIdentifier, logicalAnalysisFile).extract()
+            Platform.JAVA -> return JvmEvolutionaryCouplingExtractor(vcsSystem, basePackageIdentifier, evolutionaryAnalysisFile).extract()
             else -> throw IllegalArgumentException()
         }
     }
@@ -95,7 +95,7 @@ class GraphInserter(
     }
 
     private fun calculateInputMetrics(mergedStaticAndDynamicAnalysisGraph: Graph): InputQuality {
-        return InputQualityAnalyzer(mergedStaticAndDynamicAnalysisGraph = mergedStaticAndDynamicAnalysisGraph, dynamicAnalysisGraph = dynamicCouplingGraph, semanticAnalysisGraph = semanticCouplingGraph, logicalAnalysisGraph = logicalCouplingGraph).calculateInputQualityMetrics()
+        return InputQualityAnalyzer(mergedStaticAndDynamicAnalysisGraph = mergedStaticAndDynamicAnalysisGraph, dynamicAnalysisGraph = dynamicCouplingGraph, semanticAnalysisGraph = semanticCouplingGraph, evolutionaryAnalysisGraph = evolutionaryCouplingGraph).calculateInputQualityMetrics()
     }
 
     private fun mergeStaticAndDynamicCouplingGraphs(): Graph {
@@ -103,9 +103,9 @@ class GraphInserter(
         return staticAnalysisGraph
     }
 
-    private fun mergeSemanticAndLogicalCouplingGraphs(baseGraph: Graph): Graph {
+    private fun mergeSemanticAndEvolutionaryCouplingGraphs(baseGraph: Graph): Graph {
         semanticCouplingGraph.edges.forEach { baseGraph.updateEdge(it) }
-        logicalCouplingGraph.edges.forEach { baseGraph.updateEdge(it) }
+        evolutionaryCouplingGraph.edges.forEach { baseGraph.updateEdge(it) }
         return baseGraph
     }
 
@@ -128,7 +128,7 @@ class GraphInserter(
                 callee = endUnit,
                 dynamicCouplingScore = edge.attributes.dynamicCouplingScore,
                 semanticCouplingScore = edge.attributes.semanticCouplingScore,
-                logicalCouplingScore = edge.attributes.logicalCouplingScore
+                evolutionaryCouplingScore = edge.attributes.evolutionaryCouplingScore
             )
 
             Neo4jConnector.saveEntity(startUnit)
