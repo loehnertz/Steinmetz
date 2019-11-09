@@ -57,7 +57,7 @@ class ClausetNewmanMooreManager(private val graph: Graph, private val projectNam
             }
 
             val clusteredUnit: Unit = id2UnitMap[line.toInt()]
-                    ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
+                ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
             graph.addOrUpdateNode(Node(unit = clusteredUnit, attributes = NodeAttributes(cluster = clusterId)))
         }
 

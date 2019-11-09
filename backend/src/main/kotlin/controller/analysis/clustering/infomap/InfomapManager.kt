@@ -44,7 +44,7 @@ class InfomapManager(private val graph: Graph, private val projectName: String) 
             val (nodeId, clusterId, _) = line.split(' ')
 
             val clusteredUnit: Unit = id2UnitMap[nodeId.toInt()]
-                    ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
+                ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
             graph.addOrUpdateNode(Node(unit = clusteredUnit, attributes = NodeAttributes(cluster = clusterId.toInt())))
         }
 

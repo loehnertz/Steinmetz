@@ -27,55 +27,55 @@ class LouvainManager(private val graph: Graph, private val projectName: String) 
 
     private fun executeGraphAlgorithm(): Result {
         return Neo4jConnector.executeCypher(
-                "CALL algo.louvain.stream('$LouvainNodeLabel', '$CallsRelation', {weightProperty:'${EdgeAttributes::couplingScore.name}'})\n" +
-                        "YIELD nodeId, $ClusterIdentifer\n" +
-                        "RETURN algo.asNode(nodeId) AS $UnitIdentifier, $ClusterIdentifer"
+            "CALL algo.louvain.stream('$LouvainNodeLabel', '$CallsRelation', {weightProperty:'${EdgeAttributes::couplingScore.name}'})\n" +
+                "YIELD nodeId, $ClusterIdentifer\n" +
+                "RETURN algo.asNode(nodeId) AS $UnitIdentifier, $ClusterIdentifer"
         )
     }
 
     private fun addNecessaryLabels() {
         for (edge in graph.edges) {
             Neo4jConnector.executeCypher(
-                    "MATCH " +
-                            "(s:Unit {" +
-                            "${model.neo4j.node.Unit::identifier.name}:'${edge.start.identifier}', " +
-                            "${model.neo4j.node.Unit::packageIdentifier.name}:'${edge.start.packageIdentifier}'" +
-                            "})" +
-                            "-[r]->" +
-                            "(e:Unit {" +
-                            "${model.neo4j.node.Unit::identifier.name}:'${edge.end.identifier}', " +
-                            "${model.neo4j.node.Unit::packageIdentifier.name}:'${edge.end.packageIdentifier}'" +
-                            "})\n" +
-                            "SET r.${edge.attributes::couplingScore.name} = ${edge.attributes.couplingScore}\n"
+                "MATCH " +
+                    "(s:Unit {" +
+                    "${model.neo4j.node.Unit::identifier.name}:'${edge.start.identifier}', " +
+                    "${model.neo4j.node.Unit::packageIdentifier.name}:'${edge.start.packageIdentifier}'" +
+                    "})" +
+                    "-[r]->" +
+                    "(e:Unit {" +
+                    "${model.neo4j.node.Unit::identifier.name}:'${edge.end.identifier}', " +
+                    "${model.neo4j.node.Unit::packageIdentifier.name}:'${edge.end.packageIdentifier}'" +
+                    "})\n" +
+                    "SET r.${edge.attributes::couplingScore.name} = ${edge.attributes.couplingScore}\n"
             )
         }
 
         Neo4jConnector.executeCypher(
-                "MATCH (u:Unit {${model.neo4j.node.Unit::projectName.name}:'$projectName'})\n" +
-                        "SET u:$LouvainNodeLabel\n"
+            "MATCH (u:Unit {${model.neo4j.node.Unit::projectName.name}:'$projectName'})\n" +
+                "SET u:$LouvainNodeLabel\n"
         )
     }
 
     private fun removeNecessaryLabels() {
         for (edge in graph.edges) {
             Neo4jConnector.executeCypher(
-                    "MATCH " +
-                            "(s:Unit {" +
-                            "${model.neo4j.node.Unit::identifier.name}:'${edge.start.identifier}', " +
-                            "${model.neo4j.node.Unit::packageIdentifier.name}:'${edge.start.packageIdentifier}'" +
-                            "})" +
-                            "-[r]->" +
-                            "(e:Unit {" +
-                            "${model.neo4j.node.Unit::identifier.name}:'${edge.end.identifier}', " +
-                            "${model.neo4j.node.Unit::packageIdentifier.name}:'${edge.end.packageIdentifier}'" +
-                            "})\n" +
-                            "REMOVE r.${edge.attributes::couplingScore.name}\n"
+                "MATCH " +
+                    "(s:Unit {" +
+                    "${model.neo4j.node.Unit::identifier.name}:'${edge.start.identifier}', " +
+                    "${model.neo4j.node.Unit::packageIdentifier.name}:'${edge.start.packageIdentifier}'" +
+                    "})" +
+                    "-[r]->" +
+                    "(e:Unit {" +
+                    "${model.neo4j.node.Unit::identifier.name}:'${edge.end.identifier}', " +
+                    "${model.neo4j.node.Unit::packageIdentifier.name}:'${edge.end.packageIdentifier}'" +
+                    "})\n" +
+                    "REMOVE r.${edge.attributes::couplingScore.name}\n"
             )
         }
 
         Neo4jConnector.executeCypher(
-                "MATCH (u:$LouvainNodeLabel {${model.neo4j.node.Unit::projectName.name}:'$projectName'})\n" +
-                        "REMOVE u:$LouvainNodeLabel\n"
+            "MATCH (u:$LouvainNodeLabel {${model.neo4j.node.Unit::projectName.name}:'$projectName'})\n" +
+                "REMOVE u:$LouvainNodeLabel\n"
         )
     }
 

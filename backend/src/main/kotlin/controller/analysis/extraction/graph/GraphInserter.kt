@@ -19,14 +19,14 @@ import java.io.File
 
 
 class GraphInserter(
-        private val projectName: String,
-        private val projectPlatform: Platform,
-        private val vcsSystem: VcsSystem,
-        private val basePackageIdentifier: String,
-        private val staticAnalysisFile: File,
-        private val dynamicAnalysisFile: File,
-        private val semanticAnalysisFile: File,
-        private val logicalAnalysisFile: File
+    private val projectName: String,
+    private val projectPlatform: Platform,
+    private val vcsSystem: VcsSystem,
+    private val basePackageIdentifier: String,
+    private val staticAnalysisFile: File,
+    private val dynamicAnalysisFile: File,
+    private val semanticAnalysisFile: File,
+    private val logicalAnalysisFile: File
 ) {
     init {
         if (projectAlreadyExists()) throw ProjectAlreadyExistsException()
@@ -112,23 +112,23 @@ class GraphInserter(
     private fun insertGraphIntoDatabase(graph: Graph) {
         for (edge: Edge in graph.edges) {
             val startUnit = model.neo4j.node.Unit.create(
-                    identifier = edge.start.identifier,
-                    packageIdentifier = edge.start.packageIdentifier,
-                    projectName = projectName,
-                    size = graph.findNodeByUnit(edge.start)?.attributes?.footprint?.byteSize ?: -1
+                identifier = edge.start.identifier,
+                packageIdentifier = edge.start.packageIdentifier,
+                projectName = projectName,
+                size = graph.findNodeByUnit(edge.start)?.attributes?.footprint?.byteSize ?: -1
             )
             val endUnit = model.neo4j.node.Unit.create(
-                    identifier = edge.end.identifier,
-                    packageIdentifier = edge.end.packageIdentifier,
-                    projectName = projectName,
-                    size = graph.findNodeByUnit(edge.end)?.attributes?.footprint?.byteSize ?: -1
+                identifier = edge.end.identifier,
+                packageIdentifier = edge.end.packageIdentifier,
+                projectName = projectName,
+                size = graph.findNodeByUnit(edge.end)?.attributes?.footprint?.byteSize ?: -1
             )
 
             startUnit.calls(
-                    callee = endUnit,
-                    dynamicCouplingScore = edge.attributes.dynamicCouplingScore,
-                    semanticCouplingScore = edge.attributes.semanticCouplingScore,
-                    logicalCouplingScore = edge.attributes.logicalCouplingScore
+                callee = endUnit,
+                dynamicCouplingScore = edge.attributes.dynamicCouplingScore,
+                semanticCouplingScore = edge.attributes.semanticCouplingScore,
+                logicalCouplingScore = edge.attributes.logicalCouplingScore
             )
 
             Neo4jConnector.saveEntity(startUnit)

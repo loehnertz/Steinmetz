@@ -16,20 +16,20 @@ class Metrics(var projectName: String, var dynamicAnalysisQuality: Int?, var sem
     companion object Factory {
         fun create(projectName: String, metrics: model.metrics.Metrics): Metrics {
             return Metrics(
-                    projectName = projectName,
-                    dynamicAnalysisQuality = metrics.inputQuality?.dynamicAnalysis,
-                    semanticAnalysisQuality = metrics.inputQuality?.semanticAnalysis,
-                    logicalAnalysisQuality = metrics.inputQuality?.logicalAnalysis
+                projectName = projectName,
+                dynamicAnalysisQuality = metrics.inputQuality?.dynamicAnalysis,
+                semanticAnalysisQuality = metrics.inputQuality?.semanticAnalysis,
+                logicalAnalysisQuality = metrics.inputQuality?.logicalAnalysis
             )
         }
 
         fun convertToDataClass(metricsNode: Metrics): model.metrics.Metrics {
             return model.metrics.Metrics(
-                    inputQuality = InputQuality(
-                            dynamicAnalysis = metricsNode.dynamicAnalysisQuality!!,
-                            semanticAnalysis = metricsNode.semanticAnalysisQuality!!,
-                            logicalAnalysis = metricsNode.logicalAnalysisQuality!!
-                    )
+                inputQuality = InputQuality(
+                    dynamicAnalysis = metricsNode.dynamicAnalysisQuality!!,
+                    semanticAnalysis = metricsNode.semanticAnalysisQuality!!,
+                    logicalAnalysis = metricsNode.logicalAnalysisQuality!!
+                )
             )
         }
     }

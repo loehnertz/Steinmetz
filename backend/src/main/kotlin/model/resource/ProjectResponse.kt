@@ -5,6 +5,6 @@ import model.metrics.Metrics
 
 
 class ProjectResponse(
-        val graph: Graph,
-        val metrics: Metrics
+    val graph: Graph,
+    val metrics: Metrics
 )

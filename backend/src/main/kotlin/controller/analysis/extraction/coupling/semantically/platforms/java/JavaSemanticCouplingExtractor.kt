@@ -51,19 +51,19 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
 
     private fun retrieveSourceCodeFiles(): List<File> {
         return File(unarchiverPath)
-                .walkTopDown()
-                .filter { it.isFile }
-                .filter { it.name.endsWith(FileExtension) }
-                .filter { it.name != PackageInfoFileName }
-                .toList()
+            .walkTopDown()
+            .filter { it.isFile }
+            .filter { it.name.endsWith(FileExtension) }
+            .filter { it.name != PackageInfoFileName }
+            .toList()
     }
 
     private fun setupSemanticCouplingCalculator(files: List<File>): SemanticCouplingCalculator {
         return SemanticCouplingCalculator(
-                files = buildFileListMap(files),
-                programmingLanguage = JavaEnumKey,
-                naturalLanguage = EnglishLanguageEnumKey,
-                fileSimilaritiesToCalculate = buildFilePairsToCalculate()
+            files = buildFileListMap(files),
+            programmingLanguage = JavaEnumKey,
+            naturalLanguage = EnglishLanguageEnumKey,
+            fileSimilaritiesToCalculate = buildFilePairsToCalculate()
         ).also { it.useStemming() }.also { it.doNotUseLsi() }
     }
 

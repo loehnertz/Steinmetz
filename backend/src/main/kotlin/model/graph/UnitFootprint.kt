@@ -2,7 +2,7 @@ package model.graph
 
 
 data class UnitFootprint(
-        val byteSize: Long
+    val byteSize: Long
 ) {
     companion object {
         fun mergeUnitFootprints(vararg unitFootprints: UnitFootprint): UnitFootprint {
@@ -10,7 +10,7 @@ data class UnitFootprint(
             unitFootprints.forEach { byteSizeSum += it.byteSize }
 
             return UnitFootprint(
-                    byteSize = byteSizeSum
+                byteSize = byteSizeSum
             )
         }
     }

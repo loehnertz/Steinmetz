@@ -6,10 +6,10 @@ import model.metrics.InputQuality
 
 
 class InputQualityAnalyzer(
-        private val mergedStaticAndDynamicAnalysisGraph: Graph,
-        private val dynamicAnalysisGraph: Graph,
-        private val semanticAnalysisGraph: Graph,
-        private val logicalAnalysisGraph: Graph
+    private val mergedStaticAndDynamicAnalysisGraph: Graph,
+    private val dynamicAnalysisGraph: Graph,
+    private val semanticAnalysisGraph: Graph,
+    private val logicalAnalysisGraph: Graph
 ) {
     fun calculateInputQualityMetrics(): InputQuality {
         val dynamicAnalysisQuality: Int = calculateEdgeQuality(baseGraph = mergedStaticAndDynamicAnalysisGraph, comparisonGraph = dynamicAnalysisGraph)
@@ -17,9 +17,9 @@ class InputQualityAnalyzer(
         val logicalAnalysisQuality: Int = calculateEdgeQuality(baseGraph = mergedStaticAndDynamicAnalysisGraph, comparisonGraph = logicalAnalysisGraph)
 
         return InputQuality(
-                dynamicAnalysis = dynamicAnalysisQuality,
-                semanticAnalysis = semanticAnalysisQuality,
-                logicalAnalysis = logicalAnalysisQuality
+            dynamicAnalysis = dynamicAnalysisQuality,
+            semanticAnalysis = semanticAnalysisQuality,
+            logicalAnalysis = logicalAnalysisQuality
         )
     }
 

@@ -17,6 +17,8 @@ import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import model.graph.EdgeAttributeWeights
 import model.graph.Graph
 import model.metrics.ClusteringQuality
@@ -33,14 +35,14 @@ import kotlin.reflect.KProperty1
 class AnalysisController {
     fun insertProject(projectRequest: ProjectRequest): ProjectResponse {
         return GraphInserter(
-                projectName = projectRequest.projectName,
-                projectPlatform = projectRequest.projectPlatform,
-                vcsSystem = projectRequest.vcsSystem,
-                basePackageIdentifier = projectRequest.basePackageIdentifier,
-                staticAnalysisFile = projectRequest.staticAnalysisFile,
-                dynamicAnalysisFile = projectRequest.dynamicAnalysisFile,
-                semanticAnalysisFile = projectRequest.semanticAnalysisFile,
-                logicalAnalysisFile = projectRequest.logicalAnalysisFile
+            projectName = projectRequest.projectName,
+            projectPlatform = projectRequest.projectPlatform,
+            vcsSystem = projectRequest.vcsSystem,
+            basePackageIdentifier = projectRequest.basePackageIdentifier,
+            staticAnalysisFile = projectRequest.staticAnalysisFile,
+            dynamicAnalysisFile = projectRequest.dynamicAnalysisFile,
+            semanticAnalysisFile = projectRequest.semanticAnalysisFile,
+            logicalAnalysisFile = projectRequest.logicalAnalysisFile
         ).insert()
     }
 
@@ -117,25 +119,25 @@ class AnalysisController {
                         ProjectRequest::staticAnalysisFile.name -> {
                             file = File("${StaticAnalysisExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
-                            file.createNewFile()
+                            withContext(Dispatchers.IO) { file.createNewFile() }
                             staticAnalysisFile = file
                         }
                         ProjectRequest::dynamicAnalysisFile.name -> {
                             file = File("${DynamicAnalysisExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
-                            file.createNewFile()
+                            withContext(Dispatchers.IO) { file.createNewFile() }
                             dynamicAnalysisFile = file
                         }
                         ProjectRequest::semanticAnalysisFile.name -> {
                             file = File("${SemanticCouplingExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
-                            file.createNewFile()
+                            withContext(Dispatchers.IO) { file.createNewFile() }
                             semanticAnalysisFile = file
                         }
                         ProjectRequest::logicalAnalysisFile.name -> {
                             file = File("${LogicalCouplingExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
-                            file.createNewFile()
+                            withContext(Dispatchers.IO) { file.createNewFile() }
                             logicalAnalysisFile = file
                         }
                         else -> throw IllegalArgumentException("File keys must be in ${listOf(ProjectRequest::staticAnalysisFile.name, ProjectRequest::dynamicAnalysisFile.name, ProjectRequest::semanticAnalysisFile.name, ProjectRequest::logicalAnalysisFile.name)}")
@@ -155,14 +157,14 @@ class AnalysisController {
         }
 
         return ProjectRequest(
-                projectName = projectName!!,
-                projectPlatform = projectPlatform!!,
-                vcsSystem = vcsSystem!!,
-                basePackageIdentifier = basePackageIdentifier!!,
-                staticAnalysisFile = staticAnalysisFile!!,
-                dynamicAnalysisFile = dynamicAnalysisFile!!,
-                semanticAnalysisFile = semanticAnalysisFile!!,
-                logicalAnalysisFile = logicalAnalysisFile!!
+            projectName = projectName!!,
+            projectPlatform = projectPlatform!!,
+            vcsSystem = vcsSystem!!,
+            basePackageIdentifier = basePackageIdentifier!!,
+            staticAnalysisFile = staticAnalysisFile!!,
+            dynamicAnalysisFile = dynamicAnalysisFile!!,
+            semanticAnalysisFile = semanticAnalysisFile!!,
+            logicalAnalysisFile = logicalAnalysisFile!!
         )
     }
 }

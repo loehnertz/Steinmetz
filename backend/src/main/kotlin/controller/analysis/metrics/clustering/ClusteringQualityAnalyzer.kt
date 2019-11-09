@@ -19,15 +19,15 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
         val totalCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::couplingScore)
 
         return ClusteringQuality(
-                accumulatedEdgeWeights = accumulatedEdgeWeights,
-                amountClusters = amountOfClusters,
-                amountInterfaceEdges = interClusterEdges.size,
-                accumulatedInterfaceEdgeWeights = accumulatedInterfaceEdgeWeights,
-                dynamicCouplingModularity = dynamicCouplingModularity,
-                semanticCouplingModularity = semanticCouplingModularity,
-                logicalCouplingModularity = logicalCouplingModularity,
-                averageCouplingModularity = averageCouplingModularity,
-                totalCouplingModularity = totalCouplingModularity
+            accumulatedEdgeWeights = accumulatedEdgeWeights,
+            amountClusters = amountOfClusters,
+            amountInterfaceEdges = interClusterEdges.size,
+            accumulatedInterfaceEdgeWeights = accumulatedInterfaceEdgeWeights,
+            dynamicCouplingModularity = dynamicCouplingModularity,
+            semanticCouplingModularity = semanticCouplingModularity,
+            logicalCouplingModularity = logicalCouplingModularity,
+            averageCouplingModularity = averageCouplingModularity,
+            totalCouplingModularity = totalCouplingModularity
         )
     }
 

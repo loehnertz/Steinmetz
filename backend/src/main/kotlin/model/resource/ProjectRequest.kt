@@ -6,12 +6,12 @@ import java.io.File
 
 
 data class ProjectRequest(
-        val projectName: String,
-        val projectPlatform: Platform,
-        val vcsSystem: VcsSystem,
-        val basePackageIdentifier: String,
-        val staticAnalysisFile: File,
-        val dynamicAnalysisFile: File,
-        val semanticAnalysisFile: File,
-        val logicalAnalysisFile: File
+    val projectName: String,
+    val projectPlatform: Platform,
+    val vcsSystem: VcsSystem,
+    val basePackageIdentifier: String,
+    val staticAnalysisFile: File,
+    val dynamicAnalysisFile: File,
+    val semanticAnalysisFile: File,
+    val logicalAnalysisFile: File
 )

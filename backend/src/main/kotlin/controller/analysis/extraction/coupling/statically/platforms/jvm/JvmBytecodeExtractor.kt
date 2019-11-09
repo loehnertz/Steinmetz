@@ -51,7 +51,7 @@ class JvmBytecodeExtractor(projectName: String, private val basePackageIdentifie
 
     private fun attachUnitFootprint(node: Node): Node {
         node.attributes.footprint = UnitFootprint(
-                byteSize = calculateUnitFootprint(node.unit)
+            byteSize = calculateUnitFootprint(node.unit)
         )
         return node
     }
