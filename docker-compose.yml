@@ -5,10 +5,9 @@ services:
     ports:
       - 5656:5656
     environment:
-      NEO4J_HOST: "neo4j"
-      REDIS_HOST: "redis"
+      NEO4J_HOST: "database"
     depends_on:
-      - neo4j
+      - database
   frontend:
     build: frontend/
     ports:
@@ -17,7 +16,7 @@ services:
       - data:/app
     depends_on:
       - backend
-  neo4j:
+  database:
     build: database/
     ports:
       - 7474
