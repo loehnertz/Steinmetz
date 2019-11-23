@@ -24,9 +24,9 @@ class GraphInserter(
     private val vcsSystem: VcsSystem,
     private val basePackageIdentifier: String,
     private val staticAnalysisFile: File,
-    private val dynamicAnalysisFile: File,
-    private val semanticAnalysisFile: File,
-    private val evolutionaryAnalysisFile: File
+    private val dynamicAnalysisFile: File?,
+    private val semanticAnalysisFile: File?,
+    private val evolutionaryAnalysisFile: File?
 ) {
     init {
         if (projectAlreadyExists()) throw ProjectAlreadyExistsException()
@@ -38,26 +38,43 @@ class GraphInserter(
     private lateinit var evolutionaryCouplingGraph: Graph
 
     fun insert(): ProjectResponse {
+        println("Started graph construction process of project '$projectName'")
+
         staticAnalysisGraph = processStaticAnalysisData()
-        dynamicCouplingGraph = processDynamicCouplingData()
+
+        dynamicCouplingGraph = if (dynamicAnalysisFile != null) {
+            processDynamicCouplingData()
+        } else {
+            Graph()
+        }
 
         val baseGraph: Graph = mergeStaticAndDynamicCouplingGraphs()
 
-        semanticCouplingGraph = processSemanticCouplingData(baseGraph.edges)
-        evolutionaryCouplingGraph = processEvolutionaryCouplingData()
-
-        val finalGraph: Graph = mergeSemanticAndEvolutionaryCouplingGraphs(baseGraph)
+        semanticCouplingGraph = if (semanticAnalysisFile != null) {
+            processSemanticCouplingData(baseGraph.edges)
+        } else {
+            Graph()
+        }
+        evolutionaryCouplingGraph = if (evolutionaryAnalysisFile != null) {
+            processEvolutionaryCouplingData()
+        } else {
+            Graph()
+        }
 
         val metrics: Metrics = calculateMetrics(baseGraph = baseGraph)
+        val finalGraph: Graph = mergeSemanticAndEvolutionaryCouplingGraphs(baseGraph)
 
-        insertGraphIntoDatabase(finalGraph)
         insertMetricsIntoDatabase(metrics)
+        insertGraphIntoDatabase(finalGraph)
+
+        println("Finished graph construction process of project '$projectName'")
 
         return ProjectResponse(graph = finalGraph, metrics = metrics)
     }
 
     @Throws(IllegalArgumentException::class)
     private fun processStaticAnalysisData(): Graph {
+        println("Processing static analysis data")
         when (projectPlatform) {
             Platform.JAVA -> return JvmBytecodeExtractor(projectName, basePackageIdentifier, staticAnalysisFile).extract()
             else -> throw IllegalArgumentException()
@@ -66,31 +83,34 @@ class GraphInserter(
 
     @Throws(IllegalArgumentException::class)
     private fun processDynamicCouplingData(): Graph {
+        println("Processing dynamic coupling data")
         when (projectPlatform) {
-            Platform.JAVA -> return JvmDynamicAnalysisExtractor(projectName, basePackageIdentifier, dynamicAnalysisFile).extract()
+            Platform.JAVA -> return JvmDynamicAnalysisExtractor(projectName, basePackageIdentifier, dynamicAnalysisFile!!).extract()
             else -> throw IllegalArgumentException()
         }
     }
 
     @Throws(IllegalArgumentException::class)
     private fun processSemanticCouplingData(edgesToConsider: Set<Edge>): Graph {
+        println("Processing semantic coupling data")
         when (projectPlatform) {
-            Platform.JAVA -> return JavaSemanticCouplingExtractor(projectName, basePackageIdentifier, semanticAnalysisFile, edgesToConsider).extract()
+            Platform.JAVA -> return JavaSemanticCouplingExtractor(projectName, basePackageIdentifier, semanticAnalysisFile!!, edgesToConsider).extract()
             else -> throw IllegalArgumentException()
         }
     }
 
     @Throws(IllegalArgumentException::class)
     private fun processEvolutionaryCouplingData(): Graph {
+        println("Processing evolutionary coupling data")
         when (projectPlatform) {
-            Platform.JAVA -> return JvmEvolutionaryCouplingExtractor(vcsSystem, basePackageIdentifier, evolutionaryAnalysisFile).extract()
+            Platform.JAVA -> return JvmEvolutionaryCouplingExtractor(vcsSystem, basePackageIdentifier, evolutionaryAnalysisFile!!).extract()
             else -> throw IllegalArgumentException()
         }
     }
 
     private fun calculateMetrics(baseGraph: Graph): Metrics {
+        println("Calculating metrics")
         val inputQuality: InputQuality = calculateInputMetrics(baseGraph)
-
         return Metrics(inputQuality = inputQuality)
     }
 

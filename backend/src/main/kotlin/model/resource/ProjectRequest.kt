@@ -11,7 +11,7 @@ data class ProjectRequest(
     val vcsSystem: VcsSystem,
     val basePackageIdentifier: String,
     val staticAnalysisFile: File,
-    val dynamicAnalysisFile: File,
-    val semanticAnalysisFile: File,
-    val evolutionaryAnalysisFile: File
+    val dynamicAnalysisFile: File?,
+    val semanticAnalysisFile: File?,
+    val evolutionaryAnalysisFile: File?
 )

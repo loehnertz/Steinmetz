@@ -3,6 +3,7 @@ package controller.analysis.metrics.clustering
 import model.graph.*
 import model.graph.Unit
 import model.metrics.ClusteringQuality
+import kotlin.math.pow
 import kotlin.reflect.KMutableProperty1
 
 
@@ -43,7 +44,7 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
             val eii: Double = (edgesStartingAndEndingInCurrentCluster.sumBy { couplingScoreType.get(it.attributes) }.toDouble() / totalCouplingScoreTypeAmount)
 
             val edgesEndingInCurrentCluster: List<Edge> = clusteredGraph.edges.filter { unitsOfCurrentCluster.contains(it.end) }
-            val aiSquared: Double = Math.pow((edgesEndingInCurrentCluster.sumBy { couplingScoreType.get(it.attributes) }.toDouble() / totalCouplingScoreTypeAmount), 2.0)
+            val aiSquared: Double = (edgesEndingInCurrentCluster.sumBy { couplingScoreType.get(it.attributes) }.toDouble() / totalCouplingScoreTypeAmount).pow(2.0)
 
             modularitySummands.add((eii - aiSquared))
         }

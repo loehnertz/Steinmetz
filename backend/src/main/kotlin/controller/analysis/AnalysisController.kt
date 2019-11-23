@@ -156,15 +156,18 @@ class AnalysisController {
             part.dispose()
         }
 
+        require(staticAnalysisFile != null) { "A static analysis file has to be supplied." }
+        require(listOf(dynamicAnalysisFile, semanticAnalysisFile, evolutionaryAnalysisFile).count { it == null } <= 1) { "Only one of the optional analysis files can be left out." }
+
         return ProjectRequest(
             projectName = projectName!!,
             projectPlatform = projectPlatform!!,
             vcsSystem = vcsSystem!!,
             basePackageIdentifier = basePackageIdentifier!!,
             staticAnalysisFile = staticAnalysisFile!!,
-            dynamicAnalysisFile = dynamicAnalysisFile!!,
-            semanticAnalysisFile = semanticAnalysisFile!!,
-            evolutionaryAnalysisFile = evolutionaryAnalysisFile!!
+            dynamicAnalysisFile = dynamicAnalysisFile,
+            semanticAnalysisFile = semanticAnalysisFile,
+            evolutionaryAnalysisFile = evolutionaryAnalysisFile
         )
     }
 }
