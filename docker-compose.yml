@@ -6,6 +6,7 @@ services:
       - 5656:5656
     environment:
       NEO4J_HOST: "database"
+      EXTERNAL_EXECUTABLE_PATH: "/app/executables/"
     depends_on:
       - database
   frontend:
@@ -19,8 +20,8 @@ services:
   database:
     build: database/
     ports:
-      - 7474
-      - 7687
+      - 7474:7474
+      - 7687:7687
     environment:
       NEO4J_AUTH: "none"
     volumes:

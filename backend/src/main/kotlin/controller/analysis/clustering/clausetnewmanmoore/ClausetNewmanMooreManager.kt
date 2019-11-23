@@ -92,11 +92,11 @@ class ClausetNewmanMooreManager(private val graph: Graph, private val projectNam
     }
 
     private fun retrieveExecutablePath(): String {
-        return Utilities.getResourceAsText(ExecutableName).absolutePath
+        return Utilities.getExternalExecutableAsFile(ExecutableName).absolutePath
     }
 
     companion object {
-        private const val ExecutableName = "executables/FastCommunity_wMH"
+        private const val ExecutableName = "FastCommunity_wMH"
         private const val InputOutputPath = "/tmp/steinmetz/clausetnewmanmoore"
         private const val InputFileName = "steinmetz"
         private const val InputFileExtension = "wpairs"

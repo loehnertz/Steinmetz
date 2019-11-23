@@ -26,7 +26,7 @@ class WalktrapManager(private val graph: Graph, private val chosenClusteringMetr
 
         return runBlocking {
             val clusteredGraphs: List<Graph> = deferredExecutions.map { it.await() }.mapNotNull { convertOutputToGraph(it, Graph(nodes = graph.nodes.map { node -> node.copy() }.toMutableSet(), edges = graph.edges)) }
-            return@runBlocking clusteredGraphs.sortedByDescending { (chosenClusteringMetric.get(ClusteringQualityAnalyzer(it).calculateClusteringQualityMetrics()) as Number).toDouble() }.first()
+            return@runBlocking clusteredGraphs.maxBy { (chosenClusteringMetric.get(ClusteringQualityAnalyzer(it).calculateClusteringQualityMetrics()) as Number).toDouble() }!!
         }
     }
 
