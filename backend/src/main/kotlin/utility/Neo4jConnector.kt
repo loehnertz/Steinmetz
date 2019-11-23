@@ -10,10 +10,11 @@ import org.neo4j.ogm.session.SessionFactory
 
 
 object Neo4jConnector {
-    private const val Neo4jBoltConnectionUri = "bolt://localhost"
+    private const val Neo4JHostEnvironmentVariableKey = "NEO4J_HOST"
     private const val NodeModelPackageIdentifier = "model.neo4j.node"
     private const val RelationshipModelPackageIdentifier = "model.neo4j.relationship"
-    private val configuration: Configuration = Configuration.Builder().uri(Neo4jBoltConnectionUri).build()!!
+    private val Neo4JBoltConnectionUri = "bolt://${retrieveNeo4JHost()}"
+    private val configuration: Configuration = Configuration.Builder().uri(Neo4JBoltConnectionUri).build()!!
     private val sessionFactory: SessionFactory = SessionFactory(configuration, NodeModelPackageIdentifier, RelationshipModelPackageIdentifier)
 
     fun saveEntity(entity: GraphEntity) {
@@ -59,5 +60,9 @@ object Neo4jConnector {
 
     private fun createSession(): Session {
         return sessionFactory.openSession()
+    }
+
+    private fun retrieveNeo4JHost(): String {
+        return System.getenv(Neo4JHostEnvironmentVariableKey) ?: "localhost"
     }
 }
