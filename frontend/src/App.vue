@@ -805,7 +805,7 @@
                 data.append('evolutionaryAnalysisFile', this.uploadEvolutionaryAnalysisFile);
 
                 axios
-                    .post(`http://localhost:5656/analysis/`, data)
+                    .post(`http://${this.$backendHost}/analysis/`, data)
                     .then((response) => {
                         this.graphData = response.data["graph"];
                         this.metricsData = response.data["metrics"];
@@ -818,7 +818,7 @@
             },
             fetchAnalysis() {
                 axios
-                    .get(`http://localhost:5656/analysis/${this.selectedProjectId}`)
+                    .get(`http://${this.$backendHost}/analysis/${this.selectedProjectId}`)
                     .then((response) => {
                         this.clusteredViewEnabled = false;
                         this.graphData = response.data["graph"];
@@ -845,7 +845,7 @@
 
                 axios
                     .get(
-                        `http://localhost:5656/analysis/${this.selectedProjectId}/cluster`,
+                        `http://${this.$backendHost}/analysis/${this.selectedProjectId}/cluster`,
                         {
                             params: parameters,
                         },
@@ -884,7 +884,7 @@
 
                     axios
                         .get(
-                            `http://localhost:5656/analysis/${this.selectedProjectId}/cluster`,
+                            `http://${this.$backendHost}/analysis/${this.selectedProjectId}/cluster`,
                             {
                                 params: parameters,
                             },
