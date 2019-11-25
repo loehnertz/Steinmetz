@@ -34,6 +34,7 @@ import kotlin.reflect.KProperty1
 
 class AnalysisController {
     fun insertProject(projectRequest: ProjectRequest): ProjectResponse {
+        val startTime = System.currentTimeMillis()
         return GraphInserter(
             projectName = projectRequest.projectName,
             projectPlatform = projectRequest.projectPlatform,
@@ -43,7 +44,9 @@ class AnalysisController {
             dynamicAnalysisFile = projectRequest.dynamicAnalysisFile,
             semanticAnalysisFile = projectRequest.semanticAnalysisFile,
             evolutionaryAnalysisFile = projectRequest.evolutionaryAnalysisFile
-        ).insert()
+        ).insert().also {
+            println("The analysis of project '${projectRequest.projectName}' took ${(System.currentTimeMillis() - startTime) / 1000} seconds.")
+        }
     }
 
     fun retrieveProject(projectName: String): ProjectResponse {
