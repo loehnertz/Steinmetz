@@ -27,8 +27,8 @@ class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private
             output.add(line)
             line = reader.readLine()
         }
-        process.waitFor()
-        output.removeAt(0)
+        process.destroy()
+        output.removeAt(0)  // Just contains the column names
 
         cleanup(vcsLogFile.absolutePath)
 
@@ -37,7 +37,7 @@ class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private
 
     override fun normalizeUnit(unit: Unit): Unit = JvmBytecodeExtractor.normalizeUnit(unit)
 
-    private fun convertOutputToGraph(output: ArrayList<String>): Graph {
+    private fun convertOutputToGraph(output: List<String>): Graph {
         val edges: List<Edge> = output.mapNotNull { parseOutputLine(it) }
         return Graph(edges = edges.toMutableSet())
     }
