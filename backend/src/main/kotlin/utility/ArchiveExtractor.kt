@@ -8,7 +8,7 @@ import java.util.zip.ZipInputStream
 
 
 class ArchiveExtractor(private val fileExtension: String, private val destinationDirectory: String) {
-    fun unpackAnalysisArchive(archive: File) {
+    fun unpackAnalysisArchive(archive: File): File {
         ZipInputStream(FileInputStream(archive)).use { input ->
             val buffer = ByteArray(1024)
 
@@ -30,5 +30,6 @@ class ArchiveExtractor(private val fileExtension: String, private val destinatio
                 entry = input.nextEntry
             }
         }
+        return File(destinationDirectory)
     }
 }
