@@ -1,7 +1,6 @@
 package controller.analysis.extraction.coupling.dynamically.platforms.jvm
 
 import controller.analysis.extraction.coupling.dynamically.DynamicAnalysisExtractor
-import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
@@ -17,7 +16,7 @@ class InstrumentationRecordingAnalyzer(private val instrumentationRecordingFile:
         return mergeInnerUnitNodesWithParentNodes(graph)
     }
 
-    override fun normalizeUnit(unit: Unit): Unit = JvmBytecodeExtractor.normalizeUnit(unit)
+    override fun normalizeUnit(unit: Unit): Unit = Unit(identifier = unit.identifier.substringBeforeLast(InnerUnitDelimiter), packageIdentifier = unit.packageIdentifier)
 
     private fun convertInvokationPairsToGraph(invokations: List<Pair<String, String>>): Graph {
         val graph = Graph()
@@ -41,5 +40,9 @@ class InstrumentationRecordingAnalyzer(private val instrumentationRecordingFile:
 
     private fun stripMethodIdentifier(identifier: String): String {
         return identifier.substringBeforeLast(':')
+    }
+
+    companion object {
+        private const val InnerUnitDelimiter = '$'
     }
 }

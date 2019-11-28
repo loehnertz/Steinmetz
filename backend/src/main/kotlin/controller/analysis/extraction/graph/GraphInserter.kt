@@ -5,7 +5,7 @@ import controller.analysis.extraction.coupling.dynamically.platforms.jvm.JvmDyna
 import controller.analysis.extraction.coupling.evolutionary.VcsSystem
 import controller.analysis.extraction.coupling.evolutionary.platforms.jvm.JvmEvolutionaryCouplingExtractor
 import controller.analysis.extraction.coupling.semantically.platforms.java.JavaSemanticCouplingExtractor
-import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
+import controller.analysis.extraction.coupling.statically.platforms.java.JavaStaticCouplingExtractor
 import controller.analysis.metrics.input.InputQualityAnalyzer
 import model.graph.Edge
 import model.graph.Graph
@@ -76,7 +76,7 @@ class GraphInserter(
     private fun processStaticAnalysisData(): Graph {
         println("Processing static analysis data")
         when (projectPlatform) {
-            Platform.JAVA -> return JvmBytecodeExtractor(projectName, basePackageIdentifier, staticAnalysisFile).extract()
+            Platform.JAVA -> return JavaStaticCouplingExtractor(projectName, basePackageIdentifier, staticAnalysisFile).extract()
             else -> throw IllegalArgumentException()
         }
     }

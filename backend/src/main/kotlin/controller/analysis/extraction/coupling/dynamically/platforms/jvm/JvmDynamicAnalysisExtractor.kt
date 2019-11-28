@@ -1,7 +1,6 @@
 package controller.analysis.extraction.coupling.dynamically.platforms.jvm
 
 import controller.analysis.extraction.coupling.dynamically.DynamicAnalysisExtractor
-import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import model.graph.Graph
 import model.graph.Unit
 import java.io.File
@@ -13,7 +12,7 @@ class JvmDynamicAnalysisExtractor(private val projectName: String, private val b
         return scaleDynamicCouplingScores(graph)
     }
 
-    override fun normalizeUnit(unit: Unit): Unit = JvmBytecodeExtractor.normalizeUnit(unit)
+    override fun normalizeUnit(unit: Unit): Unit = Unit(identifier = unit.identifier.substringBeforeLast(InnerUnitDelimiter), packageIdentifier = unit.packageIdentifier)
 
     private fun retrieveGraph(): Graph {
         return when (recordingFile.extension) {
@@ -26,5 +25,6 @@ class JvmDynamicAnalysisExtractor(private val projectName: String, private val b
     companion object {
         private const val JfrRecordingExtension = "jfr"
         private const val InstrumentationRecordingExtension = "net"
+        private const val InnerUnitDelimiter = '$'
     }
 }

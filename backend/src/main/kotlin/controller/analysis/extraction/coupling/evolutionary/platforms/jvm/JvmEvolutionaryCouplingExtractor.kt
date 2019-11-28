@@ -2,7 +2,6 @@ package controller.analysis.extraction.coupling.evolutionary.platforms.jvm
 
 import controller.analysis.extraction.coupling.evolutionary.EvolutionaryCouplingExtractor
 import controller.analysis.extraction.coupling.evolutionary.VcsSystem
-import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
@@ -35,7 +34,7 @@ class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private
         return mergeInnerUnitNodesWithParentNodes(convertOutputToGraph(output))
     }
 
-    override fun normalizeUnit(unit: Unit): Unit = JvmBytecodeExtractor.normalizeUnit(unit)
+    override fun normalizeUnit(unit: Unit): Unit = Unit(identifier = unit.identifier.substringBeforeLast(InnerUnitDelimiter), packageIdentifier = unit.packageIdentifier)
 
     private fun convertOutputToGraph(output: List<String>): Graph {
         val edges: List<Edge> = output.mapNotNull { parseOutputLine(it) }
@@ -73,6 +72,7 @@ class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private
     companion object {
         private const val ExecutableName = "code-maat.jar"
         private const val FileExtension = ".java"
+        private const val InnerUnitDelimiter = '$'
         private const val MinRevisions = 1
         private const val MinSharedRevisions = 1
         private const val MinCouplingScore = 1
