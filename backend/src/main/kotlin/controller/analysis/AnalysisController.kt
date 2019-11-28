@@ -34,7 +34,7 @@ import kotlin.reflect.KProperty1
 
 class AnalysisController {
     fun insertProject(projectRequest: ProjectRequest): ProjectResponse {
-        val startTime = System.currentTimeMillis()
+        val startTime: Long = System.currentTimeMillis()
         return GraphInserter(
             projectName = projectRequest.projectName,
             projectPlatform = projectRequest.projectPlatform,
