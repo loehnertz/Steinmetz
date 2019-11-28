@@ -46,6 +46,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .mapNotNull { it.result.toNullable() }
             .flatMap { it.types }
             .mapNotNull { it as? ClassOrInterfaceDeclaration }  // TODO: Should Enum's also be included?
+            .filter { it.fullyQualifiedName.get().startsWith(basePackageIdentifier) }
             .map { Pair(it, retrieveCallClasses(it)) }
             .flatMap { retrieveCallPairs(it) }
             .toSet()
