@@ -17,4 +17,4 @@ RUN apt-get install -y build-essential libgomp1
 
 # Boot up the server
 EXPOSE 5656
-CMD ["java", "-server", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseG1GC", "-XX:MaxGCPauseMillis=100", "-XX:+UseStringDeduplication", "-jar", "backend.jar"]
+CMD ["java", "-server", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseG1GC", "-XX:+UseStringDeduplication", "-jar", "backend.jar"]
