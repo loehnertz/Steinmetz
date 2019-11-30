@@ -45,7 +45,7 @@ class AnalysisController {
             semanticAnalysisFile = projectRequest.semanticAnalysisFile,
             evolutionaryAnalysisFile = projectRequest.evolutionaryAnalysisFile
         ).insert().also {
-            println("The analysis of project '${projectRequest.projectName}' took ${(System.currentTimeMillis() - startTime) / 1000} seconds.")
+            println("The analysis of project '${projectRequest.projectName}' took ${(System.currentTimeMillis() - startTime) / 1000} seconds")
         }
     }
 
@@ -66,6 +66,8 @@ class AnalysisController {
     private fun retrieveGraph(projectName: String): Graph {
         val filter = Filter(model.neo4j.node.Unit::projectName.name, ComparisonOperator.EQUALS, projectName)
         val unitNodes: List<model.neo4j.node.Unit> = Neo4jConnector.retrieveEntities(model.neo4j.node.Unit::class.java, filter).map { it as model.neo4j.node.Unit }
+
+        if (unitNodes.isEmpty()) throw ProjectDoesNotExistException()
 
         return GraphConverter(unitNodes).convertUnitListToGraph()
     }
@@ -174,3 +176,7 @@ class AnalysisController {
         )
     }
 }
+
+class ProjectAlreadyExistsException(override val message: String = "A project with that name already exists") : Exception()
+
+class ProjectDoesNotExistException(override val message: String = "A project with that name does not exist") : Exception()

@@ -56,6 +56,7 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
         val clusterMap: MutableMap<Int, ArrayList<Node>> = mutableMapOf()
 
         for (node: Node in clusteredGraph.nodes) {
+            if (node.attributes.cluster == null) continue
             var clusterList: ArrayList<Node>? = clusterMap[node.attributes.cluster!!]
             if (clusterList == null) clusterList = arrayListOf()
             clusterList.add(node)

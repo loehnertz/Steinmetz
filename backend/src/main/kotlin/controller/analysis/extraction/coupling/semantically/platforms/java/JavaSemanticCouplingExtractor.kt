@@ -3,6 +3,7 @@ package controller.analysis.extraction.coupling.semantically.platforms.java
 import codes.jakob.semanticcoupling.SemanticCouplingCalculator
 import codes.jakob.semanticcoupling.model.NaturalLanguage
 import codes.jakob.semanticcoupling.model.ProgrammingLanguage
+import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.coupling.semantically.SemanticCouplingExtractor
 import model.graph.Edge
 import model.graph.EdgeAttributes
@@ -14,21 +15,21 @@ import java.io.File
 
 class JavaSemanticCouplingExtractor(projectName: String, private val basePackageIdentifier: String, private val sourceCodeFilesArchive: File, private val edgesToConsider: Set<Edge>) : SemanticCouplingExtractor() {
     private val unarchiverPath = "${getWorkingDirectory()}/sources/$projectName/"
-    private val unarchiver = ArchiveExtractor(FileExtension, unarchiverPath)
+    private val unarchiver = ArchiveExtractor(".$JavaFileExtension", unarchiverPath)
 
     override fun extract(): Graph {
         unarchiver.unpackAnalysisArchive(sourceCodeFilesArchive)
 
         val files: List<File> = retrieveSourceCodeFiles()
-        val semanticCouplingCalculator: SemanticCouplingCalculator = setupSemanticCouplingCalculator(files).also { it.calculate() }
-        val similarities: List<Triple<String, String, Double>> = semanticCouplingCalculator.retrieveSimilaritiesAsListOfTriples()
+        val semanticCouplingCalculator: SemanticCouplingCalculator = setupSemanticCouplingCalculator(files).also { it.calculate() }.also { println("\tCalculated semantic similarities") }
+        val similarities: List<Triple<String, String, Double>> = semanticCouplingCalculator.retrieveSimilaritiesAsListOfTriples().also { println("\tExtracted ${it.size} semantic coupling pairs") }
 
         cleanup(unarchiverPath, sourceCodeFilesArchive.absolutePath)
 
-        return mergeInnerUnitNodesWithParentNodes(Graph(edges = buildEdgesOutOfSimilarities(similarities).toMutableSet()))
+        return Graph(edges = buildEdgesOutOfSimilarities(similarities).toMutableSet()).also { println("\tConstructed semantic coupling graph") }
     }
 
-    override fun normalizeUnit(unit: Unit): Unit = Unit(identifier = unit.identifier.substringBeforeLast(InnerUnitDelimiter), packageIdentifier = unit.packageIdentifier)
+    override fun normalizeUnit(unit: Unit): Unit = AbstractExtractor.normalizeUnit(unit)
 
     private fun buildEdgesOutOfSimilarities(similarities: List<Triple<String, String, Double>>): List<Edge> {
         val edges: ArrayList<Edge> = arrayListOf()
@@ -50,9 +51,9 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
 
     private fun retrieveSourceCodeFiles(): List<File> {
         return File(unarchiverPath)
-            .walkTopDown()
+            .walk()
             .filter { it.isFile }
-            .filter { it.name.endsWith(FileExtension) }
+            .filter { it.extension == JavaFileExtension }
             .filter { it.name != PackageInfoFileName }
             .toList()
     }
@@ -67,21 +68,20 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
     }
 
     private fun buildFilePairsToCalculate(): List<Pair<String, String>> {
-        return edgesToConsider.map { Pair(it.start.toString(), it.end.toString()) }
+        return edgesToConsider.map { it.start.toString() to it.end.toString() }
     }
 
-    private fun buildFileListMap(files: List<File>): List<Map<String, String>> {
-        return files.map { mapOf(convertFileNameToIdentifier(it.absolutePath) to it.readText()) }
+    private fun buildFileListMap(files: List<File>): Map<String, String> {
+        return files.map { convertFileNameToIdentifier(it.absolutePath) to it.readText() }.toMap()
     }
 
     private fun convertFileNameToIdentifier(filePath: String): String {
-        return "$basePackageIdentifier${filePath.replace('/', '.').substringAfter(basePackageIdentifier).replace(FileExtension, "")}"
+        return "$basePackageIdentifier${filePath.replace('/', '.').substringAfter(basePackageIdentifier).replace(".$JavaFileExtension", "")}"
     }
 
     companion object {
-        private const val FileExtension = ".java"
+        private const val JavaFileExtension = "java"
         private const val PackageInfoFileName = "package-info.java"
-        private const val InnerUnitDelimiter = '$'
         private val JavaEnumKey = ProgrammingLanguage.JAVA
         private val EnglishLanguageEnumKey = NaturalLanguage.EN
     }

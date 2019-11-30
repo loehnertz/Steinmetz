@@ -6,7 +6,7 @@ import model.graph.UnitFootprint.Companion.mergeUnitFootprints
 
 data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: MutableSet<Edge> = mutableSetOf()) {
     init {
-        if (this.nodes.isEmpty()) inferNodesOutOfEdges()
+        inferNodesOutOfEdges()
     }
 
     fun addOrUpdateNode(node: Node) {
@@ -28,12 +28,13 @@ data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: Mutabl
         val existingEdge: Edge? = edges.find { it == edge }
 
         if (edges.removeIf { it == edge } && existingEdge != null) {
-            edges.add(mergeEqualEdges(existingEdge, edge))
+            val newEdge: Edge = mergeEqualEdges(existingEdge, edge)
+            edges.add(newEdge)
+            inferNodesOutOfEdge(newEdge)
         } else {
             edges.add(edge)
+            inferNodesOutOfEdge(edge)
         }
-
-        inferNodesOutOfEdges()
     }
 
     fun updateEdge(edge: Edge) {
@@ -49,6 +50,12 @@ data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: Mutabl
     private fun mergeEqualEdges(firstEdge: Edge, secondEdge: Edge): Edge {
         require(firstEdge == secondEdge) { "The two passed edges are not equal" }
         return Edge(start = firstEdge.start, end = firstEdge.end, attributes = mergeEdgeAttributes(firstEdge.attributes, secondEdge.attributes))
+    }
+
+    private fun inferNodesOutOfEdge(edge: Edge) {
+        addOrUpdateNode(Node(unit = edge.start))
+        addOrUpdateNode(Node(unit = edge.end))
+        ensureNodesAndEdgesIntegrity()
     }
 
     private fun inferNodesOutOfEdges() {

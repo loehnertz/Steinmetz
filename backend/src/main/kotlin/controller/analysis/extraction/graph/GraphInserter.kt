@@ -1,5 +1,6 @@
 package controller.analysis.extraction.graph
 
+import controller.analysis.ProjectAlreadyExistsException
 import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.dynamically.platforms.jvm.JvmDynamicAnalysisExtractor
 import controller.analysis.extraction.coupling.evolutionary.VcsSystem
@@ -38,7 +39,7 @@ class GraphInserter(
     private lateinit var evolutionaryCouplingGraph: Graph
 
     fun insert(): ProjectResponse {
-        println("Started graph construction process of project '$projectName'")
+        println("\nStarted analysis of project '$projectName'")
 
         staticAnalysisGraph = processStaticAnalysisData()
 
@@ -62,19 +63,21 @@ class GraphInserter(
         }
 
         val metrics: Metrics = calculateMetrics(baseGraph = baseGraph)
-        val finalGraph: Graph = mergeSemanticAndEvolutionaryCouplingGraphs(baseGraph)
+        val finalGraph: Graph = mergeSemanticAndEvolutionaryCouplingGraphs(baseGraph).also { println("Merged coupling graphs into final coupling graph with ${it.nodes.size} nodes and ${it.nodes.size} edges") }
 
-        insertMetricsIntoDatabase(metrics)
-        insertGraphIntoDatabase(finalGraph)
+        println("Inserting analysis data into database")
 
-        println("Finished graph construction process of project '$projectName'")
+        insertMetricsIntoDatabase(metrics).also { println("\tInserted metrics into the database") }
+        insertGraphIntoDatabase(finalGraph).also { println("\tInserted coupling graph into the database") }
+
+        println("Finished analysis of project '$projectName'")
 
         return ProjectResponse(graph = finalGraph, metrics = metrics)
     }
 
     @Throws(IllegalArgumentException::class)
     private fun processStaticAnalysisData(): Graph {
-        println("Processing static analysis data")
+        println("Processing static coupling data")
         when (projectPlatform) {
             Platform.JAVA -> return JavaStaticCouplingExtractor(projectName, basePackageIdentifier, staticAnalysisFile).extract()
             else -> throw IllegalArgumentException()
@@ -165,5 +168,3 @@ class GraphInserter(
         return Neo4jConnector.retrieveEntities(model.neo4j.node.Unit::class.java, filter).isNotEmpty()
     }
 }
-
-class ProjectAlreadyExistsException(override val message: String = "A project with that name already exists") : Exception()

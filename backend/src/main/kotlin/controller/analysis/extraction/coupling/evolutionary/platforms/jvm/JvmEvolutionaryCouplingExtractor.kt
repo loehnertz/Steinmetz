@@ -1,5 +1,6 @@
 package controller.analysis.extraction.coupling.evolutionary.platforms.jvm
 
+import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.coupling.evolutionary.EvolutionaryCouplingExtractor
 import controller.analysis.extraction.coupling.evolutionary.VcsSystem
 import model.graph.Edge
@@ -26,23 +27,23 @@ class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private
             output.add(line)
             line = reader.readLine()
         }
-        process.destroy()
+        process.destroy().also { println("\tCalculated evolutionary coupling") }
         output.removeAt(0)  // Just contains the column names
 
         cleanup(vcsLogFile.absolutePath)
 
-        return mergeInnerUnitNodesWithParentNodes(convertOutputToGraph(output))
+        return convertOutputToGraph(output).also { println("\tConstructed evolutionary coupling graph") }
     }
 
-    override fun normalizeUnit(unit: Unit): Unit = Unit(identifier = unit.identifier.substringBeforeLast(InnerUnitDelimiter), packageIdentifier = unit.packageIdentifier)
+    override fun normalizeUnit(unit: Unit): Unit = AbstractExtractor.normalizeUnit(unit)
 
     private fun convertOutputToGraph(output: List<String>): Graph {
-        val edges: List<Edge> = output.mapNotNull { parseOutputLine(it) }
+        val edges: List<Edge> = output.mapNotNull { parseOutputLine(it) }.also { println("\tExtracted ${it.size} evolutionary coupling pairs") }
         return Graph(edges = edges.toMutableSet())
     }
 
     private fun parseOutputLine(line: String): Edge? {
-        try {
+        return try {
             val (start: String, end: String, degree: String, _: String) = line.split(',')
 
             if (!start.endsWith(FileExtension) || !end.endsWith(FileExtension)) return null
@@ -53,9 +54,9 @@ class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private
 
             if (!startUnit.packageIdentifier.startsWith(basePackageIdentifier) || !endUnit.packageIdentifier.startsWith(basePackageIdentifier)) return null
 
-            return Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(evolutionaryCouplingScore = degree.toInt()))
+            Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(evolutionaryCouplingScore = degree.toInt()))
         } catch (exception: Exception) {
-            return null
+            null
         }
     }
 
@@ -72,7 +73,6 @@ class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private
     companion object {
         private const val ExecutableName = "code-maat.jar"
         private const val FileExtension = ".java"
-        private const val InnerUnitDelimiter = '$'
         private const val MinRevisions = 1
         private const val MinSharedRevisions = 1
         private const val MinCouplingScore = 1

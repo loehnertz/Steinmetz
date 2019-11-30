@@ -38,5 +38,7 @@ abstract class AbstractExtractor {
 
     companion object {
         const val ExtractionBasePath: String = ExtractorCompanion.ExtractionBasePath
+
+        fun normalizeUnit(unit: Unit): Unit = unit
     }
 }

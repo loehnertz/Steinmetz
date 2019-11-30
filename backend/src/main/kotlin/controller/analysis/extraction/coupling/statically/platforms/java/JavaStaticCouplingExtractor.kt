@@ -5,15 +5,15 @@ import com.github.javaparser.ast.body.TypeDeclaration
 import com.github.javaparser.ast.type.ClassOrInterfaceType
 import com.github.javaparser.resolution.Resolvable
 import com.github.javaparser.resolution.types.ResolvedType
+import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade
 import com.github.javaparser.symbolsolver.utils.SymbolSolverCollectionStrategy
 import com.github.javaparser.utils.ProjectRoot
+import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
-import kotlinx.coroutines.runBlocking
 import model.graph.*
 import model.graph.Unit
 import utility.ArchiveExtractor
-import utility.mapConcurrently
 import utility.toNullable
 import java.io.File
 import java.util.*
@@ -24,32 +24,45 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
     private val basePath: String = buildBasePath(PlatformIdentifier, projectName)
     private val staticAnalysisBasePath = "$basePath/$StaticAnalysisDirectory"
     private val unarchiver = ArchiveExtractor(".$JavaFileExtension", staticAnalysisBasePath)
+    private val potentialUnitFiles: List<File> = File(staticAnalysisBasePath).walk().filter { it.isFile }.filter { it.extension == JavaFileExtension }.toList()
 
     override fun extract(): Graph {
         val unarchivedDirectory: File = unarchiver.unpackAnalysisArchive(archive)
 
-        val invocations: Set<Pair<String, String>> = extractInvocations(unarchivedDirectory)
+        val referencePairs: Set<Pair<String, String>> = extractReferencePairs(unarchivedDirectory).also { println("\tExtracted ${it.size} static coupling pairs") }
 
-        val graph: Graph = convertInvocationPairsToGraph(invocations)
+        val graph: Graph = convertReferencePairsToGraph(referencePairs)
 
         cleanup(staticAnalysisBasePath)
 
-        return graph
+        return graph.also { println("\tConstructed static coupling graph") }
     }
 
-    override fun normalizeUnit(unit: Unit): Unit = Unit(identifier = unit.identifier, packageIdentifier = unit.packageIdentifier)
+    override fun normalizeUnit(unit: Unit): Unit = AbstractExtractor.normalizeUnit(unit)
 
-    private fun extractInvocations(unarchivedDirectory: File): Set<Pair<String, String>> {
+    private fun extractReferencePairs(unarchivedDirectory: File): Set<Pair<String, String>> {
         val projectRoot: ProjectRoot = SymbolSolverCollectionStrategy().collect(unarchivedDirectory.toPath())
+        projectRoot.sourceRoots.forEach { sourceRoot ->
+            sourceRoot.parserConfiguration.isStoreTokens = false
+            sourceRoot.parserConfiguration.isAttributeComments = false
+            sourceRoot.parserConfiguration.isIgnoreAnnotationsWhenAttributingComments = false
+        }
+
         return projectRoot.sourceRoots
-            .flatMap { it.tryToParseParallelized() }
+            .filter { !it.root.toString().contains(JavaTestDirectory) }
+            .flatMap { it.tryToParse() }
             .mapNotNull { it.result.toNullable() }
+            .also { println("\tParsed ASTs") }
             .flatMap { it.types }
             .mapNotNull { it as? ClassOrInterfaceDeclaration }  // TODO: Should Enum's also be included?
-            .filter { it.fullyQualifiedName.get().startsWith(basePackageIdentifier) }
-            .map { Pair(it, retrieveCallClasses(it)) }
+            .filter { isLegalUnit(it.fullyQualifiedName.get()) }
+            .map { it to retrieveCallClasses(it) }
             .flatMap { retrieveCallPairs(it) }
+            .also { println("\tRetrieved call pairs") }
             .toSet()
+            .also { JavaParserFacade.clearInstances() }
+            .also { System.gc() }
+            .also { println("\tCleared parsing caches") }
     }
 
     private fun retrieveCallClasses(declaration: ClassOrInterfaceDeclaration): List<Resolvable<ResolvedType>> {
@@ -58,8 +71,8 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
 
     private fun retrieveCallPairs(classReferences: Pair<TypeDeclaration<*>, List<Resolvable<ResolvedType>>>): List<Pair<String, String>> {
         val classIdentifier: String = classReferences.first.fullyQualifiedName.get()
-        val referencedTypes: List<String> = runBlocking { classReferences.second.mapConcurrently { resolveType(it) }.filterNotNull().map { it.describe() } }
-        return referencedTypes.filter { it.startsWith(basePackageIdentifier) }.filter { it != classIdentifier }.map { Pair(classIdentifier, it) }
+        val referencedTypes: List<String> = classReferences.second.mapNotNull { resolveType(it) }.map { it.describe() }
+        return referencedTypes.filter { isLegalUnit(it) }.filter { it != classIdentifier }.map { classIdentifier to it }
     }
 
     private fun retrieveSuperTypes(declaration: ClassOrInterfaceDeclaration): Set<ClassOrInterfaceType> {
@@ -87,12 +100,12 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         }
     }
 
-    private fun convertInvocationPairsToGraph(invokations: Set<Pair<String, String>>): Graph {
+    private fun convertReferencePairsToGraph(referencePairs: Set<Pair<String, String>>): Graph {
         val graph = Graph()
 
-        for (invocation in invokations) {
-            val startUnit = Unit(identifier = invocation.first.substringAfterLast('.'), packageIdentifier = invocation.first.substringBeforeLast('.'))
-            val endUnit = Unit(identifier = invocation.second.substringAfterLast('.'), packageIdentifier = invocation.second.substringBeforeLast('.'))
+        for (referencePair in referencePairs) {
+            val startUnit = Unit(identifier = referencePair.first.substringAfterLast('.'), packageIdentifier = referencePair.first.substringBeforeLast('.'))
+            val endUnit = Unit(identifier = referencePair.second.substringAfterLast('.'), packageIdentifier = referencePair.second.substringBeforeLast('.'))
             val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes())
 
             if (startUnit == endUnit) continue
@@ -107,22 +120,23 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
 
     private fun attachUnitFootprint(node: Node): Node {
         node.attributes.footprint = UnitFootprint(
-            byteSize = calculateUnitFootprint(node.unit)
+            byteSize = calculateUnitByteFootprint(node.unit)
         )
         return node
     }
 
-    private fun calculateUnitFootprint(unit: Unit): Long {
-        return File(staticAnalysisBasePath).walk()
-            .filter { it.isFile }
-            .filter { it.extension == JavaFileExtension }
-            .find { it.path.replace("/", ".").substringAfterLast(basePackageIdentifier) == "${unit.packageIdentifier.substringAfterLast(basePackageIdentifier)}.${unit.identifier}.$JavaFileExtension" }
-            ?.length()
-            ?: 0
+    private fun calculateUnitByteFootprint(unit: Unit): Long {
+        return potentialUnitFiles.find { it.path.replace("/", ".").substringAfterLast(basePackageIdentifier) == "${unit.packageIdentifier.substringAfterLast(basePackageIdentifier)}.${unit.identifier}.$JavaFileExtension" }?.length()
+            ?: potentialUnitFiles.find { "${unit.packageIdentifier.substringAfterLast(basePackageIdentifier)}.${unit.identifier}".contains(it.path.replace("/", ".").substringAfterLast(basePackageIdentifier).removeSuffix(".$JavaFileExtension")) }?.length()
+            ?: DefaultUnitFootprintByteSize
     }
+
+    private fun isLegalUnit(identifier: String): Boolean = identifier.startsWith(basePackageIdentifier) && !identifier.substringAfterLast('.').contains(JavaGenericsStatement)
 
     companion object {
         private val PlatformIdentifier: String = Platform.JAVA.toString().toLowerCase()
         private const val JavaFileExtension = "java"
+        private const val JavaTestDirectory = "/test/"
+        private val JavaGenericsStatement = Regex("[<>]")
     }
 }
