@@ -65,7 +65,7 @@ class GraphInserter(
         val metrics: Metrics = calculateMetrics(baseGraph = baseGraph)
         val finalGraph: Graph = mergeSemanticAndEvolutionaryCouplingGraphs(baseGraph).also { println("Merged coupling graphs into final coupling graph with ${it.nodes.size} nodes and ${it.nodes.size} edges") }
 
-        println("Inserting analysis data into database")
+        println("Inserting analysis data into database").also { System.gc() }
 
         insertMetricsIntoDatabase(metrics).also { println("\tInserted metrics into the database") }
         insertGraphIntoDatabase(finalGraph).also { println("\tInserted coupling graph into the database") }
