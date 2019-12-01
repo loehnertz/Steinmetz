@@ -1,5 +1,6 @@
 <template>
     <div id="app">
+        <notifications/>
         <div id="throbber" v-show="isLoading && !liveRerenderModeActive">
             <Throbber :is-loading="isLoading"/>
         </div>
@@ -793,8 +794,12 @@
             uploadNewProjectData() {
                 this.isLoading = true;
 
-                const data = new FormData();
+                if (!this.uploadProjectName) {
+                    this.notifyError("No project name was chosen");
+                    return;
+                }
 
+                const data = new FormData();
                 data.append('projectName', this.uploadProjectName);
                 data.append('projectPlatform', this.uploadProjectPlatform);
                 data.append('vcsSystem', this.uploadVcsSystem);
@@ -812,11 +817,17 @@
                         this.isLoading = false;
                     })
                     .catch((error) => {
-                        console.error(error);
+                        console.error(error.response);
                         this.isLoading = false;
+                        this.notifyError(error.response.data);
                     });
             },
             fetchAnalysis() {
+                if (!this.selectedProjectId) {
+                    this.notifyError("No project name was filled in");
+                    return;
+                }
+
                 axios
                     .get(`http://${this.$backendHost}/analysis/${this.selectedProjectId}`)
                     .then((response) => {
@@ -826,13 +837,19 @@
                         this.isLoading = false;
                     })
                     .catch((error) => {
-                        console.error(error);
+                        console.error(error.response);
                         this.liveRerenderModeActive = false;
                         this.isLoading = false;
+                        this.notifyError(error.response.data);
                     });
             },
             fetchClusteredGraph() {
                 this.isLoading = true;
+
+                if (!this.selectedProjectId) {
+                    this.notifyError("No project name was filled in");
+                    return;
+                }
 
                 const parameters = {
                     'clusteringAlgorithm': this.selectedClusteringAlgorithm,
@@ -858,11 +875,13 @@
                         this.metricsData = response.data["metrics"];
                         this.isLoading = false;
                         this.scrollToRefAnchor('clustering-controls');
+                        this.$notify({title: `Clustering with '${this.convertClusteringAlgorithmIdentifierToLabel(this.selectedClusteringAlgorithm)}' was successful`});
                     })
                     .catch((error) => {
-                        console.error(error);
+                        console.error(error.response);
                         this.liveRerenderModeActive = false;
                         this.isLoading = false;
+                        this.$notify({title: `Clustering with '${this.convertClusteringAlgorithmIdentifierToLabel(this.selectedClusteringAlgorithm)}' failed`});
                     });
 
                 this.fetchClusteredGraphOfEveryGraphClusteringAlgorithm();
@@ -895,11 +914,13 @@
                             this.clusteringAlgorithmMetrics[clusteringAlgorithm] = response.data["metrics"];
                             this.reevaluateMetrics();
                             this.$forceUpdate();
+                            this.$notify({title: `Clustering with '${this.convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)}' was successful`});
                         })
                         .catch((error) => {
-                            console.error(error);
+                            console.error(error.response);
                             this.liveRerenderModeActive = false;
                             this.isLoading = false;
+                            this.$notify({title: `Clustering with '${this.convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)}' failed`});
                         });
                 }
 
@@ -931,7 +952,7 @@
                     case LouvainIdentifier:
                         return 'Louvain';
                     case ClausetNewmanMooreIdentifier:
-                        return 'Fast Modularity';
+                        return 'Clauset et al.';
                     case WalktrapIdentifier:
                         return 'Walktrap';
                     case ChineseWhispersIdentifier:
@@ -987,6 +1008,9 @@
                     this.uploadEvolutionaryAnalysisFile = files[0];
                     this.evolutionaryAnalyisUploadLabel = this.shortenText(files[0].name, 15);
                 }
+            },
+            notifyError(errorMessage) {
+                this.$notify({title: `An error occurred: '${errorMessage}'`});
             },
             calculatePercentageRatioBetweenTwoNumbers(first, second) {
                 return parseInt((first / second) * 100);
