@@ -112,28 +112,28 @@ class AnalysisController {
             when (part) {
                 is PartData.FormItem -> {
                     when (part.name) {
-                        ProjectRequest::projectName.name -> projectName = part.value
-                        ProjectRequest::projectPlatform.name -> projectPlatform = getPlatformByName(part.value)
-                        ProjectRequest::vcsSystem.name -> vcsSystem = getVcsSystemByName(part.value)
+                        ProjectRequest::projectName.name           -> projectName = part.value
+                        ProjectRequest::projectPlatform.name       -> projectPlatform = getPlatformByName(part.value)
+                        ProjectRequest::vcsSystem.name             -> vcsSystem = getVcsSystemByName(part.value)
                         ProjectRequest::basePackageIdentifier.name -> basePackageIdentifier = part.value
                     }
                 }
                 is PartData.FileItem -> {
                     val file: File
                     when (part.name) {
-                        ProjectRequest::staticAnalysisFile.name -> {
+                        ProjectRequest::staticAnalysisFile.name       -> {
                             file = File("${StaticAnalysisExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
                             withContext(Dispatchers.IO) { file.createNewFile() }
                             staticAnalysisFile = file
                         }
-                        ProjectRequest::dynamicAnalysisFile.name -> {
+                        ProjectRequest::dynamicAnalysisFile.name      -> {
                             file = File("${DynamicAnalysisExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
                             withContext(Dispatchers.IO) { file.createNewFile() }
                             dynamicAnalysisFile = file
                         }
-                        ProjectRequest::semanticAnalysisFile.name -> {
+                        ProjectRequest::semanticAnalysisFile.name     -> {
                             file = File("${SemanticCouplingExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
                             withContext(Dispatchers.IO) { file.createNewFile() }
@@ -145,7 +145,7 @@ class AnalysisController {
                             withContext(Dispatchers.IO) { file.createNewFile() }
                             evolutionaryAnalysisFile = file
                         }
-                        else -> throw IllegalArgumentException("File keys must be in ${listOf(ProjectRequest::staticAnalysisFile.name, ProjectRequest::dynamicAnalysisFile.name, ProjectRequest::semanticAnalysisFile.name, ProjectRequest::evolutionaryAnalysisFile.name)}")
+                        else                                          -> throw IllegalArgumentException("File keys must be in ${listOf(ProjectRequest::staticAnalysisFile.name, ProjectRequest::dynamicAnalysisFile.name, ProjectRequest::semanticAnalysisFile.name, ProjectRequest::evolutionaryAnalysisFile.name)}")
                     }
 
                     part.streamProvider().use { uploadStream ->

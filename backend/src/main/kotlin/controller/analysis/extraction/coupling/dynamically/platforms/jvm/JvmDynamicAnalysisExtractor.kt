@@ -16,9 +16,9 @@ class JvmDynamicAnalysisExtractor(private val projectName: String, private val b
 
     private fun retrieveGraph(): Graph {
         return when (recordingFile.extension) {
-            JfrRecordingExtension -> JfrRecordingAnalyzer(projectName = projectName, basePackageIdentifier = basePackageIdentifier, jfrRecording = recordingFile).extract()
+            JfrRecordingExtension             -> JfrRecordingAnalyzer(projectName = projectName, basePackageIdentifier = basePackageIdentifier, jfrRecording = recordingFile).extract()
             InstrumentationRecordingExtension -> InstrumentationRecordingAnalyzer(instrumentationRecordingFile = recordingFile).extract()
-            else -> throw IllegalArgumentException()
+            else                              -> throw IllegalArgumentException()
         }
     }
 

@@ -12,11 +12,11 @@ data class EdgeAttributeWeights(
         fun retrieveEdgeAttributeWeightsFromQueryParameters(queryParameters: Parameters): EdgeAttributeWeights {
             return EdgeAttributeWeights(
                 dynamicCouplingScoreWeight = queryParameters[EdgeAttributeWeights::dynamicCouplingScoreWeight.name]?.toInt()
-                    ?: throw IllegalArgumentException("Passed query parameters do not contain the mandatory key ${EdgeAttributeWeights::dynamicCouplingScoreWeight.name}"),
+                                             ?: throw IllegalArgumentException("Passed query parameters do not contain the mandatory key ${EdgeAttributeWeights::dynamicCouplingScoreWeight.name}"),
                 semanticCouplingScoreWeight = queryParameters[EdgeAttributeWeights::semanticCouplingScoreWeight.name]?.toInt()
-                    ?: throw IllegalArgumentException("Passed query parameters do not contain the mandatory key ${EdgeAttributeWeights::semanticCouplingScoreWeight.name}"),
+                                              ?: throw IllegalArgumentException("Passed query parameters do not contain the mandatory key ${EdgeAttributeWeights::semanticCouplingScoreWeight.name}"),
                 evolutionaryCouplingScoreWeight = queryParameters[EdgeAttributeWeights::evolutionaryCouplingScoreWeight.name]?.toInt()
-                    ?: throw IllegalArgumentException("Passed query parameters do not contain the mandatory key ${EdgeAttributeWeights::evolutionaryCouplingScoreWeight.name}")
+                                                  ?: throw IllegalArgumentException("Passed query parameters do not contain the mandatory key ${EdgeAttributeWeights::evolutionaryCouplingScoreWeight.name}")
             )
         }
     }

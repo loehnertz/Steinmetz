@@ -63,7 +63,7 @@ class GraphInserter(
         }
 
         val metrics: Metrics = calculateMetrics(baseGraph = baseGraph)
-        val finalGraph: Graph = mergeSemanticAndEvolutionaryCouplingGraphs(baseGraph).also { println("Merged coupling graphs into final coupling graph with ${it.nodes.size} nodes and ${it.nodes.size} edges") }
+        val finalGraph: Graph = mergeSemanticAndEvolutionaryCouplingGraphs(baseGraph).also { println("Merged coupling graphs into final coupling graph with ${it.nodes.size} nodes and ${it.edges.size} edges") }
 
         println("Inserting analysis data into database").also { System.gc() }
 
@@ -80,7 +80,7 @@ class GraphInserter(
         println("Processing static coupling data")
         when (projectPlatform) {
             Platform.JAVA -> return JavaStaticCouplingExtractor(projectName, basePackageIdentifier, staticAnalysisFile).extract()
-            else -> throw IllegalArgumentException()
+            else          -> throw IllegalArgumentException()
         }
     }
 
@@ -89,7 +89,7 @@ class GraphInserter(
         println("Processing dynamic coupling data")
         when (projectPlatform) {
             Platform.JAVA -> return JvmDynamicAnalysisExtractor(projectName, basePackageIdentifier, dynamicAnalysisFile!!).extract()
-            else -> throw IllegalArgumentException()
+            else          -> throw IllegalArgumentException()
         }
     }
 
@@ -98,7 +98,7 @@ class GraphInserter(
         println("Processing semantic coupling data")
         when (projectPlatform) {
             Platform.JAVA -> return JavaSemanticCouplingExtractor(projectName, basePackageIdentifier, semanticAnalysisFile!!, edgesToConsider).extract()
-            else -> throw IllegalArgumentException()
+            else          -> throw IllegalArgumentException()
         }
     }
 
@@ -107,7 +107,7 @@ class GraphInserter(
         println("Processing evolutionary coupling data")
         when (projectPlatform) {
             Platform.JAVA -> return JvmEvolutionaryCouplingExtractor(vcsSystem, basePackageIdentifier, evolutionaryAnalysisFile!!).extract()
-            else -> throw IllegalArgumentException()
+            else          -> throw IllegalArgumentException()
         }
     }
 

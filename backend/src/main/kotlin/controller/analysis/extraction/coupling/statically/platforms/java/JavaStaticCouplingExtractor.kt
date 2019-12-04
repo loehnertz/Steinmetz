@@ -127,8 +127,8 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
 
     private fun calculateUnitByteFootprint(unit: Unit): Long {
         return potentialUnitFiles.find { it.path.replace("/", ".").substringAfterLast(basePackageIdentifier) == "${unit.packageIdentifier.substringAfterLast(basePackageIdentifier)}.${unit.identifier}.$JavaFileExtension" }?.length()
-            ?: potentialUnitFiles.find { "${unit.packageIdentifier.substringAfterLast(basePackageIdentifier)}.${unit.identifier}".contains(it.path.replace("/", ".").substringAfterLast(basePackageIdentifier).removeSuffix(".$JavaFileExtension")) }?.length()
-            ?: DefaultUnitFootprintByteSize
+               ?: potentialUnitFiles.find { "${unit.packageIdentifier.substringAfterLast(basePackageIdentifier)}.${unit.identifier}".contains(it.path.replace("/", ".").substringAfterLast(basePackageIdentifier).removeSuffix(".$JavaFileExtension")) }?.length()
+               ?: DefaultUnitFootprintByteSize
     }
 
     private fun isLegalUnit(identifier: String): Boolean = identifier.startsWith(basePackageIdentifier) && !identifier.substringAfterLast('.').contains(JavaGenericsStatement)

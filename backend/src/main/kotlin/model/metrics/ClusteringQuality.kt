@@ -18,7 +18,7 @@ data class ClusteringQuality(
     companion object {
         fun getClusteringMetricByName(name: String): KProperty1<ClusteringQuality, *> {
             return ClusteringQuality::class.declaredMemberProperties.find { it.name == name }
-                ?: throw IllegalArgumentException("Clustering metric $name does not exist")
+                   ?: throw IllegalArgumentException("Clustering metric $name does not exist")
         }
     }
 }
