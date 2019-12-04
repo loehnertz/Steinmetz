@@ -76,7 +76,7 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
     }
 
     private fun convertFileNameToIdentifier(filePath: String): String {
-        return "$basePackageIdentifier${filePath.replace('/', '.').substringAfter(basePackageIdentifier).replace(".$JavaFileExtension", "")}"
+        return "$basePackageIdentifier${filePath.replace('/', '.').substringAfterLast(basePackageIdentifier).replace(".$JavaFileExtension", "")}"
     }
 
     companion object {
