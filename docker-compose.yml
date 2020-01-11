@@ -1,15 +1,5 @@
 version: "3"
 services:
-  backend:
-    build: backend/
-    ports:
-      - 5656:5656
-    environment:
-      NEO4J_HOST: "database"
-      NEO4J_PORT: "7687"
-      EXTERNAL_EXECUTABLE_PATH: "/app/executables/"
-    depends_on:
-      - database
   frontend:
     build: frontend/
     ports:
@@ -18,6 +8,17 @@ services:
       - data:/app
     depends_on:
       - backend
+  backend:
+    build: backend/
+    ports:
+      - 5005:5005
+      - 5656:5656
+    environment:
+      NEO4J_HOST: "database"
+      NEO4J_PORT: "7687"
+      EXTERNAL_EXECUTABLE_PATH: "/app/executables/"
+    depends_on:
+      - database
   database:
     build: database/
     ports:
