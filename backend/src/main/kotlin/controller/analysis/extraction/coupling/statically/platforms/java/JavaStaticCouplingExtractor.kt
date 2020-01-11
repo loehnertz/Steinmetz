@@ -14,6 +14,7 @@ import controller.analysis.extraction.coupling.statically.StaticAnalysisExtracto
 import model.graph.*
 import model.graph.Unit
 import utility.ArchiveExtractor
+import utility.Utilities
 import utility.toNullable
 import java.io.File
 import java.util.*
@@ -65,6 +66,24 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .also { println("\tCleared parsing caches") }
     }
 
+    private fun convertReferencePairsToGraph(referencePairs: Set<Pair<String, String>>): Graph {
+        val graph = Graph()
+
+        for (referencePair in referencePairs) {
+            val startUnit = Unit(identifier = referencePair.first.substringAfterLast('.'), packageIdentifier = referencePair.first.substringBeforeLast('.'))
+            val endUnit = Unit(identifier = referencePair.second.substringAfterLast('.'), packageIdentifier = referencePair.second.substringBeforeLast('.'))
+            val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes())
+
+            if (startUnit == endUnit) continue
+
+            graph.addOrUpdateEdge(edge)
+        }
+
+        graph.nodes.map { attachUnitFootprint(it) }.forEach { graph.addOrUpdateNode(it) }
+
+        return graph
+    }
+
     private fun retrieveCallClasses(declaration: ClassOrInterfaceDeclaration): List<Resolvable<ResolvedType>> {
         return (retrieveSuperTypes(declaration) + retrieveReferencedTypes(declaration)).mapNotNull { it as? Resolvable<ResolvedType> }
     }
@@ -72,7 +91,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
     private fun retrieveCallPairs(classReferences: Pair<TypeDeclaration<*>, List<Resolvable<ResolvedType>>>): List<Pair<String, String>> {
         val classIdentifier: String = classReferences.first.fullyQualifiedName.get()
         val referencedTypes: List<String> = classReferences.second.mapNotNull { resolveType(it) }.map { it.describe() }
-        return referencedTypes.filter { isLegalUnit(it) }.filter { it != classIdentifier }.map { classIdentifier to it }
+        return referencedTypes.filter { isLegalUnit(it) }.filter { it != classIdentifier }.map { classIdentifier to it }.also { checkToFreeMemory() }
     }
 
     private fun retrieveSuperTypes(declaration: ClassOrInterfaceDeclaration): Set<ClassOrInterfaceType> {
@@ -100,22 +119,11 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         }
     }
 
-    private fun convertReferencePairsToGraph(referencePairs: Set<Pair<String, String>>): Graph {
-        val graph = Graph()
-
-        for (referencePair in referencePairs) {
-            val startUnit = Unit(identifier = referencePair.first.substringAfterLast('.'), packageIdentifier = referencePair.first.substringBeforeLast('.'))
-            val endUnit = Unit(identifier = referencePair.second.substringAfterLast('.'), packageIdentifier = referencePair.second.substringBeforeLast('.'))
-            val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes())
-
-            if (startUnit == endUnit) continue
-
-            graph.addOrUpdateEdge(edge)
+    private fun checkToFreeMemory() {
+        if (Utilities.freeMemoryPercentage() <= LowMemoryPercentageThreshold) {
+            JavaParserFacade.clearInstances()
+            System.gc()
         }
-
-        graph.nodes.map { attachUnitFootprint(it) }.forEach { graph.addOrUpdateNode(it) }
-
-        return graph
     }
 
     private fun attachUnitFootprint(node: Node): Node {
@@ -138,5 +146,6 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         private const val JavaFileExtension = "java"
         private const val JavaTestDirectory = "/test/"
         private val JavaGenericsStatement = Regex("[<>]")
+        private const val LowMemoryPercentageThreshold = 15
     }
 }

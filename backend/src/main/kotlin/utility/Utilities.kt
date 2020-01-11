@@ -13,4 +13,6 @@ object Utilities {
     fun extractTsv(tsvFile: File): List<List<String>> {
         return tsvFile.readLines().map { it.split("\t") }
     }
+
+    fun freeMemoryPercentage(): Int = ((Runtime.getRuntime().freeMemory().toDouble() / Runtime.getRuntime().maxMemory().toDouble()) * 100).toInt()
 }
