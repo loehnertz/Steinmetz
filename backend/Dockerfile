@@ -4,9 +4,6 @@ FROM openjdk:11
 RUN mkdir /app
 WORKDIR /app
 
-# Copy the latest build into the image
-COPY ./target/steinmetz-1.0-SNAPSHOT-jar-with-dependencies.jar backend.jar
-
 # Copy the external executables into the image
 RUN mkdir executables
 COPY ./lib/executables/* executables/
@@ -14,6 +11,9 @@ COPY ./lib/executables/* executables/
 # Install dependencies for executables
 RUN apt-get update
 RUN apt-get install -y build-essential libgomp1
+
+# Copy the latest build into the image
+COPY ./target/steinmetz-1.0-SNAPSHOT-jar-with-dependencies.jar backend.jar
 
 # Boot up the server
 EXPOSE 5656
