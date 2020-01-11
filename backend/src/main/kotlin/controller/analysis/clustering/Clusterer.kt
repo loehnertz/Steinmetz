@@ -19,7 +19,7 @@ class Clusterer(private val graph: Graph, private val projectName: String, priva
 
     fun applyClusteringAlgorithm(clusteringAlgorithm: ClusteringAlgorithm, maxIterations: Int): Graph {
         return when (clusteringAlgorithm) {
-            ClusteringAlgorithm.MCL                  -> MclManager(graph, chosenClusteringMetric).apply(iterations = maxIterations)
+            ClusteringAlgorithm.MCL                  -> MclManager(graph, projectName, chosenClusteringMetric).apply(iterations = maxIterations)
             ClusteringAlgorithm.INFOMAP              -> InfomapManager(graph, projectName).apply(iterations = maxIterations)
             ClusteringAlgorithm.LOUVAIN              -> LouvainManager(graph, projectName).apply(iterations = maxIterations)
             ClusteringAlgorithm.CLAUSET_NEWMAN_MOORE -> ClausetNewmanMooreManager(graph, projectName).apply(iterations = maxIterations)

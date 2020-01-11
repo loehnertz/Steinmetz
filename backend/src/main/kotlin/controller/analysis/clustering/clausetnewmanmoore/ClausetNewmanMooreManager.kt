@@ -15,9 +15,9 @@ class ClausetNewmanMooreManager(private val graph: Graph, private val projectNam
     override fun apply(iterations: Int): Graph {
         createInputFile()
 
-        Runtime.getRuntime().exec(buildFirstRunCommand()).waitFor()
+        Runtime.getRuntime().exec(buildFirstRunCommand()).also { it.inputStream.readAllBytes() }
         val maximumModularity: Int = retrieveMaxModularityAfterFirstRun()
-        Runtime.getRuntime().exec(buildSecondRunCommand(maximumModularity)).waitFor()
+        Runtime.getRuntime().exec(buildSecondRunCommand(maximumModularity)).also { it.inputStream.readAllBytes() }
 
         val outputLines: List<String> = readOutputFileLines()
         return convertOutputToGraph(outputLines)
