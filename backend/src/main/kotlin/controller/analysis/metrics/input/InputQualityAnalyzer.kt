@@ -3,7 +3,6 @@ package controller.analysis.metrics.input
 import model.graph.Edge
 import model.graph.Graph
 import model.metrics.InputQuality
-import kotlin.math.abs
 
 
 class InputQualityAnalyzer(
