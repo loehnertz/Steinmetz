@@ -599,6 +599,7 @@
                                 :dynamic-coupling-modularity="metrics['clusteringQuality']['dynamicCouplingModularity']"
                                 :semantic-coupling-modularity="metrics['clusteringQuality']['semanticCouplingModularity']"
                                 :evolutionary-coupling-modularity="metrics['clusteringQuality']['evolutionaryCouplingModularity']"
+                                :average-coupling-modularity="metrics['clusteringQuality']['averageCouplingModularity']"
                                 :total-coupling-modularity="metrics['clusteringQuality']['totalCouplingModularity']"
                         />
                     </div>
