@@ -578,6 +578,7 @@
                         :dynamic-coupling-modularity="clusteringQuality['dynamicCouplingModularity']"
                         :semantic-coupling-modularity="clusteringQuality['semanticCouplingModularity']"
                         :evolutionary-coupling-modularity="clusteringQuality['evolutionaryCouplingModularity']"
+                        :average-coupling-modularity="clusteringQuality['averageCouplingModularity']"
                         :total-coupling-modularity="clusteringQuality['totalCouplingModularity']"
                 />
                 <div class="box level">

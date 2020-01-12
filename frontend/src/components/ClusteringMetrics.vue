@@ -59,9 +59,8 @@
                 return Number(this.totalCouplingModularity).toFixed(2);
             },
             nonNullAverageCouplingModularity: function () {
-                const couplingModularityValues = [this.nonNullDynamicCouplingModularity, this.nonNullSemanticCouplingModularity, this.nonNullEvolutionaryCouplingModularity];
-                if (couplingModularityValues.includes(NotAvailableLabel)) return NotAvailableLabel;
-                return Number(this.calculateAverage(couplingModularityValues)).toFixed(2);
+                if (!this.averageCouplingModularity) return NotAvailableLabel;
+                return Number(this.averageCouplingModularity).toFixed(2);
             },
             nonNullDynamicCouplingModularity: function () {
                 if (!this.totalCouplingModularity) return NotAvailableLabel;
@@ -76,12 +75,6 @@
                 return Number(this.evolutionaryCouplingModularity).toFixed(2);
             },
         },
-        methods: {
-            calculateAverage(couplingModularityValues) {
-                const numberValues = couplingModularityValues.map(Number);
-                return (numberValues.reduce((a, b) => a + b, 0) / numberValues.length);
-            },
-        },
         props: {
             fontSize: Number,
             clusteringAlgorithm: String,
@@ -93,6 +86,7 @@
             dynamicCouplingModularity: Number,
             semanticCouplingModularity: Number,
             evolutionaryCouplingModularity: Number,
+            averageCouplingModularity: Number,
             totalCouplingModularity: Number,
         },
     }
