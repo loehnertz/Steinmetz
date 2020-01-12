@@ -75,7 +75,6 @@ class GraphInserter(
         return ProjectResponse(graph = finalGraph, metrics = metrics)
     }
 
-    @Throws(IllegalArgumentException::class)
     private fun processStaticAnalysisData(): Graph {
         println("Processing static coupling data")
         when (projectPlatform) {
@@ -84,7 +83,6 @@ class GraphInserter(
         }
     }
 
-    @Throws(IllegalArgumentException::class)
     private fun processDynamicCouplingData(): Graph {
         println("Processing dynamic coupling data")
         when (projectPlatform) {
@@ -93,7 +91,6 @@ class GraphInserter(
         }
     }
 
-    @Throws(IllegalArgumentException::class)
     private fun processSemanticCouplingData(edgesToConsider: Set<Edge>): Graph {
         println("Processing semantic coupling data")
         when (projectPlatform) {
@@ -102,7 +99,6 @@ class GraphInserter(
         }
     }
 
-    @Throws(IllegalArgumentException::class)
     private fun processEvolutionaryCouplingData(): Graph {
         println("Processing evolutionary coupling data")
         when (projectPlatform) {

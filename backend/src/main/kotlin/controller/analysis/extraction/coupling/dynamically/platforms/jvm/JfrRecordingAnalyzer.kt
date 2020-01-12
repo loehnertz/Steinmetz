@@ -19,7 +19,7 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
     private val dynamicAnalysisBasePath = "$basePath/$DynamicAnalysisDirectory"
 
     override fun extract(): Graph {
-        val dynamicAnalysisGraph: Graph = analyzeRecording().also { println("\tRetrieved ${it.edges} dynamic coupling pairs") }
+        val dynamicAnalysisGraph: Graph = analyzeRecording().also { println("\tRetrieved ${it.edges.size} dynamic coupling pairs") }
         cleanup(basePath, dynamicAnalysisBasePath)
         return mergeInnerUnitNodesWithParentNodes(dynamicAnalysisGraph).also { println("\tConstructed dynamic coupling graph") }
     }
@@ -35,7 +35,7 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
 
                 if (event.eventType.name == MethodInvocationEventType) {
                     val stackTrace: RecordedStackTrace = event.stackTrace ?: continue
-                    val frames: List<RecordedFrame> = stackTrace.frames.filter { it.isJavaFrame && it.method.type.name.startsWith(basePackageIdentifier) }.reversed()
+                    val frames: List<RecordedFrame> = stackTrace.frames.filter { it.isJavaFrame && isLegalUnit(it.method.type.name, basePackageIdentifier) }.reversed()
 
                     frames.forEachIndexed { index: Int, caller: RecordedFrame ->
                         if (index + 1 < frames.size) {

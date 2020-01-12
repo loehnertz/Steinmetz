@@ -26,7 +26,6 @@ class InputQualityAnalyzer(
 
     private fun calculateEdgeQuality(baseGraph: Graph, comparisonGraph: Graph): Int {
         val intersectionCoveredUnits: Set<Edge> = baseGraph.edges intersect comparisonGraph.edges
-        val coveredUnitsDifference: Double = abs(baseGraph.edges.size - intersectionCoveredUnits.size).toDouble()
-        return (100 - ((coveredUnitsDifference / baseGraph.edges.size.toDouble()) * 100)).toInt()
+        return ((intersectionCoveredUnits.size.toDouble() / baseGraph.edges.size.toDouble()) * 100).toInt()
     }
 }

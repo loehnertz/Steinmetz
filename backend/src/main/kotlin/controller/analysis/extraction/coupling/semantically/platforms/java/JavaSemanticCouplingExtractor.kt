@@ -13,7 +13,7 @@ import utility.ArchiveExtractor
 import java.io.File
 
 
-class JavaSemanticCouplingExtractor(projectName: String, private val basePackageIdentifier: String, private val sourceCodeFilesArchive: File, private val edgesToConsider: Set<Edge>) : SemanticCouplingExtractor() {
+class JavaSemanticCouplingExtractor(private val projectName: String, private val basePackageIdentifier: String, private val sourceCodeFilesArchive: File, private val edgesToConsider: Set<Edge>) : SemanticCouplingExtractor() {
     private val unarchiverPath = "${getWorkingDirectory()}/sources/$projectName/"
     private val unarchiver = ArchiveExtractor(".$JavaFileExtension", unarchiverPath)
 
@@ -55,6 +55,7 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
             .filter { it.isFile }
             .filter { it.extension == JavaFileExtension }
             .filter { it.name != PackageInfoFileName }
+            .filter { isLegalUnit(convertFileNameToIdentifier(it.absolutePath), basePackageIdentifier) }
             .toList()
     }
 
@@ -76,7 +77,9 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
     }
 
     private fun convertFileNameToIdentifier(filePath: String): String {
-        return "$basePackageIdentifier${filePath.replace('/', '.').substringAfterLast(basePackageIdentifier).replace(".$JavaFileExtension", "")}"
+        var identifer: String = filePath.replace('/', '.').substringAfterLast("$projectName.").substringAfterLast(basePackageIdentifier).replace(".$JavaFileExtension", "")
+        if (basePackageIdentifier != WildcardBasePackageIdentifer) identifer = basePackageIdentifier + identifer
+        return identifer
     }
 
     companion object {

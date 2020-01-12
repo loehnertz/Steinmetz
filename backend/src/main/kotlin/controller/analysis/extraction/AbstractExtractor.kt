@@ -16,6 +16,11 @@ abstract class AbstractExtractor {
 
     internal fun cleanup(vararg basePaths: String) = basePaths.forEach { File(it).deleteRecursively() }
 
+    internal fun isLegalUnit(unitIdentifier: String, basePackageIdentifier: String): Boolean {
+        if (basePackageIdentifier == WildcardBasePackageIdentifer) return true
+        return unitIdentifier.startsWith(basePackageIdentifier)
+    }
+
     internal fun mergeInnerUnitNodesWithParentNodes(graph: Graph): Graph {
         val mergedGraph = Graph()
 
@@ -37,6 +42,7 @@ abstract class AbstractExtractor {
     }
 
     companion object {
+        const val WildcardBasePackageIdentifer = "*"
         const val ExtractionBasePath: String = ExtractorCompanion.ExtractionBasePath
 
         fun normalizeUnit(unit: Unit): Unit = unit

@@ -139,7 +139,9 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
                ?: DefaultUnitFootprintByteSize
     }
 
-    private fun isLegalUnit(identifier: String): Boolean = identifier.startsWith(basePackageIdentifier) && !identifier.substringAfterLast('.').contains(JavaGenericsStatement)
+    private fun isLegalUnit(identifier: String): Boolean {
+        return isLegalUnit(identifier, basePackageIdentifier) && !identifier.substringAfterLast('.').contains(JavaGenericsStatement)
+    }
 
     companion object {
         private val PlatformIdentifier: String = Platform.JAVA.toString().toLowerCase()
