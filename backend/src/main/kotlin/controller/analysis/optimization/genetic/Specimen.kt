@@ -2,8 +2,8 @@ package controller.analysis.optimization.genetic
 
 
 data class Specimen(
-        var chromosome: IntArray,
-        var fitness: Double? = null
+    var chromosome: IntArray,
+    var fitness: Double? = null
 ) {
     fun clone(): Specimen {
         return Specimen(chromosome = this.chromosome.copyOf(), fitness = fitness)

@@ -11,8 +11,8 @@ data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: Mutabl
 
     fun clone(): Graph {
         return Graph(
-                nodes = this.nodes.map { node -> node.copy() }.toMutableSet(),
-                edges = this.edges.map { edge -> edge.copy() }.toMutableSet()
+            nodes = this.nodes.map { node -> node.copy() }.toMutableSet(),
+            edges = this.edges.map { edge -> edge.copy() }.toMutableSet()
         )
     }
 

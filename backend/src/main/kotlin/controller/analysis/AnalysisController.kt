@@ -75,12 +75,12 @@ class AnalysisController {
         val geneAmount: Int = EdgeAttributeWeights::class.declaredMemberProperties.size
 
         val bestSpecimen: Specimen = EvolutionManager(
-                maxGenerations = maxIterations,
-                populationSize = (EdgeAttributeWeights.UpperBound * 2),
-                geneLength = ceil(sqrt(EdgeAttributeWeights.UpperBound.toDouble())).toInt(),
-                geneAmount = geneAmount,
-                illegalValues = listOf(0),
-                fitnessFunction = fitnessFunction
+            maxGenerations = maxIterations,
+            populationSize = (EdgeAttributeWeights.UpperBound * 2),
+            geneLength = ceil(sqrt(EdgeAttributeWeights.UpperBound.toDouble())).toInt(),
+            geneAmount = geneAmount,
+            illegalValues = listOf(0),
+            fitnessFunction = fitnessFunction
         ).start()
 
         val parameterList: List<Int> = EvolutionManager.convertBinaryChromosomeToIntegerList(bestSpecimen.chromosome, geneAmount)

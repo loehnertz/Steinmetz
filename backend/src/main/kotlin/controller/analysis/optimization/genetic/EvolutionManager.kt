@@ -6,13 +6,13 @@ import kotlin.math.abs
 
 
 class EvolutionManager(
-        private val maxGenerations: Int = MaxGenerations,
-        private val populationSize: Int = PopulationSize,
-        private val chanceToMutateInPercent: Int = ChanceToMutateInPercent,
-        private val geneLength: Int,
-        private val geneAmount: Int,
-        private val illegalValues: List<Int>? = null,
-        private val fitnessFunction: (Specimen) -> Double
+    private val maxGenerations: Int = MaxGenerations,
+    private val populationSize: Int = PopulationSize,
+    private val chanceToMutateInPercent: Int = ChanceToMutateInPercent,
+    private val geneLength: Int,
+    private val geneAmount: Int,
+    private val illegalValues: List<Int>? = null,
+    private val fitnessFunction: (Specimen) -> Double
 ) {
     private val chromosomeLength: Int = geneLength * geneAmount
     private val randomizer: Random = Random()
