@@ -2,36 +2,42 @@ package controller.analysis.clustering.mcl
 
 import controller.analysis.clustering.ClusteringAlgorithmManager
 import controller.analysis.metrics.clustering.ClusteringQualityAnalyzer
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import model.graph.Graph
 import model.graph.Node
 import model.graph.NodeAttributes
 import model.graph.Unit
 import model.metrics.ClusteringQuality
+import utility.mapConcurrently
+import java.io.File
 import java.math.RoundingMode
 import kotlin.reflect.KProperty1
 
 
-class MclManager(private val graph: Graph, private val chosenClusteringMetric: KProperty1<ClusteringQuality, *>) : ClusteringAlgorithmManager {
+class MclManager(private val graph: Graph, private val projectName: String, private val chosenClusteringMetric: KProperty1<ClusteringQuality, *>) : ClusteringAlgorithmManager {
     override fun apply(iterations: Int): Graph {
-        val clusteringInflationValues: List<Double> = buildClusteringInflationValuesList()
-
-        val input: String = convertGraphToInput()
-
-        val deferredExecutions: ArrayList<Deferred<String>> = arrayListOf()
-        for (clusteringInflationValue: Double in clusteringInflationValues) deferredExecutions.add(GlobalScope.async { MclExecutor(input, clusteringInflationValue).execute() })
-
         return runBlocking {
-            val clusteredGraphs: List<Graph> = deferredExecutions.map { it.await() }.map { convertOutputToGraph(it, Graph(nodes = graph.nodes.map { node -> node.copy() }.toMutableSet(), edges = graph.edges)) }
-            return@runBlocking clusteredGraphs.sortedByDescending { (chosenClusteringMetric.get(ClusteringQualityAnalyzer(it).calculateClusteringQualityMetrics()) as Number).toDouble() }.first()
+            val clusteringInflationValues: List<Double> = buildClusteringInflationValuesList(iterations)
+            val inputFile: File = createInputFile()
+            val clusteredGraphs: List<Graph> = clusteringInflationValues
+                .mapConcurrently { clusteringInflationValue -> MclExecutor(inputFile, clusteringInflationValue).execute() }
+                .map { convertOutputToGraph(it, Graph(nodes = graph.nodes.map { node -> node.copy() }.toMutableSet(), edges = graph.edges)) }
+            return@runBlocking clusteredGraphs
+                .maxBy { (chosenClusteringMetric.get(ClusteringQualityAnalyzer(it).calculateClusteringQualityMetrics()) as Number).toDouble() }!!
         }
     }
 
-    private fun convertGraphToInput(): String {
-        return graph.edges.joinToString("\n") { buildInputLine(it.start, it.end, it.attributes.couplingScore) }
+    private fun createInputFile(): File {
+        val inputFileString: String = graph.edges.joinToString("\n") { buildInputLine(it.start, it.end, it.attributes.couplingScore) }
+        return writeInputFile(inputFileString)
+    }
+
+    private fun writeInputFile(inputFileString: String): File {
+        val inputFile = File("${constructBaseFileLocation()}.${InputFileExtension}")
+        inputFile.parentFile.mkdirs()
+        inputFile.createNewFile()
+        inputFile.bufferedWriter().use { file -> file.write(inputFileString) }
+        return inputFile
     }
 
     private fun convertOutputToGraph(output: String, graph: Graph): Graph {
@@ -70,5 +76,15 @@ class MclManager(private val graph: Graph, private val chosenClusteringMetric: K
 
     private fun buildNodeIdentifier(identifier: String, packageIdentifier: String): String {
         return "$packageIdentifier.$identifier"
+    }
+
+    private fun constructBaseFileLocation(): String {
+        return "$InputOutputPath/$projectName/$InputFileName"
+    }
+
+    companion object {
+        private const val InputOutputPath = "/tmp/steinmetz/mcl"
+        private const val InputFileName = "steinmetz"
+        private const val InputFileExtension = "abc"
     }
 }

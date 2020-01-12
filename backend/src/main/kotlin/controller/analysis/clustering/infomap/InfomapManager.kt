@@ -44,7 +44,7 @@ class InfomapManager(private val graph: Graph, private val projectName: String) 
             val (nodeId, clusterId, _) = line.split(' ')
 
             val clusteredUnit: Unit = id2UnitMap[nodeId.toInt()]
-                    ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
+                                      ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
             graph.addOrUpdateNode(Node(unit = clusteredUnit, attributes = NodeAttributes(cluster = clusterId.toInt())))
         }
 
@@ -71,11 +71,11 @@ class InfomapManager(private val graph: Graph, private val projectName: String) 
     }
 
     private fun retrieveExecutablePath(): String {
-        return Utilities.getResourceAsText(ExecutableName).absolutePath
+        return Utilities.getExternalExecutableAsFile(ExecutableName).absolutePath
     }
 
     companion object {
-        private const val ExecutableName = "executables/Infomap"
+        private const val ExecutableName = "Infomap"
         private const val InputOutputPath = "/tmp/steinmetz/infomap"
         private const val InputFileName = "steinmetz.txt"
         private const val OutputDirectory = "."

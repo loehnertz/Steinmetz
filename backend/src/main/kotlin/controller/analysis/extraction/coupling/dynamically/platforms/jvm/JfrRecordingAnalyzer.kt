@@ -2,7 +2,6 @@ package controller.analysis.extraction.coupling.dynamically.platforms.jvm
 
 import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.dynamically.DynamicAnalysisExtractor
-import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import jdk.jfr.consumer.RecordedEvent
 import jdk.jfr.consumer.RecordedFrame
 import jdk.jfr.consumer.RecordedStackTrace
@@ -16,16 +15,16 @@ import java.nio.file.Paths
 
 
 class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifier: String, private val jfrRecording: File) : DynamicAnalysisExtractor() {
-    private val basePath: String = buildBasePath(platformIdentifier, projectName)
+    private val basePath: String = buildBasePath(PlatformIdentifier, projectName)
     private val dynamicAnalysisBasePath = "$basePath/$DynamicAnalysisDirectory"
 
     override fun extract(): Graph {
-        val dynamicAnalysisGraph: Graph = analyzeRecording()
+        val dynamicAnalysisGraph: Graph = analyzeRecording().also { println("\tRetrieved ${it.edges.size} dynamic coupling pairs") }
         cleanup(basePath, dynamicAnalysisBasePath)
-        return mergeInnerUnitNodesWithParentNodes(dynamicAnalysisGraph)
+        return mergeInnerUnitNodesWithParentNodes(dynamicAnalysisGraph).also { println("\tConstructed dynamic coupling graph") }
     }
 
-    override fun normalizeUnit(unit: Unit): Unit = JvmBytecodeExtractor.normalizeUnit(unit)
+    override fun normalizeUnit(unit: Unit): Unit = Unit(identifier = unit.identifier.substringBeforeLast(InnerUnitDelimiter), packageIdentifier = unit.packageIdentifier)
 
     private fun analyzeRecording(): Graph {
         val graph = Graph()
@@ -34,9 +33,9 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
             while (file.hasMoreEvents()) {
                 val event: RecordedEvent = file.readEvent()
 
-                if (event.eventType.name == methodInvocationEventType) {
+                if (event.eventType.name == MethodInvocationEventType) {
                     val stackTrace: RecordedStackTrace = event.stackTrace ?: continue
-                    val frames: List<RecordedFrame> = stackTrace.frames.filter { it.isJavaFrame && it.method.type.name.startsWith(basePackageIdentifier) }.reversed()
+                    val frames: List<RecordedFrame> = stackTrace.frames.filter { it.isJavaFrame && isLegalUnit(it.method.type.name, basePackageIdentifier) }.reversed()
 
                     frames.forEachIndexed { index: Int, caller: RecordedFrame ->
                         if (index + 1 < frames.size) {
@@ -64,7 +63,8 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
     }
 
     companion object {
-        private val platformIdentifier: String = Platform.JAVA.toString().toLowerCase()
-        private const val methodInvocationEventType = "jdk.ExecutionSample"
+        private val PlatformIdentifier: String = Platform.JAVA.toString().toLowerCase()
+        private const val MethodInvocationEventType = "jdk.ExecutionSample"
+        private const val InnerUnitDelimiter = '$'
     }
 }

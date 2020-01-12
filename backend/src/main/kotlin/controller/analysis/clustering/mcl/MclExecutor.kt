@@ -1,30 +1,26 @@
 package controller.analysis.clustering.mcl
 
 import utility.Utilities
-import java.io.BufferedWriter
-import java.io.OutputStreamWriter
-import java.nio.charset.StandardCharsets
-import java.util.*
+import java.io.File
+import java.nio.charset.StandardCharsets.UTF_8
 
 
-class MclExecutor(private val input: String, private val inflationValue: Double) {
+class MclExecutor(private val inputFile: File, private val inflationValue: Double) {
     fun execute(): String {
         val process: Process = Runtime.getRuntime().exec(buildCommand(inflationValue))
-        BufferedWriter(OutputStreamWriter(process.outputStream)).use { writer -> writer.write(input); writer.flush() }
-        process.waitFor()
-        return Scanner(process.inputStream, StandardCharsets.UTF_8.name()).useDelimiter("\\A").next()
+        return String(process.inputStream.readAllBytes(), UTF_8)
     }
 
     private fun buildCommand(clusteringInflationValue: Double): String {
-        return "${retrieveExecutablePath()} $MclBaseCommand -I $clusteringInflationValue"
+        return "${retrieveExecutablePath()} ${inputFile.absolutePath} $MclBaseCommand -I $clusteringInflationValue"
     }
 
     private fun retrieveExecutablePath(): String {
-        return Utilities.getResourceAsText(ExecutableName).absolutePath
+        return Utilities.getExternalExecutableAsFile(ExecutableName).absolutePath
     }
 
     companion object {
-        private const val ExecutableName = "executables/mcl"
-        private const val MclBaseCommand = "- --abc -o -"
+        private const val ExecutableName = "mcl"
+        private const val MclBaseCommand = "--abc -o -"
     }
 }

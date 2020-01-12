@@ -2,13 +2,11 @@ package controller.analysis.clustering.walktrap
 
 import controller.analysis.clustering.ClusteringAlgorithmManager
 import controller.analysis.metrics.clustering.ClusteringQualityAnalyzer
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import model.graph.*
 import model.graph.Unit
 import model.metrics.ClusteringQuality
+import utility.mapConcurrently
 import java.io.File
 import java.util.*
 import kotlin.reflect.KProperty1
@@ -19,14 +17,13 @@ class WalktrapManager(private val graph: Graph, private val chosenClusteringMetr
     private val id2UnitMap: HashMap<Int, Unit> = hashMapOf()
 
     override fun apply(iterations: Int): Graph {
-        val inputFile: File = createInputFile()
-
-        val deferredExecutions: ArrayList<Deferred<String>> = arrayListOf()
-        for (clusterAmount: Int in (1..iterations)) deferredExecutions.add(GlobalScope.async { WalktrapExecutor(inputFile, clusterAmount).execute() })
-
         return runBlocking {
-            val clusteredGraphs: List<Graph> = deferredExecutions.map { it.await() }.mapNotNull { convertOutputToGraph(it, Graph(nodes = graph.nodes.map { node -> node.copy() }.toMutableSet(), edges = graph.edges)) }
-            return@runBlocking clusteredGraphs.sortedByDescending { (chosenClusteringMetric.get(ClusteringQualityAnalyzer(it).calculateClusteringQualityMetrics()) as Number).toDouble() }.first()
+            val inputFile: File = createInputFile()
+            val clusteredGraphs: List<Graph> = (1..iterations)
+                .mapConcurrently { iterationAmount -> WalktrapExecutor(inputFile, iterationAmount).execute() }
+                .mapNotNull { convertOutputToGraph(it, Graph(nodes = graph.nodes.map { node -> node.copy() }.toMutableSet(), edges = graph.edges)) }
+            return@runBlocking clusteredGraphs
+                .maxBy { (chosenClusteringMetric.get(ClusteringQualityAnalyzer(it).calculateClusteringQualityMetrics()) as Number).toDouble() }!!
         }
     }
 
@@ -58,7 +55,7 @@ class WalktrapManager(private val graph: Graph, private val chosenClusteringMetr
 
             for (unitId: Int in convertOutputClusterLineToListOfUnitIds(line)) {
                 val clusteredUnit: Unit = id2UnitMap[unitId]
-                        ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
+                                          ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
                 graph.addOrUpdateNode(Node(unit = clusteredUnit, attributes = NodeAttributes(cluster = clusterId)))
             }
 

@@ -3,8 +3,8 @@ package controller.analysis.extraction.coupling.semantically.platforms.java
 import codes.jakob.semanticcoupling.SemanticCouplingCalculator
 import codes.jakob.semanticcoupling.model.NaturalLanguage
 import codes.jakob.semanticcoupling.model.ProgrammingLanguage
+import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.coupling.semantically.SemanticCouplingExtractor
-import controller.analysis.extraction.coupling.statically.platforms.jvm.JvmBytecodeExtractor
 import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
@@ -13,23 +13,23 @@ import utility.ArchiveExtractor
 import java.io.File
 
 
-class JavaSemanticCouplingExtractor(projectName: String, private val basePackageIdentifier: String, private val sourceCodeFilesArchive: File, private val edgesToConsider: Set<Edge>) : SemanticCouplingExtractor() {
+class JavaSemanticCouplingExtractor(private val projectName: String, private val basePackageIdentifier: String, private val sourceCodeFilesArchive: File, private val edgesToConsider: Set<Edge>) : SemanticCouplingExtractor() {
     private val unarchiverPath = "${getWorkingDirectory()}/sources/$projectName/"
-    private val unarchiver = ArchiveExtractor(FileExtension, unarchiverPath)
+    private val unarchiver = ArchiveExtractor(".$JavaFileExtension", unarchiverPath)
 
     override fun extract(): Graph {
         unarchiver.unpackAnalysisArchive(sourceCodeFilesArchive)
 
         val files: List<File> = retrieveSourceCodeFiles()
-        val semanticCouplingCalculator: SemanticCouplingCalculator = setupSemanticCouplingCalculator(files).also { it.calculate() }
-        val similarities: List<Triple<String, String, Double>> = semanticCouplingCalculator.retrieveSimilaritiesAsListOfTriples()
+        val semanticCouplingCalculator: SemanticCouplingCalculator = setupSemanticCouplingCalculator(files).also { it.calculate() }.also { println("\tCalculated semantic similarities") }
+        val similarities: List<Triple<String, String, Double>> = semanticCouplingCalculator.retrieveSimilaritiesAsListOfTriples().also { println("\tExtracted ${it.size} semantic coupling pairs") }
 
         cleanup(unarchiverPath, sourceCodeFilesArchive.absolutePath)
 
-        return mergeInnerUnitNodesWithParentNodes(Graph(edges = buildEdgesOutOfSimilarities(similarities).toMutableSet()))
+        return Graph(edges = buildEdgesOutOfSimilarities(similarities).toMutableSet()).also { println("\tConstructed semantic coupling graph") }
     }
 
-    override fun normalizeUnit(unit: Unit): Unit = JvmBytecodeExtractor.normalizeUnit(unit)
+    override fun normalizeUnit(unit: Unit): Unit = AbstractExtractor.normalizeUnit(unit)
 
     private fun buildEdgesOutOfSimilarities(similarities: List<Triple<String, String, Double>>): List<Edge> {
         val edges: ArrayList<Edge> = arrayListOf()
@@ -51,36 +51,39 @@ class JavaSemanticCouplingExtractor(projectName: String, private val basePackage
 
     private fun retrieveSourceCodeFiles(): List<File> {
         return File(unarchiverPath)
-                .walkTopDown()
-                .filter { it.isFile }
-                .filter { it.name.endsWith(FileExtension) }
-                .filter { it.name != PackageInfoFileName }
-                .toList()
+            .walk()
+            .filter { it.isFile }
+            .filter { it.extension == JavaFileExtension }
+            .filter { it.name != PackageInfoFileName }
+            .filter { isLegalUnit(convertFileNameToIdentifier(it.absolutePath), basePackageIdentifier) }
+            .toList()
     }
 
     private fun setupSemanticCouplingCalculator(files: List<File>): SemanticCouplingCalculator {
         return SemanticCouplingCalculator(
-                files = buildFileListMap(files),
-                programmingLanguage = JavaEnumKey,
-                naturalLanguage = EnglishLanguageEnumKey,
-                fileSimilaritiesToCalculate = buildFilePairsToCalculate()
+            files = buildFileListMap(files),
+            programmingLanguage = JavaEnumKey,
+            naturalLanguage = EnglishLanguageEnumKey,
+            fileSimilaritiesToCalculate = buildFilePairsToCalculate()
         ).also { it.useStemming() }.also { it.doNotUseLsi() }
     }
 
     private fun buildFilePairsToCalculate(): List<Pair<String, String>> {
-        return edgesToConsider.map { Pair(it.start.toString(), it.end.toString()) }
+        return edgesToConsider.map { it.start.toString() to it.end.toString() }
     }
 
-    private fun buildFileListMap(files: List<File>): List<Map<String, String>> {
-        return files.map { mapOf(convertFileNameToIdentifier(it.absolutePath) to it.readText()) }
+    private fun buildFileListMap(files: List<File>): Map<String, String> {
+        return files.map { convertFileNameToIdentifier(it.absolutePath) to it.readText() }.toMap()
     }
 
     private fun convertFileNameToIdentifier(filePath: String): String {
-        return "$basePackageIdentifier${filePath.replace('/', '.').substringAfter(basePackageIdentifier).replace(FileExtension, "")}"
+        var identifer: String = filePath.replace('/', '.').substringAfterLast("$projectName.").substringAfterLast(basePackageIdentifier).replace(".$JavaFileExtension", "")
+        if (basePackageIdentifier != WildcardBasePackageIdentifer) identifer = basePackageIdentifier + identifer
+        return identifer
     }
 
     companion object {
-        private const val FileExtension = ".java"
+        private const val JavaFileExtension = "java"
         private const val PackageInfoFileName = "package-info.java"
         private val JavaEnumKey = ProgrammingLanguage.JAVA
         private val EnglishLanguageEnumKey = NaturalLanguage.EN

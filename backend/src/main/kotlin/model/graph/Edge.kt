@@ -2,9 +2,9 @@ package model.graph
 
 
 data class Edge(
-        val start: Unit,
-        val end: Unit,
-        val attributes: EdgeAttributes
+    val start: Unit,
+    val end: Unit,
+    val attributes: EdgeAttributes
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

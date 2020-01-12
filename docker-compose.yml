@@ -1,31 +1,34 @@
 version: "3"
 services:
-  backend:
-    build: backend/
-    ports:
-      - 5656:5656
-    environment:
-      NEO4J_HOST: "neo4j"
-      REDIS_HOST: "redis"
   frontend:
     build: frontend/
     ports:
-      - 8080:8080
+      - 8056:80
     volumes:
       - data:/app
-  neo4j:
+    depends_on:
+      - backend
+  backend:
+    build: backend/
+    ports:
+      - 5005:5005
+      - 5656:5656
+    environment:
+      NEO4J_HOST: "database"
+      NEO4J_PORT: "7687"
+      EXTERNAL_EXECUTABLE_PATH: "/app/executables/"
+    depends_on:
+      - database
+  database:
     build: database/
     ports:
       - 7474:7474
       - 7687:7687
     environment:
       NEO4J_AUTH: "none"
+      NEO4J_dbms_memory_heap_max__size: "4G"
     volumes:
       - data:/data
       - data:/logs
-  redis:
-    image: redis:alpine
-    ports:
-      - 6379
 volumes:
   data:

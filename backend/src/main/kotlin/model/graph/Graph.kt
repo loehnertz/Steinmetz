@@ -6,7 +6,7 @@ import model.graph.UnitFootprint.Companion.mergeUnitFootprints
 
 data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: MutableSet<Edge> = mutableSetOf()) {
     init {
-        if (this.nodes.isEmpty()) inferNodesOutOfEdges()
+        inferNodesOutOfEdges()
     }
 
     fun clone(): Graph {
@@ -35,12 +35,13 @@ data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: Mutabl
         val existingEdge: Edge? = edges.find { it == edge }
 
         if (edges.removeIf { it == edge } && existingEdge != null) {
-            edges.add(mergeEqualEdges(existingEdge, edge))
+            val newEdge: Edge = mergeEqualEdges(existingEdge, edge)
+            edges.add(newEdge)
+            inferNodesOutOfEdge(newEdge)
         } else {
             edges.add(edge)
+            inferNodesOutOfEdge(edge)
         }
-
-        inferNodesOutOfEdges()
     }
 
     fun updateEdge(edge: Edge) {
@@ -54,8 +55,14 @@ data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: Mutabl
     }
 
     private fun mergeEqualEdges(firstEdge: Edge, secondEdge: Edge): Edge {
-        if (firstEdge != secondEdge) throw IllegalArgumentException("The two passed edges are not equal")
+        require(firstEdge == secondEdge) { "The two passed edges are not equal" }
         return Edge(start = firstEdge.start, end = firstEdge.end, attributes = mergeEdgeAttributes(firstEdge.attributes, secondEdge.attributes))
+    }
+
+    private fun inferNodesOutOfEdge(edge: Edge) {
+        addOrUpdateNode(Node(unit = edge.start))
+        addOrUpdateNode(Node(unit = edge.end))
+        ensureNodesAndEdgesIntegrity()
     }
 
     private fun inferNodesOutOfEdges() {
@@ -69,6 +76,6 @@ data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: Mutabl
     private fun ensureNodesAndEdgesIntegrity() {
         val nodeUnits: Set<Unit> = nodes.map { it.unit }.toSet()
         val edgeUnits: Set<Unit> = edges.map { it.start }.toSet().union(edges.map { it.end }.toSet())
-        if (nodeUnits.size != edgeUnits.size) throw IllegalStateException("The integrity check on the nodes and edges failed")
+        check(nodeUnits.size == edgeUnits.size) { "The integrity check on the nodes and edges failed" }
     }
 }

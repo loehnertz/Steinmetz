@@ -4,10 +4,10 @@ import java.io.File
 
 
 object Utilities {
-    fun getResourceAsText(path: String): File {
-        var fullPath: String = path
-        if (!path.startsWith('/')) fullPath = "/$fullPath"
-        return File(object {}.javaClass.getResource(fullPath).file)
+    private val externalExecutablePath: String = System.getenv("EXTERNAL_EXECUTABLE_PATH") ?: "backend/lib/executables/"
+
+    fun getExternalExecutableAsFile(name: String): File {
+        return File(externalExecutablePath + name).absoluteFile
     }
 
     fun extractTsv(tsvFile: File): List<List<String>> {
@@ -27,4 +27,6 @@ object Utilities {
         }
         return decimalNumber
     }
+
+    fun freeMemoryPercentage(): Int = ((Runtime.getRuntime().freeMemory().toDouble() / Runtime.getRuntime().maxMemory().toDouble()) * 100).toInt()
 }

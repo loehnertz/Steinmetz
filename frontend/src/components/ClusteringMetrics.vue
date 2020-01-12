@@ -27,7 +27,7 @@
             Semantic Coupling Modularity: {{ nonNullSemanticCouplingModularity }}
         </p>
         <p :style="{ fontSize: fontSize + 'em' }">
-            Logical Coupling Modularity: {{ nonNullLogicalCouplingModularity }}
+            Evolutionary Coupling Modularity: {{ nonNullEvolutionaryCouplingModularity }}
         </p>
     </div>
 </template>
@@ -59,7 +59,7 @@
                 return Number(this.totalCouplingModularity).toFixed(2);
             },
             nonNullAverageCouplingModularity: function () {
-                const couplingModularityValues = [this.nonNullDynamicCouplingModularity, this.nonNullSemanticCouplingModularity, this.nonNullLogicalCouplingModularity];
+                const couplingModularityValues = [this.nonNullDynamicCouplingModularity, this.nonNullSemanticCouplingModularity, this.nonNullEvolutionaryCouplingModularity];
                 if (couplingModularityValues.includes(NotAvailableLabel)) return NotAvailableLabel;
                 return Number(this.calculateAverage(couplingModularityValues)).toFixed(2);
             },
@@ -71,9 +71,9 @@
                 if (!this.totalCouplingModularity) return NotAvailableLabel;
                 return Number(this.semanticCouplingModularity).toFixed(2);
             },
-            nonNullLogicalCouplingModularity: function () {
+            nonNullEvolutionaryCouplingModularity: function () {
                 if (!this.totalCouplingModularity) return NotAvailableLabel;
-                return Number(this.logicalCouplingModularity).toFixed(2);
+                return Number(this.evolutionaryCouplingModularity).toFixed(2);
             },
         },
         methods: {
@@ -92,7 +92,7 @@
             percentageInterClusterEdgeWeights: Number,
             dynamicCouplingModularity: Number,
             semanticCouplingModularity: Number,
-            logicalCouplingModularity: Number,
+            evolutionaryCouplingModularity: Number,
             totalCouplingModularity: Number,
         },
     }

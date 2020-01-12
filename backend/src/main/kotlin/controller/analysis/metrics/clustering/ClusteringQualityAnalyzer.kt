@@ -15,20 +15,20 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
         val accumulatedInterfaceEdgeWeights: Int = interClusterEdges.sumBy { it.attributes.couplingScore }
         val dynamicCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::dynamicCouplingScore)
         val semanticCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::semanticCouplingScore)
-        val logicalCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::logicalCouplingScore)
-        val averageCouplingModularity: Double = listOf(dynamicCouplingModularity, semanticCouplingModularity, logicalCouplingModularity).average()
+        val evolutionaryCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::evolutionaryCouplingScore)
+        val averageCouplingModularity: Double = listOf(dynamicCouplingModularity, semanticCouplingModularity, evolutionaryCouplingModularity).average()
         val totalCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::couplingScore)
 
         return ClusteringQuality(
-                accumulatedEdgeWeights = accumulatedEdgeWeights,
-                amountClusters = amountOfClusters,
-                amountInterfaceEdges = interClusterEdges.size,
-                accumulatedInterfaceEdgeWeights = accumulatedInterfaceEdgeWeights,
-                dynamicCouplingModularity = dynamicCouplingModularity,
-                semanticCouplingModularity = semanticCouplingModularity,
-                logicalCouplingModularity = logicalCouplingModularity,
-                averageCouplingModularity = averageCouplingModularity,
-                totalCouplingModularity = totalCouplingModularity
+            accumulatedEdgeWeights = accumulatedEdgeWeights,
+            amountClusters = amountOfClusters,
+            amountInterfaceEdges = interClusterEdges.size,
+            accumulatedInterfaceEdgeWeights = accumulatedInterfaceEdgeWeights,
+            dynamicCouplingModularity = dynamicCouplingModularity,
+            semanticCouplingModularity = semanticCouplingModularity,
+            evolutionaryCouplingModularity = evolutionaryCouplingModularity,
+            averageCouplingModularity = averageCouplingModularity,
+            totalCouplingModularity = totalCouplingModularity
         )
     }
 
@@ -56,6 +56,7 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
         val clusterMap: MutableMap<Int, ArrayList<Node>> = mutableMapOf()
 
         for (node: Node in clusteredGraph.nodes) {
+            if (node.attributes.cluster == null) continue
             var clusterList: ArrayList<Node>? = clusterMap[node.attributes.cluster!!]
             if (clusterList == null) clusterList = arrayListOf()
             clusterList.add(node)

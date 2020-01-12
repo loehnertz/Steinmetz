@@ -15,9 +15,9 @@ class ClausetNewmanMooreManager(private val graph: Graph, private val projectNam
     override fun apply(iterations: Int): Graph {
         createInputFile()
 
-        Runtime.getRuntime().exec(buildFirstRunCommand()).waitFor()
+        Runtime.getRuntime().exec(buildFirstRunCommand()).also { it.inputStream.readAllBytes() }
         val maximumModularity: Int = retrieveMaxModularityAfterFirstRun()
-        Runtime.getRuntime().exec(buildSecondRunCommand(maximumModularity)).waitFor()
+        Runtime.getRuntime().exec(buildSecondRunCommand(maximumModularity)).also { it.inputStream.readAllBytes() }
 
         val outputLines: List<String> = readOutputFileLines()
         return convertOutputToGraph(outputLines)
@@ -57,7 +57,7 @@ class ClausetNewmanMooreManager(private val graph: Graph, private val projectNam
             }
 
             val clusteredUnit: Unit = id2UnitMap[line.toInt()]
-                    ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
+                                      ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
             graph.addOrUpdateNode(Node(unit = clusteredUnit, attributes = NodeAttributes(cluster = clusterId)))
         }
 
@@ -92,11 +92,11 @@ class ClausetNewmanMooreManager(private val graph: Graph, private val projectNam
     }
 
     private fun retrieveExecutablePath(): String {
-        return Utilities.getResourceAsText(ExecutableName).absolutePath
+        return Utilities.getExternalExecutableAsFile(ExecutableName).absolutePath
     }
 
     companion object {
-        private const val ExecutableName = "executables/FastCommunity_wMH"
+        private const val ExecutableName = "FastCommunity_wMH"
         private const val InputOutputPath = "/tmp/steinmetz/clausetnewmanmoore"
         private const val InputFileName = "steinmetz"
         private const val InputFileExtension = "wpairs"

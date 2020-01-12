@@ -3,9 +3,12 @@ package resource
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import controller.analysis.AnalysisController
+import controller.analysis.ProjectAlreadyExistsException
+import controller.analysis.ProjectDoesNotExistException
 import controller.analysis.clustering.ClusteringAlgorithm
 import controller.analysis.clustering.ClusteringAlgorithm.Companion.getClusteringAlgorithmByName
 import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveMultipart
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -25,13 +28,25 @@ fun Route.analysis(controller: AnalysisController) {
         post("/") {
             val request: ProjectRequest = controller.handleNewProjectUploads(call.receiveMultipart())
 
-            call.respond(controller.insertProject(request))
+            try {
+                call.respond(controller.insertProject(request))
+            } catch (e: ProjectAlreadyExistsException) {
+                call.respond(HttpStatusCode.Conflict, e.message)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
+            }
         }
 
         get("/{projectName}") {
             val projectName: String = call.parameters["projectName"].toString()
 
-            call.respond(controller.retrieveProject(projectName))
+            try {
+                call.respond(controller.retrieveProject(projectName))
+            } catch (e: ProjectDoesNotExistException) {
+                call.respond(HttpStatusCode.NotFound, e.message)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
+            }
         }
 
         get("/{projectName}/cluster") {
@@ -41,7 +56,13 @@ fun Route.analysis(controller: AnalysisController) {
             val edgeAttributeWeights: EdgeAttributeWeights = retrieveEdgeAttributeWeightsFromQueryParameters(call.request.queryParameters)
             val maxIterations: Int = call.request.queryParameters["maxClusteringIterations"]?.toInt() ?: 100
 
-            call.respond(controller.clusterGraph(projectName, chosenClusteringAlgorithm, chosenClusteringMetric, edgeAttributeWeights, maxIterations))
+            try {
+                call.respond(controller.clusterGraph(projectName, chosenClusteringAlgorithm, chosenClusteringMetric, edgeAttributeWeights, maxIterations))
+            } catch (e: ProjectDoesNotExistException) {
+                call.respond(HttpStatusCode.NotFound, e.message)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
+            }
         }
 
         get("/{projectName}/optimize") {

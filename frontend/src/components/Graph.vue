@@ -12,9 +12,7 @@
     import {Network} from 'vue2vis';
 
     const DefaultColor = 'orange';
-    const DefaultUnitEdgeLength = 1000;
-    const InterfaceUnitEdgeLength = DefaultUnitEdgeLength * 10;
-    const NormalNodeShape = 'square';
+    const NormalNodeShape = 'dot';
     const InterfaceNodeShape = 'diamond';
     const ClusterNodeKeyword = '$cluster';
     const LayoutSeed = 55609697;
@@ -34,7 +32,7 @@
                     nodes: {
                         font: {
                             face: 'Titillium Web',
-                            size: 21,
+                            size: 150,
                         },
                         margin: 15,
                         shape: NormalNodeShape,
@@ -43,8 +41,9 @@
                         scaling: {
                             customScalingFunction: this.getEdgeScalingFunction(),
                         },
+                        selectionWidth: this.getSelectionWidthFunction(),
                         smooth: {
-                            type: 'dynamic',
+                            type: 'cubicBezier',
                         },
                     },
                     layout: {
@@ -54,19 +53,15 @@
                         hideEdgesOnDrag: true,
                     },
                     manipulation: {
-                        enabled: true,
-                        addNode: false,
-                        addEdge: false,
-                        editEdge: false,
-                        deleteNode: false,
-                        deleteEdge: false,
+                        enabled: false,
                     },
                     physics: {
-                        barnesHut: {
-                            gravitationalConstant: 0,
+                        forceAtlas2Based: {
+                            gravitationalConstant: -100000,
+                            springConstant: 0.5,
                         },
-                        maxVelocity: 100,
-                        timestep: 1.0,
+                        solver: 'forceAtlas2Based',
+                        timestep: 5.5,
                     },
                 },
             }
@@ -90,7 +85,6 @@
             },
             constructGraph(nodes, relationships) {
                 if (nodes && relationships) {
-                    this.configureGravitation(relationships.length);
                     this.setNodes(nodes);
                     this.setEdges(relationships);
                     this.watchStabilization();
@@ -102,10 +96,7 @@
             },
             rerenderGraphWithDelay() {
                 this.flushGraph();
-                setTimeout(() => this.constructGraph(this.graphData["nodes"], this.graphData["edges"]));
-            },
-            configureGravitation(relationshipAmount) {
-                this.graphOptions.physics.barnesHut.gravitationalConstant = -(relationshipAmount * 10000);
+                setTimeout(() => this.constructGraph(this.graphData["nodes"], this.graphData["edges"]), 1000);
             },
             setNodes(nodes) {
                 for (let node of nodes) {
@@ -161,14 +152,14 @@
                 return {
                     id: this.constructUnitNodeId(identifier, packageIdentifier),
                     cid: clusterId,
-                    title: this.generateGraphPopup(`${packageIdentifier}.${identifier}<br>Size: ${size} Byte`),
+                    title: this.generateGraphPopup(`${packageIdentifier}.${identifier}<br>Size: ${size} Bytes`),
                     label: identifier,
                     borderWidth: 5,
                     color: {
                         background: 'whitesmoke',
                         border: this.getNodeBorderColor(clusterId, clusterAmount),
                     },
-                    size: size / 100,
+                    size: size / 10,
                 }
             },
             buildServiceNode(clusterId, hidden) {
@@ -181,17 +172,16 @@
                         background: 'whitesmoke',
                         border: DefaultColor,
                     },
+                    size: 500,
                     shape: 'hexagon',
                     hidden: hidden,
                 }
             },
             buildUnitEdge(startNodeId, endNodeId, weight, isInterface) {
                 let color = 'green';
-                let length = DefaultUnitEdgeLength;
 
                 if (isInterface) {
                     color = 'blue';
-                    length = InterfaceUnitEdgeLength;
                     this.updateNodeShape(startNodeId, InterfaceNodeShape);
                     this.updateNodeShape(endNodeId, InterfaceNodeShape);
                 }
@@ -199,12 +189,11 @@
                 return {
                     from: startNodeId,
                     to: endNodeId,
-                    title: this.generateGraphPopup(`${weight}`),
+                    title: this.generateGraphPopup(`${startNodeId} &rarr; ${endNodeId}<br>Coupling: ${weight}`),
                     value: weight,
-                    length: length,
                     color: {
                         color: color,
-                        highlight: DefaultColor,
+                        highlight: 'firebrick',
                     },
                     arrows: {
                         to: {
@@ -227,6 +216,8 @@
             },
             clusterGraph(showClusterNodes) {
                 if (showClusterNodes) {
+                    this.graphOptions.physics.forceAtlas2Based.springConstant = 0.8;
+
                     const unit2unitEdges = this.graphEdges;
                     this.graphEdges = [];
 
@@ -247,13 +238,18 @@
                             }
                         }
                     }
+                } else {
+                    this.graphOptions.physics.forceAtlas2Based.springConstant = 0.08;
                 }
 
                 for (let unitNodeIndex in this.graphNodes) {
-                    if (showClusterNodes) this.graphNodes[unitNodeIndex]["shape"] = 'box';
+                    if (showClusterNodes && !this.graphNodes[unitNodeIndex]["id"].startsWith(ClusterNodeKeyword)) {
+                        this.graphNodes[unitNodeIndex]["size"] = 100;
+                    }
 
                     const unitNode = this.graphNodes[unitNodeIndex];
                     const clusterEdge = this.buildServiceEdge(unitNode.id, this.constructClusterNodeId(unitNode.cid));
+                    clusterEdge.smooth = {type: 'dynamic'};
 
                     this.graphEdges.push(clusterEdge);
                 }
@@ -268,14 +264,15 @@
                 }
             },
             unnullifyUnitByteSize(unitAttributes) {
-                if (!unitAttributes["footprint"] || !unitAttributes["footprint"]["byteSize"]) return 1;
+                if (!unitAttributes["footprint"] || !unitAttributes["footprint"]["byteSize"]) return 1024;
                 return unitAttributes["footprint"]["byteSize"];
             },
             watchStabilization() {
-                setInterval(() => {
+                const stabilizationWatcher = setInterval(() => {
                     if (!this.$refs["graph"]) return;
                     if (this.$refs["graph"].network.physics.stabilizationIterations >= this.$refs["graph"].network.physics.options.stabilization.iterations) {
                         this.$refs["graph"].network.physics.stabilized = true;
+                        clearInterval(stabilizationWatcher);
                     }
                 }, 1000);
             },
@@ -309,11 +306,16 @@
                     if (max === min) {
                         return 0.5;
                     } else {
-                        let scale = 1 / (max - min);
+                        const scale = 10 / (max - min);
                         return Math.max(0, (value - min) * scale);
                     }
                 }
             },
+            getSelectionWidthFunction() {
+                return function (width) {
+                    return width * 5;
+                }
+            }
         },
         props: {
             graphData: {

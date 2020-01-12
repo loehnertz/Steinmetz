@@ -2,26 +2,25 @@ package controller.analysis.clustering.walktrap
 
 import utility.Utilities
 import java.io.File
-import java.nio.charset.StandardCharsets
-import java.util.*
+import java.nio.charset.StandardCharsets.UTF_8
 
 
 class WalktrapExecutor(private val inputFile: File, private val iterations: Int) {
     fun execute(): String {
-        val process: Process = Runtime.getRuntime().exec(buildCommand(inputFile, iterations)).also { it.waitFor() }
-        return Scanner(process.inputStream, StandardCharsets.UTF_8.name()).useDelimiter("\\A").next()
+        val process: Process = Runtime.getRuntime().exec(buildCommand())
+        return String(process.inputStream.readAllBytes(), UTF_8)
     }
 
-    private fun buildCommand(inputFile: File, amountOfClusters: Int): String {
-        return "${retrieveExecutablePath()} ${inputFile.absolutePath} $WalktrapBaseCommand -p$amountOfClusters"
+    private fun buildCommand(): String {
+        return "${retrieveExecutablePath()} ${inputFile.absolutePath} $WalktrapBaseCommand -p$iterations"
     }
 
     private fun retrieveExecutablePath(): String {
-        return Utilities.getResourceAsText(ExecutableName).absolutePath
+        return Utilities.getExternalExecutableAsFile(ExecutableName).absolutePath
     }
 
     companion object {
-        private const val ExecutableName = "executables/walktrap"
+        private const val ExecutableName = "walktrap"
         private const val WalktrapBaseCommand = "-s"
     }
 }

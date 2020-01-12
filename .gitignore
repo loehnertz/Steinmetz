@@ -1,5 +1,6 @@
 # Compiled class file
 *.class
+target
 
 # Log file
 *.log
@@ -40,3 +41,6 @@ yarn-error.log*
 
 # JVM libraries
 !/backend/lib/*
+
+# JAR-based resource dependencies
+!/backend/src/main/resources/executables/code-maat.jar

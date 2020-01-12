@@ -14,8 +14,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>main.MainKt</main.class>
-        <kotlin.version>1.3.40</kotlin.version>
-        <ktor.version>1.2.1</ktor.version>
+        <kotlin.version>1.3.50</kotlin.version>
+        <ktor.version>1.2.5</ktor.version>
         <junit.version>5.4.0</junit.version>
     </properties>
 
@@ -24,6 +24,10 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>lib-repo</id>
+            <url>file://${project.basedir}/lib-repo</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -31,6 +35,11 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
         <dependency>
@@ -114,32 +123,24 @@
             <version>3.1.7</version>
         </dependency>
         <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>3.0.1</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>codes.jakob</groupId>
             <artifactId>semanticcoupling</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/semanticcoupling-1.0-SNAPSHOT.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>de.tudarmstadt.lt</groupId>
             <artifactId>chinese-whispers</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/chinese-whispers.jar</systemPath>
         </dependency>
         <dependency>
-            <groupId>gr.gousiosg.javacg</groupId>
-            <artifactId>stat</artifactId>
-            <version>0.2-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/javacg-static.jar</systemPath>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-symbol-solver-core</artifactId>
+            <version>3.15.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-core</artifactId>
+            <version>3.15.5</version>
         </dependency>
     </dependencies>
 

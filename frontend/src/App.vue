@@ -1,5 +1,6 @@
 <template>
     <div id="app">
+        <notifications/>
         <div id="throbber" v-show="isLoading && !liveRerenderModeActive">
             <Throbber :is-loading="isLoading"/>
         </div>
@@ -181,15 +182,15 @@
                                             <input
                                                     class="file-input"
                                                     type="file"
-                                                    placeholder="Logical Coupling Analysis File"
-                                                    @change="onLogicalAnalysisUploadFileChange"
+                                                    placeholder="Evolutionary Coupling Analysis File"
+                                                    @change="onEvolutionaryAnalysisUploadFileChange"
                                             >
                                             <span class="file-cta">
                                                 <span class="file-icon">
                                                     <i class="fas fa-upload"></i>
                                                 </span>
                                                 <span class="file-label">
-                                                    {{ logicalAnalyisUploadLabel }}
+                                                    {{ evolutionaryAnalyisUploadLabel }}
                                                 </span>
                                             </span>
                                         </label>
@@ -235,6 +236,64 @@
                         </div>
                     </div>
                     <div class="level-right">
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-bottom"
+                                        data-tooltip="Toggles the graph view"
+                                >
+                                    <input
+                                            class="switch"
+                                            id="graphViewEnabled"
+                                            type="checkbox"
+                                            v-model="graphEnabled"
+                                            :checked="graphEnabled"
+                                    >
+                                    <label for="graphViewEnabled">
+                                        Graph View
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-bottom"
+                                        data-tooltip="Toggles the textual view"
+                                >
+                                    <input
+                                            class="switch"
+                                            id="textualViewEnabled"
+                                            type="checkbox"
+                                            v-model="overviewEnabled"
+                                            :checked="overviewEnabled"
+                                    >
+                                    <label for="textualViewEnabled">
+                                        Textual View
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-bottom"
+                                        data-tooltip="Toggles the metrics view"
+                                >
+                                    <input
+                                            class="switch"
+                                            id="metricsViewEnabled"
+                                            type="checkbox"
+                                            v-model="metricsEnabled"
+                                            :checked="metricsEnabled"
+                                    >
+                                    <label for="metricsViewEnabled">
+                                        Metrics View
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">&nbsp;</div>
                         <div class="level-item">
                             <div class="field">
                                 <div
@@ -443,7 +502,7 @@
                                 >
                                     <label>
                                         <input class="input" type="number" step="1"
-                                               v-model="logicalCouplingScoreFactor">
+                                               v-model="evolutionaryCouplingScoreFactor">
                                     </label>
                                 </div>
                             </div>
@@ -452,7 +511,7 @@
                             <p>&times;</p>
                         </div>
                         <div class="level-item">
-                            <p>Logical Coupling Score</p>
+                            <p>Evolutionary Coupling Score</p>
                         </div>
                         <div class="level-item">
                             <p>)</p>
@@ -480,7 +539,7 @@
             </div>
         </section>
         <section class="section">
-            <div class="container box" id="graph-container">
+            <div class="container box" id="graph-container" v-if="graphData && graphEnabled">
                 <Graph
                         id="graph"
                         :graph-data="graphData"
@@ -491,13 +550,21 @@
                 />
             </div>
         </section>
-        <section class="section" v-if="clusteringAvailable">
+        <section class="section" v-if="clusteringAvailable && overviewEnabled">
+            <div class="container box" id="overview-container">
+                <ClusteringOverview
+                        :graph-data="graphData"
+                        :cluster-ids="clusterIds"
+                />
+            </div>
+        </section>
+        <section class="section" id="metrics-container" v-if="clusteringAvailable && metricsEnabled">
             <div class="container">
                 <div class="box">
                     <h1 class="title">Metrics</h1>
                     <p>Dynamic Analysis Fidelity: {{ dynamicAnalysisQuality }}%</p>
                     <p>Semantic Analysis Fidelity: {{ semanticAnalysisQuality }}%</p>
-                    <p>Logical Analysis Fidelity: {{ logicalAnalysisQuality }}%</p>
+                    <p>Evolutionary Analysis Fidelity: {{ evolutionaryAnalysisQuality }}%</p>
                 </div>
                 <ClusteringMetrics
                         class="box"
@@ -510,7 +577,7 @@
                         :percentage-inter-cluster-edge-weights="percentageInterClusterEdgeWeights"
                         :dynamic-coupling-modularity="clusteringQuality['dynamicCouplingModularity']"
                         :semantic-coupling-modularity="clusteringQuality['semanticCouplingModularity']"
-                        :logical-coupling-modularity="clusteringQuality['logicalCouplingModularity']"
+                        :evolutionary-coupling-modularity="clusteringQuality['evolutionaryCouplingModularity']"
                         :total-coupling-modularity="clusteringQuality['totalCouplingModularity']"
                 />
                 <div class="box level">
@@ -530,7 +597,7 @@
                                 :percentage-inter-cluster-edge-weights="calculatePercentageRatioBetweenTwoNumbers(metrics['clusteringQuality']['accumulatedInterfaceEdgeWeights'], accumulatedEdgeWeights)"
                                 :dynamic-coupling-modularity="metrics['clusteringQuality']['dynamicCouplingModularity']"
                                 :semantic-coupling-modularity="metrics['clusteringQuality']['semanticCouplingModularity']"
-                                :logical-coupling-modularity="metrics['clusteringQuality']['logicalCouplingModularity']"
+                                :evolutionary-coupling-modularity="metrics['clusteringQuality']['evolutionaryCouplingModularity']"
                                 :total-coupling-modularity="metrics['clusteringQuality']['totalCouplingModularity']"
                         />
                     </div>
@@ -543,6 +610,7 @@
 <script>
     import ClusteringMetrics from './components/ClusteringMetrics.vue';
     import Graph from './components/Graph.vue';
+    import ClusteringOverview from './components/ClusteringOverview.vue';
     import Slider from './components/Slider.vue';
     import Throbber from './components/Throbber.vue';
 
@@ -562,20 +630,21 @@
     const MetricAverageCouplingModularity = 'averageCouplingModularity';
     const MetricDynamicCouplingModularity = 'dynamicCouplingModularity';
     const MetricSemanticCouplingModularity = 'semanticCouplingModularity';
-    const MetricLogicalCouplingModularity = 'logicalCouplingModularity';
-    const GraphClusteringMetrics = [MetricTotalCouplingModularity, MetricAverageCouplingModularity, MetricDynamicCouplingModularity, MetricSemanticCouplingModularity, MetricLogicalCouplingModularity];
+    const MetricEvolutionaryCouplingModularity = 'evolutionaryCouplingModularity';
+    const GraphClusteringMetrics = [MetricTotalCouplingModularity, MetricAverageCouplingModularity, MetricDynamicCouplingModularity, MetricSemanticCouplingModularity, MetricEvolutionaryCouplingModularity];
     const DefaultMaxClusteringIterations = 100;
     const DefaultIterationsClusteringParameterMin = 1;
     const DefaultIterationsClusteringParameterMax = 100;
     const DefaultDynamicCouplingScoreFactor = 1;
     const DefaultSemanticCouplingScoreFactor = 1;
-    const DefaultLogicalCouplingScoreFactor = 1;
+    const DefaultEvolutionaryCouplingScoreFactor = 1;
 
 
     export default {
         name: 'app',
         components: {
             ClusteringMetrics,
+            ClusteringOverview,
             Graph,
             Slider,
             Throbber,
@@ -599,17 +668,17 @@
                     this.semanticCouplingScoreWeightAsInteger = parseInt(newValue);
                 },
             },
-            logicalCouplingScoreFactor: {
+            evolutionaryCouplingScoreFactor: {
                 get: function () {
-                    return this.logicalCouplingScoreWeightAsInteger;
+                    return this.evolutionaryCouplingScoreWeightAsInteger;
                 },
                 set: function (newValue) {
                     if (!newValue) return;
-                    this.logicalCouplingScoreWeightAsInteger = parseInt(newValue);
+                    this.evolutionaryCouplingScoreWeightAsInteger = parseInt(newValue);
                 },
             },
             couplingScoreFactorSum: function () {
-                return (this.dynamicCouplingScoreFactor + this.semanticCouplingScoreFactor + this.logicalCouplingScoreFactor);
+                return (this.dynamicCouplingScoreFactor + this.semanticCouplingScoreFactor + this.evolutionaryCouplingScoreFactor);
             },
             clusterIds: function () {
                 if (!this.clusteringAvailable || !this.graphData["nodes"]) return new Set();
@@ -625,9 +694,9 @@
                 if (!this.metricsData["inputQuality"]) return NotAvailableLabel;
                 return this.metricsData["inputQuality"]["semanticAnalysis"];
             },
-            logicalAnalysisQuality: function () {
+            evolutionaryAnalysisQuality: function () {
                 if (!this.metricsData["inputQuality"]) return NotAvailableLabel;
-                return this.metricsData["inputQuality"]["logicalAnalysis"];
+                return this.metricsData["inputQuality"]["evolutionaryAnalysis"];
             },
             clusteringQuality: function () {
                 if (!this.metricsData["clusteringQuality"]) return {};
@@ -655,14 +724,14 @@
                 uploadStaticAnalysisFile: null,
                 uploadDynamicAnalysisFile: null,
                 uploadSemanticAnalysisFile: null,
-                uploadLogicalAnalysisFile: null,
+                uploadEvolutionaryAnalysisFile: null,
                 selectedProjectId: '',
                 graphData: {},
                 metricsData: {},
                 staticProgramAnalyisUploadLabel: 'Static Analysis',
                 dynamicProgramAnalyisUploadLabel: 'Dynamic Analysis',
                 semanticProgramAnalyisUploadLabel: 'Semantic Analysis',
-                logicalAnalyisUploadLabel: 'Logical Analysis',
+                evolutionaryAnalyisUploadLabel: 'Evolutionary Analysis',
                 graphClusteringAlgorithms: GraphClusteringAlgorithms,
                 graphClusteringMetrics: GraphClusteringMetrics,
                 selectedClusteringAlgorithm: ClausetNewmanMooreIdentifier,
@@ -673,9 +742,12 @@
                 clusteredViewEnabled: false,
                 showClusterNodes: false,
                 sliderFloatingPointStepEnabled: true,
+                graphEnabled: true,
+                overviewEnabled: false,
+                metricsEnabled: true,
                 dynamicCouplingScoreWeightAsInteger: DefaultDynamicCouplingScoreFactor,
                 semanticCouplingScoreWeightAsInteger: DefaultSemanticCouplingScoreFactor,
-                logicalCouplingScoreWeightAsInteger: DefaultLogicalCouplingScoreFactor,
+                evolutionaryCouplingScoreWeightAsInteger: DefaultEvolutionaryCouplingScoreFactor,
                 maxClusteringIterations: DefaultMaxClusteringIterations,
                 iterationsClusteringParameterMin: DefaultIterationsClusteringParameterMin,
                 iterationsClusteringParameterMax: DefaultIterationsClusteringParameterMax,
@@ -693,13 +765,41 @@
                     this.showClusterNodes = false;
                 }
             },
+            dynamicCouplingScoreWeightAsInteger: function (dynamicCouplingScoreWeightAsInteger) {
+                if (dynamicCouplingScoreWeightAsInteger) {
+                    this.liveRerenderModeActive = true;
+                    this.fetchClusteredGraph();
+                }
+            },
+            semanticCouplingScoreWeightAsInteger: function (semanticCouplingScoreWeightAsInteger) {
+                if (semanticCouplingScoreWeightAsInteger) {
+                    this.liveRerenderModeActive = true;
+                    this.fetchClusteredGraph();
+                }
+            },
+            evolutionaryCouplingScoreWeightAsInteger: function (evolutionaryCouplingScoreWeightAsInteger) {
+                if (evolutionaryCouplingScoreWeightAsInteger) {
+                    this.liveRerenderModeActive = true;
+                    this.fetchClusteredGraph();
+                }
+            },
+            maxClusteringIterations: function (maxClusteringIterations) {
+                if (maxClusteringIterations) {
+                    this.liveRerenderModeActive = true;
+                    this.fetchClusteredGraph();
+                }
+            },
         },
         methods: {
             uploadNewProjectData() {
                 this.isLoading = true;
 
-                const data = new FormData();
+                if (!this.uploadProjectName) {
+                    this.notifyError("No project name was chosen");
+                    return;
+                }
 
+                const data = new FormData();
                 data.append('projectName', this.uploadProjectName);
                 data.append('projectPlatform', this.uploadProjectPlatform);
                 data.append('vcsSystem', this.uploadVcsSystem);
@@ -707,23 +807,29 @@
                 data.append('staticAnalysisFile', this.uploadStaticAnalysisFile);
                 data.append('dynamicAnalysisFile', this.uploadDynamicAnalysisFile);
                 data.append('semanticAnalysisFile', this.uploadSemanticAnalysisFile);
-                data.append('logicalAnalysisFile', this.uploadLogicalAnalysisFile);
+                data.append('evolutionaryAnalysisFile', this.uploadEvolutionaryAnalysisFile);
 
                 axios
-                    .post(`http://localhost:5656/analysis/`, data)
+                    .post(`http://${this.$backendHost}/analysis/`, data)
                     .then((response) => {
                         this.graphData = response.data["graph"];
                         this.metricsData = response.data["metrics"];
                         this.isLoading = false;
                     })
                     .catch((error) => {
-                        console.error(error);
+                        console.error(error.response);
                         this.isLoading = false;
+                        this.notifyError(error.response.data);
                     });
             },
             fetchAnalysis() {
+                if (!this.selectedProjectId) {
+                    this.notifyError("No project name was filled in");
+                    return;
+                }
+
                 axios
-                    .get(`http://localhost:5656/analysis/${this.selectedProjectId}`)
+                    .get(`http://${this.$backendHost}/analysis/${this.selectedProjectId}`)
                     .then((response) => {
                         this.clusteredViewEnabled = false;
                         this.graphData = response.data["graph"];
@@ -731,26 +837,32 @@
                         this.isLoading = false;
                     })
                     .catch((error) => {
-                        console.error(error);
+                        console.error(error.response);
                         this.liveRerenderModeActive = false;
                         this.isLoading = false;
+                        this.notifyError(error.response.data);
                     });
             },
             fetchClusteredGraph() {
                 this.isLoading = true;
+
+                if (!this.selectedProjectId) {
+                    this.notifyError("No project name was filled in");
+                    return;
+                }
 
                 const parameters = {
                     'clusteringAlgorithm': this.selectedClusteringAlgorithm,
                     'clusteringMetric': this.selectedClusteringMetric,
                     'dynamicCouplingScoreWeight': this.dynamicCouplingScoreWeightAsInteger,
                     'semanticCouplingScoreWeight': this.semanticCouplingScoreWeightAsInteger,
-                    'logicalCouplingScoreWeight': this.logicalCouplingScoreWeightAsInteger,
+                    'evolutionaryCouplingScoreWeight': this.evolutionaryCouplingScoreWeightAsInteger,
                     'maxClusteringIterations': this.maxClusteringIterations,
                 };
 
                 axios
                     .get(
-                        `http://localhost:5656/analysis/${this.selectedProjectId}/cluster`,
+                        `http://${this.$backendHost}/analysis/${this.selectedProjectId}/cluster`,
                         {
                             params: parameters,
                         },
@@ -763,11 +875,13 @@
                         this.metricsData = response.data["metrics"];
                         this.isLoading = false;
                         this.scrollToRefAnchor('clustering-controls');
+                        this.$notify({title: `Clustering with '${this.convertClusteringAlgorithmIdentifierToLabel(this.selectedClusteringAlgorithm)}' was successful`});
                     })
                     .catch((error) => {
-                        console.error(error);
+                        console.error(error.response);
                         this.liveRerenderModeActive = false;
                         this.isLoading = false;
+                        this.$notify({title: `Clustering with '${this.convertClusteringAlgorithmIdentifierToLabel(this.selectedClusteringAlgorithm)}' failed`});
                     });
 
                 this.fetchClusteredGraphOfEveryGraphClusteringAlgorithm();
@@ -783,13 +897,13 @@
                         'clusteringMetric': this.selectedClusteringMetric,
                         'dynamicCouplingScoreWeight': this.dynamicCouplingScoreWeightAsInteger,
                         'semanticCouplingScoreWeight': this.semanticCouplingScoreWeightAsInteger,
-                        'logicalCouplingScoreWeight': this.logicalCouplingScoreWeightAsInteger,
+                        'evolutionaryCouplingScoreWeight': this.evolutionaryCouplingScoreWeightAsInteger,
                         'maxClusteringIterations': this.maxClusteringIterations,
                     };
 
                     axios
                         .get(
-                            `http://localhost:5656/analysis/${this.selectedProjectId}/cluster`,
+                            `http://${this.$backendHost}/analysis/${this.selectedProjectId}/cluster`,
                             {
                                 params: parameters,
                             },
@@ -800,11 +914,13 @@
                             this.clusteringAlgorithmMetrics[clusteringAlgorithm] = response.data["metrics"];
                             this.reevaluateMetrics();
                             this.$forceUpdate();
+                            this.$notify({title: `Clustering with '${this.convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)}' was successful`});
                         })
                         .catch((error) => {
-                            console.error(error);
+                            console.error(error.response);
                             this.liveRerenderModeActive = false;
                             this.isLoading = false;
+                            this.$notify({title: `Clustering with '${this.convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)}' failed`});
                         });
                 }
 
@@ -887,8 +1003,8 @@
                         return 'Dynamic Coupling Modularity';
                     case MetricSemanticCouplingModularity:
                         return 'Semantic Coupling Modularity';
-                    case MetricLogicalCouplingModularity:
-                        return 'Logical Coupling Modularity';
+                    case MetricEvolutionaryCouplingModularity:
+                        return 'Evolutionary Coupling Modularity';
                     default:
                         return undefined
                 }
@@ -914,12 +1030,15 @@
                     this.semanticProgramAnalyisUploadLabel = this.shortenText(files[0].name, 15);
                 }
             },
-            onLogicalAnalysisUploadFileChange(e) {
+            onEvolutionaryAnalysisUploadFileChange(e) {
                 const files = e.target.files || e.dataTransfer.files;
                 if (files.length > 0) {
-                    this.uploadLogicalAnalysisFile = files[0];
-                    this.logicalAnalyisUploadLabel = this.shortenText(files[0].name, 15);
+                    this.uploadEvolutionaryAnalysisFile = files[0];
+                    this.evolutionaryAnalyisUploadLabel = this.shortenText(files[0].name, 15);
                 }
+            },
+            notifyError(errorMessage) {
+                this.$notify({title: `An error occurred: '${errorMessage}'`});
             },
             calculatePercentageRatioBetweenTwoNumbers(first, second) {
                 return parseInt((first / second) * 100);

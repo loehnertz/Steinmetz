@@ -2,8 +2,8 @@ package model.graph
 
 
 data class Node(
-        val unit: Unit,
-        val attributes: NodeAttributes = NodeAttributes()
+    val unit: Unit,
+    val attributes: NodeAttributes = NodeAttributes()
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
