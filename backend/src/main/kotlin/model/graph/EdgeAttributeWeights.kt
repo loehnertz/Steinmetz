@@ -9,6 +9,8 @@ data class EdgeAttributeWeights(
     val evolutionaryCouplingScoreWeight: Int = 1
 ) {
     companion object {
+        const val UpperBound = 8
+
         fun retrieveEdgeAttributeWeightsFromQueryParameters(queryParameters: Parameters): EdgeAttributeWeights {
             return EdgeAttributeWeights(
                 dynamicCouplingScoreWeight = queryParameters[EdgeAttributeWeights::dynamicCouplingScoreWeight.name]?.toInt()

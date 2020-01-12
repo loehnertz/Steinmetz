@@ -440,7 +440,7 @@
             </div>
             <div class="container box" ref="edge-weighting-formula-controls">
                 <div class="level">
-                    <div class="level-right">
+                    <div class="level-left">
                         <div class="level-item">
                             <p>Coupling Score</p>
                         </div>
@@ -523,6 +523,18 @@
                             <p>{{ couplingScoreFactorSum }}</p>
                         </div>
                     </div>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-multiline is-tooltip-bottom"
+                                        data-tooltip="Optimizes the parameters automatically toward the selected metric"
+                                >
+                                    <button class="button is-primary" @click="fetchOptimizedClusteringParameters">Optimize</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -566,6 +578,7 @@
                         :dynamic-coupling-modularity="clusteringQuality['dynamicCouplingModularity']"
                         :semantic-coupling-modularity="clusteringQuality['semanticCouplingModularity']"
                         :evolutionary-coupling-modularity="clusteringQuality['evolutionaryCouplingModularity']"
+                        :average-coupling-modularity="clusteringQuality['averageCouplingModularity']"
                         :total-coupling-modularity="clusteringQuality['totalCouplingModularity']"
                 />
                 <div class="box level">
@@ -586,6 +599,7 @@
                                 :dynamic-coupling-modularity="metrics['clusteringQuality']['dynamicCouplingModularity']"
                                 :semantic-coupling-modularity="metrics['clusteringQuality']['semanticCouplingModularity']"
                                 :evolutionary-coupling-modularity="metrics['clusteringQuality']['evolutionaryCouplingModularity']"
+                                :average-coupling-modularity="metrics['clusteringQuality']['averageCouplingModularity']"
                                 :total-coupling-modularity="metrics['clusteringQuality']['totalCouplingModularity']"
                         />
                     </div>
@@ -746,18 +760,6 @@
         watch: {
             uploadProjectName: function (uploadProjectName) {
                 this.selectedProjectId = uploadProjectName;
-            },
-            selectedClusteringAlgorithm: function (selectedClusteringAlgorithm) {
-                if (selectedClusteringAlgorithm) {
-                    this.liveRerenderModeActive = false;
-                    this.fetchClusteredGraph();
-                }
-            },
-            selectedClusteringMetric: function (selectedClusteringMetric) {
-                if (selectedClusteringMetric) {
-                    this.liveRerenderModeActive = false;
-                    this.fetchClusteredGraph();
-                }
             },
             clusteredViewEnabled: function (clusteredViewEnabled) {
                 if (!clusteredViewEnabled) {
@@ -925,6 +927,34 @@
                 }
 
                 this.scrollToRefAnchor('clustering-controls');
+            },
+            fetchOptimizedClusteringParameters() {
+                this.isLoading = true;
+
+                const parameters = {
+                    'clusteringAlgorithm': this.selectedClusteringAlgorithm,
+                    'clusteringMetric': this.selectedClusteringMetric,
+                    'maxClusteringIterations': this.maxClusteringIterations,
+                };
+
+                axios
+                    .get(
+                        `http://localhost:5656/analysis/${this.selectedProjectId}/optimize`,
+                        {
+                            params: parameters,
+                        },
+                    )
+                    .then((response) => {
+                        this.dynamicCouplingScoreFactor = response.data["edgeAttributeWeights"]["dynamicCouplingScoreWeight"];
+                        this.semanticCouplingScoreFactor = response.data["edgeAttributeWeights"]["semanticCouplingScoreWeight"];
+                        this.logicalCouplingScoreFactor = response.data["edgeAttributeWeights"]["logicalCouplingScoreWeight"];
+                        this.isLoading = false;
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        this.liveRerenderModeActive = false;
+                        this.isLoading = false;
+                    });
             },
             reevaluateMetrics() {
                 let currentBestScore = 0;

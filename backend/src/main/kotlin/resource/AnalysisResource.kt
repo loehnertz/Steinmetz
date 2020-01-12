@@ -64,6 +64,15 @@ fun Route.analysis(controller: AnalysisController) {
                 call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
             }
         }
+
+        get("/{projectName}/optimize") {
+            val projectName: String = call.parameters["projectName"].toString()
+            val chosenClusteringAlgorithm: ClusteringAlgorithm = getClusteringAlgorithmByName(call.request.queryParameters["clusteringAlgorithm"]!!)
+            val chosenClusteringMetric: KProperty1<ClusteringQuality, *> = getClusteringMetricByName(call.request.queryParameters["clusteringMetric"]!!)
+            val maxIterations: Int = call.request.queryParameters["maxClusteringIterations"]?.toInt() ?: 100
+
+            call.respond(controller.optimizeClusteringParameters(projectName, chosenClusteringAlgorithm, chosenClusteringMetric, maxIterations))
+        }
     }
 
     @Suppress("UNUSED_VARIABLE")
