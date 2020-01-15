@@ -37,6 +37,14 @@ fun Route.analysis(controller: AnalysisController) {
             }
         }
 
+        get("/") {
+            try {
+                call.respond(controller.retrieveAllProjectNames())
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
+            }
+        }
+
         get("/{projectName}") {
             val projectName: String = call.parameters["projectName"].toString()
 

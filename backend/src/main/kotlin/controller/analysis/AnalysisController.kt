@@ -60,6 +60,11 @@ class AnalysisController {
         }
     }
 
+    fun retrieveAllProjectNames(): List<String> {
+        val result: Result = Neo4jConnector.executeCypher("MATCH (u:${model.neo4j.node.Unit::class.simpleName}) RETURN DISTINCT u.${model.neo4j.node.Unit::projectName.name}")
+        return result.map { it.values.first().toString() }
+    }
+
     fun retrieveProject(projectName: String): ProjectResponse {
         return ProjectResponse(graph = retrieveGraph(projectName), metrics = retrieveMetrics(projectName))
     }
