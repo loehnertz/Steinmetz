@@ -26,12 +26,12 @@ class JavaSemanticCouplingExtractor(private val projectName: String, private val
 
         val files: List<File> = retrieveSourceCodeFiles()
         val semanticCouplingCalculator: SemanticCouplingCalculator = setupSemanticCouplingCalculator(files)
-        semanticCouplingCalculator.calculate().also { logger.info("\tCalculated semantic similarities") }
-        val similarities: List<Triple<String, String, Double>> = semanticCouplingCalculator.retrieveSimilaritiesAsListOfTriples().also { logger.info("\tExtracted ${it.size} semantic coupling pairs") }
+        semanticCouplingCalculator.calculate().also { logger.info("Calculated semantic similarities") }
+        val similarities: List<Triple<String, String, Double>> = semanticCouplingCalculator.retrieveSimilaritiesAsListOfTriples().also { logger.info("Extracted ${it.size} semantic coupling pairs") }
 
         cleanup(unarchiverPath, sourceCodeFilesArchive.absolutePath)
 
-        return Graph(edges = buildEdgesOutOfSimilarities(similarities).toMutableSet()).also { logger.info("\tConstructed semantic coupling graph") }
+        return Graph(edges = buildEdgesOutOfSimilarities(similarities).toMutableSet()).also { logger.info("Constructed semantic coupling graph") }
     }
 
     override fun normalizeUnit(unit: Unit): Unit = AbstractExtractor.normalizeUnit(unit)

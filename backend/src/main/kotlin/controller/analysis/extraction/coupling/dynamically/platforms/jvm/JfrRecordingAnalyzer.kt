@@ -23,9 +23,9 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
     private val dynamicAnalysisBasePath = "$basePath/$DynamicAnalysisDirectory"
 
     override fun extract(): Graph {
-        val dynamicAnalysisGraph: Graph = analyzeRecording().also { logger.info("\tRetrieved ${it.edges.size} dynamic coupling pairs") }
+        val dynamicAnalysisGraph: Graph = analyzeRecording().also { logger.info("Retrieved ${it.edges.size} dynamic coupling pairs") }
         cleanup(basePath, dynamicAnalysisBasePath)
-        return mergeInnerUnitNodesWithParentNodes(dynamicAnalysisGraph).also { logger.info("\tConstructed dynamic coupling graph") }
+        return mergeInnerUnitNodesWithParentNodes(dynamicAnalysisGraph).also { logger.info("Constructed dynamic coupling graph") }
     }
 
     override fun normalizeUnit(unit: Unit): Unit = Unit(identifier = unit.identifier.substringBeforeLast(InnerUnitDelimiter), packageIdentifier = unit.packageIdentifier)

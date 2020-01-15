@@ -15,9 +15,9 @@ class InstrumentationRecordingAnalyzer(private val instrumentationRecordingFile:
     private val logger: Logger = LoggerFactory.getLogger(InstrumentationRecordingAnalyzer::class.java)
 
     override fun extract(): Graph {
-        val invocations: List<Pair<String, String>> = retrieveInvocations().also { logger.info("\tRetrieved ${it.size} dynamic coupling pairs") }
+        val invocations: List<Pair<String, String>> = retrieveInvocations().also { logger.info("Retrieved ${it.size} dynamic coupling pairs") }
         val graph: Graph = convertInvocationPairsToGraph(invocations)
-        return mergeInnerUnitNodesWithParentNodes(graph).also { logger.info("\tConstructed dynamic coupling graph") }
+        return mergeInnerUnitNodesWithParentNodes(graph).also { logger.info("Constructed dynamic coupling graph") }
     }
 
     override fun normalizeUnit(unit: Unit): Unit = Unit(identifier = unit.identifier.substringBeforeLast(InnerUnitDelimiter), packageIdentifier = unit.packageIdentifier)

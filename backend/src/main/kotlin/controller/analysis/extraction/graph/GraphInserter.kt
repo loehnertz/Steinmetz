@@ -71,8 +71,8 @@ class GraphInserter(
 
         logger.info("Inserting analysis data into database").also { System.gc() }
 
-        insertMetricsIntoDatabase(metrics).also { logger.info("\tInserted metrics into the database") }
-        insertGraphIntoDatabase(finalGraph).also { logger.info("\tInserted coupling graph into the database") }
+        insertMetricsIntoDatabase(metrics).also { logger.info("Inserted metrics into the database") }
+        insertGraphIntoDatabase(finalGraph).also { logger.info("Inserted coupling graph into the database") }
 
         logger.info("Finished analysis of project '$projectName'")
 

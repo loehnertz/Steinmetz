@@ -34,13 +34,13 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
     override fun extract(): Graph {
         val unarchivedDirectory: File = unarchiver.unpackAnalysisArchive(archive)
 
-        val referencePairs: Set<Pair<String, String>> = extractReferencePairs(unarchivedDirectory).also { logger.info("\tExtracted ${it.size} static coupling pairs") }
+        val referencePairs: Set<Pair<String, String>> = extractReferencePairs(unarchivedDirectory).also { logger.info("Extracted ${it.size} static coupling pairs") }
 
         val graph: Graph = convertReferencePairsToGraph(referencePairs)
 
         cleanup(staticAnalysisBasePath)
 
-        return graph.also { logger.info("\tConstructed static coupling graph") }
+        return graph.also { logger.info("Constructed static coupling graph") }
     }
 
     override fun normalizeUnit(unit: Unit): Unit = AbstractExtractor.normalizeUnit(unit)
@@ -57,17 +57,17 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .filter { !it.root.toString().contains(JavaTestDirectory) }
             .flatMap { it.tryToParse() }
             .mapNotNull { it.result.toNullable() }
-            .also { logger.info("\tParsed ASTs") }
+            .also { logger.info("Parsed ASTs") }
             .flatMap { it.types }
             .mapNotNull { it as? ClassOrInterfaceDeclaration }  // TODO: Should Enum's also be included?
             .filter { isLegalUnit(it.fullyQualifiedName.get()) }
             .map { it to retrieveCallClasses(it) }
             .flatMap { retrieveCallPairs(it) }
-            .also { logger.info("\tRetrieved call pairs") }
+            .also { logger.info("Retrieved call pairs") }
             .toSet()
             .also { JavaParserFacade.clearInstances() }
             .also { System.gc() }
-            .also { logger.info("\tCleared parsing caches") }
+            .also { logger.info("Cleared parsing caches") }
     }
 
     private fun convertReferencePairsToGraph(referencePairs: Set<Pair<String, String>>): Graph {
