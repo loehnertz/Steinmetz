@@ -30,6 +30,9 @@ import model.resource.ProjectRequest
 import model.resource.ProjectResponse
 import org.neo4j.ogm.cypher.ComparisonOperator
 import org.neo4j.ogm.cypher.Filter
+import org.neo4j.ogm.model.Result
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import utility.Neo4jConnector
 import java.io.File
 import kotlin.math.ceil
@@ -39,6 +42,8 @@ import kotlin.reflect.full.declaredMemberProperties
 
 
 class AnalysisController {
+    private val logger: Logger = LoggerFactory.getLogger(AnalysisController::class.java)
+
     fun insertProject(projectRequest: ProjectRequest): ProjectResponse {
         val startTime: Long = System.currentTimeMillis()
         return GraphInserter(
@@ -51,7 +56,7 @@ class AnalysisController {
             semanticAnalysisFile = projectRequest.semanticAnalysisFile,
             evolutionaryAnalysisFile = projectRequest.evolutionaryAnalysisFile
         ).insert().also {
-            println("The analysis of project '${projectRequest.projectName}' took ${(System.currentTimeMillis() - startTime) / 1000} seconds")
+            logger.info("The analysis of project '${projectRequest.projectName}' took ${(System.currentTimeMillis() - startTime) / 1000} seconds")
         }
     }
 
@@ -84,7 +89,7 @@ class AnalysisController {
         ).start()
 
         val parameterList: List<Int> = EvolutionManager.convertBinaryChromosomeToIntegerList(bestSpecimen.chromosome, geneAmount)
-        val edgeAttributeWeights: EdgeAttributeWeights = EdgeAttributeWeights(parameterList[0], parameterList[1], parameterList[2]).also { println(it) }
+        val edgeAttributeWeights: EdgeAttributeWeights = EdgeAttributeWeights(parameterList[0], parameterList[1], parameterList[2]).also { logger.info("$it") }
 
         return OptimizationResponse(edgeAttributeWeights)
     }

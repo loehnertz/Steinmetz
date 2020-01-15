@@ -15,6 +15,8 @@ import model.metrics.Metrics
 import model.resource.ProjectResponse
 import org.neo4j.ogm.cypher.ComparisonOperator
 import org.neo4j.ogm.cypher.Filter
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import utility.Neo4jConnector
 import java.io.File
 
@@ -33,13 +35,15 @@ class GraphInserter(
         if (projectAlreadyExists()) throw ProjectAlreadyExistsException()
     }
 
+    private val logger: Logger = LoggerFactory.getLogger(GraphInserter::class.java)
+
     private lateinit var staticAnalysisGraph: Graph
     private lateinit var dynamicCouplingGraph: Graph
     private lateinit var semanticCouplingGraph: Graph
     private lateinit var evolutionaryCouplingGraph: Graph
 
     fun insert(): ProjectResponse {
-        println("\nStarted analysis of project '$projectName'")
+        logger.info("\nStarted analysis of project '$projectName'")
 
         staticAnalysisGraph = processStaticAnalysisData()
 
@@ -63,20 +67,20 @@ class GraphInserter(
         }
 
         val metrics: Metrics = calculateMetrics(baseGraph = baseGraph)
-        val finalGraph: Graph = mergeSemanticAndEvolutionaryCouplingGraphs(baseGraph).also { println("Merged coupling graphs into final coupling graph with ${it.nodes.size} nodes and ${it.edges.size} edges") }
+        val finalGraph: Graph = mergeSemanticAndEvolutionaryCouplingGraphs(baseGraph).also { logger.info("Merged coupling graphs into final coupling graph with ${it.nodes.size} nodes and ${it.edges.size} edges") }
 
-        println("Inserting analysis data into database").also { System.gc() }
+        logger.info("Inserting analysis data into database").also { System.gc() }
 
-        insertMetricsIntoDatabase(metrics).also { println("\tInserted metrics into the database") }
-        insertGraphIntoDatabase(finalGraph).also { println("\tInserted coupling graph into the database") }
+        insertMetricsIntoDatabase(metrics).also { logger.info("\tInserted metrics into the database") }
+        insertGraphIntoDatabase(finalGraph).also { logger.info("\tInserted coupling graph into the database") }
 
-        println("Finished analysis of project '$projectName'")
+        logger.info("Finished analysis of project '$projectName'")
 
         return ProjectResponse(graph = finalGraph, metrics = metrics)
     }
 
     private fun processStaticAnalysisData(): Graph {
-        println("Processing static coupling data")
+        logger.info("Processing static coupling data")
         when (projectPlatform) {
             Platform.JAVA -> return JavaStaticCouplingExtractor(projectName, basePackageIdentifier, staticAnalysisFile).extract()
             else          -> throw IllegalArgumentException()
@@ -84,7 +88,7 @@ class GraphInserter(
     }
 
     private fun processDynamicCouplingData(): Graph {
-        println("Processing dynamic coupling data")
+        logger.info("Processing dynamic coupling data")
         when (projectPlatform) {
             Platform.JAVA -> return JvmDynamicAnalysisExtractor(projectName, basePackageIdentifier, dynamicAnalysisFile!!).extract()
             else          -> throw IllegalArgumentException()
@@ -92,7 +96,7 @@ class GraphInserter(
     }
 
     private fun processSemanticCouplingData(edgesToConsider: Set<Edge>): Graph {
-        println("Processing semantic coupling data")
+        logger.info("Processing semantic coupling data")
         when (projectPlatform) {
             Platform.JAVA -> return JavaSemanticCouplingExtractor(projectName, basePackageIdentifier, semanticAnalysisFile!!, edgesToConsider).extract()
             else          -> throw IllegalArgumentException()
@@ -100,7 +104,7 @@ class GraphInserter(
     }
 
     private fun processEvolutionaryCouplingData(): Graph {
-        println("Processing evolutionary coupling data")
+        logger.info("Processing evolutionary coupling data")
         when (projectPlatform) {
             Platform.JAVA -> return JvmEvolutionaryCouplingExtractor(vcsSystem, basePackageIdentifier, evolutionaryAnalysisFile!!).extract()
             else          -> throw IllegalArgumentException()
@@ -108,7 +112,7 @@ class GraphInserter(
     }
 
     private fun calculateMetrics(baseGraph: Graph): Metrics {
-        println("Calculating metrics")
+        logger.info("Calculating metrics")
         val inputQuality: InputQuality = calculateInputMetrics(baseGraph)
         return Metrics(inputQuality = inputQuality)
     }

@@ -9,11 +9,15 @@ import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
 import model.graph.Unit
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import utility.ArchiveExtractor
 import java.io.File
 
 
 class JavaSemanticCouplingExtractor(private val projectName: String, private val basePackageIdentifier: String, private val sourceCodeFilesArchive: File, private val edgesToConsider: Set<Edge>) : SemanticCouplingExtractor() {
+    private val logger: Logger = LoggerFactory.getLogger(JavaSemanticCouplingExtractor::class.java)
+
     private val unarchiverPath = "${getWorkingDirectory()}/sources/$projectName/"
     private val unarchiver = ArchiveExtractor(".$JavaFileExtension", unarchiverPath)
 
@@ -21,12 +25,13 @@ class JavaSemanticCouplingExtractor(private val projectName: String, private val
         unarchiver.unpackAnalysisArchive(sourceCodeFilesArchive)
 
         val files: List<File> = retrieveSourceCodeFiles()
-        val semanticCouplingCalculator: SemanticCouplingCalculator = setupSemanticCouplingCalculator(files).also { it.calculate() }.also { println("\tCalculated semantic similarities") }
-        val similarities: List<Triple<String, String, Double>> = semanticCouplingCalculator.retrieveSimilaritiesAsListOfTriples().also { println("\tExtracted ${it.size} semantic coupling pairs") }
+        val semanticCouplingCalculator: SemanticCouplingCalculator = setupSemanticCouplingCalculator(files)
+        semanticCouplingCalculator.calculate().also { logger.info("\tCalculated semantic similarities") }
+        val similarities: List<Triple<String, String, Double>> = semanticCouplingCalculator.retrieveSimilaritiesAsListOfTriples().also { logger.info("\tExtracted ${it.size} semantic coupling pairs") }
 
         cleanup(unarchiverPath, sourceCodeFilesArchive.absolutePath)
 
-        return Graph(edges = buildEdgesOutOfSimilarities(similarities).toMutableSet()).also { println("\tConstructed semantic coupling graph") }
+        return Graph(edges = buildEdgesOutOfSimilarities(similarities).toMutableSet()).also { logger.info("\tConstructed semantic coupling graph") }
     }
 
     override fun normalizeUnit(unit: Unit): Unit = AbstractExtractor.normalizeUnit(unit)

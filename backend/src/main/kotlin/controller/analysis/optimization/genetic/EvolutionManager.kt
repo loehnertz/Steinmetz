@@ -1,5 +1,7 @@
 package controller.analysis.optimization.genetic
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import utility.Utilities
 import java.util.*
 import kotlin.math.abs
@@ -14,6 +16,8 @@ class EvolutionManager(
     private val illegalValues: List<Int>? = null,
     private val fitnessFunction: (Specimen) -> Double
 ) {
+    private val logger: Logger = LoggerFactory.getLogger(EvolutionManager::class.java)
+
     private val chromosomeLength: Int = geneLength * geneAmount
     private val randomizer: Random = Random()
     private var currentGeneration = 0
@@ -45,12 +49,12 @@ class EvolutionManager(
         population.forEach { it.fitness = fitnessFunction(it) }
         updateBestSpecimen()
 
-        println("Generation #$currentGeneration")
-        println("Best in current generation: ${population.maxBy { it.fitness!! }!!.fitness}")
-        println("Average fitness: ${population.map { it.fitness!! }.average()}")
-        println("Generations without improvement: $generationsWithoutImprovement")
-        println("Current mutation chance: $mutationChance%")
-        println()
+        logger.info("Generation #$currentGeneration")
+        logger.info("Best in current generation: ${population.maxBy { it.fitness!! }!!.fitness}")
+        logger.info("Average fitness: ${population.map { it.fitness!! }.average()}")
+        logger.info("Generations without improvement: $generationsWithoutImprovement")
+        logger.info("Current mutation chance: $mutationChance%")
+        logger.info("")
     }
 
     private fun select() {

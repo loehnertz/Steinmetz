@@ -5,15 +5,19 @@ import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
 import model.graph.Unit
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import utility.Utilities
 import java.io.File
 
 
 class InstrumentationRecordingAnalyzer(private val instrumentationRecordingFile: File) : DynamicAnalysisExtractor() {
+    private val logger: Logger = LoggerFactory.getLogger(InstrumentationRecordingAnalyzer::class.java)
+
     override fun extract(): Graph {
-        val invocations: List<Pair<String, String>> = retrieveInvocations().also { println("\tRetrieved ${it.size} dynamic coupling pairs") }
+        val invocations: List<Pair<String, String>> = retrieveInvocations().also { logger.info("\tRetrieved ${it.size} dynamic coupling pairs") }
         val graph: Graph = convertInvocationPairsToGraph(invocations)
-        return mergeInnerUnitNodesWithParentNodes(graph).also { println("\tConstructed dynamic coupling graph") }
+        return mergeInnerUnitNodesWithParentNodes(graph).also { logger.info("\tConstructed dynamic coupling graph") }
     }
 
     override fun normalizeUnit(unit: Unit): Unit = Unit(identifier = unit.identifier.substringBeforeLast(InnerUnitDelimiter), packageIdentifier = unit.packageIdentifier)

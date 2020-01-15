@@ -13,6 +13,8 @@ import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
 import model.graph.*
 import model.graph.Unit
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import utility.ArchiveExtractor
 import utility.Utilities
 import utility.toNullable
@@ -22,6 +24,8 @@ import com.github.javaparser.ast.Node as AstNode
 
 
 class JavaStaticCouplingExtractor(projectName: String, private val basePackageIdentifier: String, private val archive: File) : StaticAnalysisExtractor() {
+    private val logger: Logger = LoggerFactory.getLogger(JavaStaticCouplingExtractor::class.java)
+
     private val basePath: String = buildBasePath(PlatformIdentifier, projectName)
     private val staticAnalysisBasePath = "$basePath/$StaticAnalysisDirectory"
     private val unarchiver = ArchiveExtractor(".$JavaFileExtension", staticAnalysisBasePath)
@@ -30,13 +34,13 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
     override fun extract(): Graph {
         val unarchivedDirectory: File = unarchiver.unpackAnalysisArchive(archive)
 
-        val referencePairs: Set<Pair<String, String>> = extractReferencePairs(unarchivedDirectory).also { println("\tExtracted ${it.size} static coupling pairs") }
+        val referencePairs: Set<Pair<String, String>> = extractReferencePairs(unarchivedDirectory).also { logger.info("\tExtracted ${it.size} static coupling pairs") }
 
         val graph: Graph = convertReferencePairsToGraph(referencePairs)
 
         cleanup(staticAnalysisBasePath)
 
-        return graph.also { println("\tConstructed static coupling graph") }
+        return graph.also { logger.info("\tConstructed static coupling graph") }
     }
 
     override fun normalizeUnit(unit: Unit): Unit = AbstractExtractor.normalizeUnit(unit)
@@ -53,17 +57,17 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .filter { !it.root.toString().contains(JavaTestDirectory) }
             .flatMap { it.tryToParse() }
             .mapNotNull { it.result.toNullable() }
-            .also { println("\tParsed ASTs") }
+            .also { logger.info("\tParsed ASTs") }
             .flatMap { it.types }
             .mapNotNull { it as? ClassOrInterfaceDeclaration }  // TODO: Should Enum's also be included?
             .filter { isLegalUnit(it.fullyQualifiedName.get()) }
             .map { it to retrieveCallClasses(it) }
             .flatMap { retrieveCallPairs(it) }
-            .also { println("\tRetrieved call pairs") }
+            .also { logger.info("\tRetrieved call pairs") }
             .toSet()
             .also { JavaParserFacade.clearInstances() }
             .also { System.gc() }
-            .also { println("\tCleared parsing caches") }
+            .also { logger.info("\tCleared parsing caches") }
     }
 
     private fun convertReferencePairsToGraph(referencePairs: Set<Pair<String, String>>): Graph {

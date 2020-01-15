@@ -8,38 +8,32 @@ import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
 import model.graph.Unit
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import utility.Utilities
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStreamReader
-import java.util.*
+import java.nio.charset.StandardCharsets.UTF_8
 
 
 class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private val basePackageIdentifier: String, private val vcsLogFile: File) : EvolutionaryCouplingExtractor() {
+    private val logger: Logger = LoggerFactory.getLogger(JvmEvolutionaryCouplingExtractor::class.java)
+
     private val pathBasedBasePackageIdentifier: String = basePackageIdentifier.replace('.', '/')
 
     override fun extract(): Graph {
-        val output: ArrayList<String> = arrayListOf()
         val processBuilder: ProcessBuilder = ProcessBuilder("java", "-jar", Utilities.getExternalExecutableAsFile(ExecutableName).absolutePath, "-l", vcsLogFile.absolutePath, "-c", vcsSystem.toString().toLowerCase(), "-a", "coupling", "-n", MinRevisions.toString(), "-m", MinSharedRevisions.toString(), "-i", MinCouplingScore.toString(), "-t", DaysToCombineCommits.toString()).also { it.redirectErrorStream(true) }
         val process: Process = processBuilder.start()
-        val reader = BufferedReader(InputStreamReader(process.inputStream))
-        var line: String = reader.readLine()
-        while (reader.ready()) {
-            output.add(line)
-            line = reader.readLine()
-        }
-        process.destroy().also { println("\tCalculated evolutionary coupling") }
-        output.removeAt(0)  // Just contains the column names
+        val output: List<String> = String(process.inputStream.readAllBytes(), UTF_8).split("\n").drop(1).also { logger.info("\tCalculated evolutionary coupling") }
 
         cleanup(vcsLogFile.absolutePath)
 
-        return convertOutputToGraph(output).also { println("\tConstructed evolutionary coupling graph") }
+        return convertOutputToGraph(output).also { logger.info("\tConstructed evolutionary coupling graph") }
     }
 
     override fun normalizeUnit(unit: Unit): Unit = AbstractExtractor.normalizeUnit(unit)
 
     private fun convertOutputToGraph(output: List<String>): Graph {
-        val edges: MutableSet<Edge> = output.mapNotNull { parseOutputLine(it) }.toMutableSet().also { println("\tExtracted ${it.size} evolutionary coupling pairs") }
+        val edges: MutableSet<Edge> = output.mapNotNull { parseOutputLine(it) }.toMutableSet().also { logger.info("\tExtracted ${it.size} evolutionary coupling pairs") }
         return Graph(edges = edges)
     }
 

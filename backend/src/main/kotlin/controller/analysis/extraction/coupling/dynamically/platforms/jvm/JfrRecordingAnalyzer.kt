@@ -10,18 +10,22 @@ import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
 import model.graph.Unit
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Paths
 
 
 class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifier: String, private val jfrRecording: File) : DynamicAnalysisExtractor() {
+    private val logger: Logger = LoggerFactory.getLogger(JfrRecordingAnalyzer::class.java)
+
     private val basePath: String = buildBasePath(PlatformIdentifier, projectName)
     private val dynamicAnalysisBasePath = "$basePath/$DynamicAnalysisDirectory"
 
     override fun extract(): Graph {
-        val dynamicAnalysisGraph: Graph = analyzeRecording().also { println("\tRetrieved ${it.edges.size} dynamic coupling pairs") }
+        val dynamicAnalysisGraph: Graph = analyzeRecording().also { logger.info("\tRetrieved ${it.edges.size} dynamic coupling pairs") }
         cleanup(basePath, dynamicAnalysisBasePath)
-        return mergeInnerUnitNodesWithParentNodes(dynamicAnalysisGraph).also { println("\tConstructed dynamic coupling graph") }
+        return mergeInnerUnitNodesWithParentNodes(dynamicAnalysisGraph).also { logger.info("\tConstructed dynamic coupling graph") }
     }
 
     override fun normalizeUnit(unit: Unit): Unit = Unit(identifier = unit.identifier.substringBeforeLast(InnerUnitDelimiter), packageIdentifier = unit.packageIdentifier)
