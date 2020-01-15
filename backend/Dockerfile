@@ -1,19 +1,25 @@
 FROM openjdk:11
 
+# Install dependencies
+RUN apt update && apt install -y maven build-essential libgomp1
+
+# Building the JAR
+RUN mkdir /build
+WORKDIR /build
+COPY . .
+RUN mvn dependency:resolve
+RUN mvn clean package
+
 # Create working directory
 RUN mkdir /app
 WORKDIR /app
 
 # Copy the external executables into the image
 RUN mkdir executables
-COPY ./lib/executables/* executables/
-
-# Install dependencies for executables
-RUN apt-get update
-RUN apt-get install -y build-essential libgomp1
+RUN cp -R /build/lib/executables/* executables/
 
 # Copy the latest build into the image
-COPY ./target/steinmetz-1.0-SNAPSHOT-jar-with-dependencies.jar backend.jar
+RUN cp /build/target/steinmetz-1.0-SNAPSHOT-jar-with-dependencies.jar backend.jar
 
 # Boot up the server
 EXPOSE 5656
