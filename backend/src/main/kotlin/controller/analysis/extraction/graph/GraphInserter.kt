@@ -43,7 +43,7 @@ class GraphInserter(
     private lateinit var evolutionaryCouplingGraph: Graph
 
     fun insert(): ProjectResponse {
-        logger.info("\nStarted analysis of project '$projectName'")
+        logger.info("Started analysis of project '$projectName'")
 
         staticAnalysisGraph = processStaticAnalysisData()
 
