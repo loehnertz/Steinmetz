@@ -12,13 +12,13 @@ data class Edge(
 
         other as Edge
 
-        if (start != other.start) return false
-        if (end != other.end) return false
+        if (start != other.start && start != other.end) return false
+        if (end != other.end && end != other.start) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return 31 * start.hashCode() + end.hashCode()
+        return 31 * (start.hashCode() + end.hashCode())
     }
 }
