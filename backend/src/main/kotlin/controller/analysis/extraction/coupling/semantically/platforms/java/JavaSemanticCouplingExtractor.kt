@@ -3,6 +3,7 @@ package controller.analysis.extraction.coupling.semantically.platforms.java
 import codes.jakob.semanticcoupling.SemanticCouplingCalculator
 import codes.jakob.semanticcoupling.model.NaturalLanguage
 import codes.jakob.semanticcoupling.model.ProgrammingLanguage
+import codes.jakob.semanticcoupling.model.SemanticCoupling
 import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.coupling.semantically.SemanticCouplingExtractor
 import model.graph.Edge
@@ -26,8 +27,8 @@ class JavaSemanticCouplingExtractor(private val projectName: String, private val
 
         val files: List<File> = retrieveSourceCodeFiles()
         val semanticCouplingCalculator: SemanticCouplingCalculator = setupSemanticCouplingCalculator(files)
-        semanticCouplingCalculator.calculate().also { logger.info("Calculated semantic similarities") }
-        val similarities: List<Triple<String, String, Double>> = semanticCouplingCalculator.retrieveSimilaritiesAsListOfTriples().also { logger.info("Extracted ${it.size} semantic coupling pairs") }
+        val semanticCouplings: List<SemanticCoupling> = semanticCouplingCalculator.calculate().also { logger.info("Calculated ${it.size} semantic coupling pairs") }
+        val similarities: List<Triple<String, String, Double>> = semanticCouplings.map { Triple(it.documents.first().name, it.documents.last().name, it.score!!) }
 
         cleanup(unarchiverPath, sourceCodeFilesArchive.absolutePath)
 
@@ -73,12 +74,12 @@ class JavaSemanticCouplingExtractor(private val projectName: String, private val
         ).also { it.doNotUseLsi() }
     }
 
-    private fun buildFilePairsToCalculate(): List<Pair<String, String>> {
-        return edgesToConsider.map { it.start.toString() to it.end.toString() }
-    }
-
     private fun buildFileListMap(files: List<File>): Map<String, String> {
         return files.map { convertFileNameToIdentifier(it.absolutePath) to it.readText() }.toMap()
+    }
+
+    private fun buildFilePairsToCalculate(): List<Set<String>> {
+        return edgesToConsider.map { setOf(it.start.toString(), it.end.toString()) }
     }
 
     private fun convertFileNameToIdentifier(filePath: String): String {
