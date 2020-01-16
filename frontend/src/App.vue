@@ -222,13 +222,13 @@
                                         class="control has-icons-left tooltip"
                                         data-tooltip="The project identifier of a previously added project"
                                 >
-                                    <input
-                                            class="input"
-                                            type="text"
+                                    <basic-select
+                                            class="project-name-search"
                                             placeholder="Project Name"
-                                            v-model="selectedProjectId"
-                                    >
-                                    <span class="icon is-small is-left">
+                                            :options="projectNamesOptions"
+                                            @select="onProjectNameChange"
+                                    />
+                                    <span class="icon is-small is-left" style="padding-top: 0.2em;">
                                         <i class="fas fa-tag"></i>
                                     </span>
                                 </div>
@@ -530,7 +530,9 @@
                                         class="control tooltip is-tooltip-multiline is-tooltip-bottom"
                                         data-tooltip="Optimizes the parameters automatically toward the selected metric"
                                 >
-                                    <button class="button is-primary" @click="fetchOptimizedClusteringParameters">Optimize</button>
+                                    <button class="button is-primary" @click="fetchOptimizedClusteringParameters">
+                                        Optimize
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -616,6 +618,7 @@
     import Slider from './components/Slider.vue';
     import Throbber from './components/Throbber.vue';
 
+    import {BasicSelect} from 'vue-search-select';
     import axios from 'axios';
 
     const NotAvailableLabel = 'N/A';
@@ -645,6 +648,7 @@
     export default {
         name: 'app',
         components: {
+            BasicSelect,
             ClusteringMetrics,
             ClusteringOverview,
             Graph,
@@ -728,6 +732,7 @@
                 uploadSemanticAnalysisFile: null,
                 uploadEvolutionaryAnalysisFile: null,
                 selectedProjectId: '',
+                projectNamesOptions: [],
                 graphData: {},
                 metricsData: {},
                 staticProgramAnalyisUploadLabel: 'Static Analysis',
@@ -792,6 +797,9 @@
                 }
             },
         },
+        mounted() {
+            this.fetchProjectNames();
+        },
         methods: {
             uploadNewProjectData() {
                 this.isLoading = true;
@@ -821,6 +829,20 @@
                     .catch((error) => {
                         console.error(error.response);
                         this.isLoading = false;
+                        this.notifyError(error.response.data);
+                    });
+            },
+            fetchProjectNames() {
+                axios
+                    .get(`http://${this.$backendHost}/analysis/`)
+                    .then((response) => {
+                        this.projectNamesOptions = response.data.map((projectName) => ({
+                            value: projectName,
+                            text: projectName
+                        }));
+                    })
+                    .catch((error) => {
+                        console.error(error.response);
                         this.notifyError(error.response.data);
                     });
             },
@@ -1039,6 +1061,9 @@
                     this.evolutionaryAnalyisUploadLabel = this.shortenText(files[0].name, 15);
                 }
             },
+            onProjectNameChange(projectName) {
+                this.uploadProjectName = projectName.value;
+            },
             notifyError(errorMessage) {
                 this.$notify({title: `An error occurred: '${errorMessage}'`});
             },
@@ -1064,6 +1089,7 @@
     @import '~bulma/css/bulma.min.css';
     @import '~bulma-tooltip/dist/css/bulma-tooltip.min.css';
     @import '~bulma-switch/dist/css/bulma-switch.min.css';
+    @import '~vue-search-select/dist/VueSearchSelect.css';
 
     #app {
         width: 100%;
@@ -1120,6 +1146,21 @@
 
     .tooltip.is-tooltip-multiline::before {
         text-align: center !important;
+    }
+
+    .project-name-search {
+        width: 15em !important;
+    }
+
+    .project-name-search .text, .project-name-search .search {
+        font-size: 1.15em !important;
+        padding-left: 1.4em !important;
+    }
+
+    .project-name-search .search {
+        font-size: 1.15em !important;
+        padding-top: 0.5em !important;
+        padding-left: 2.4em !important;
     }
 
     .vis-button.vis-edit.vis-edit-mode {
