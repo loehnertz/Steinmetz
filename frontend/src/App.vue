@@ -824,6 +824,7 @@
                     .then((response) => {
                         this.graphData = response.data["graph"];
                         this.metricsData = response.data["metrics"];
+                        this.fetchProjectNames();
                         this.isLoading = false;
                     })
                     .catch((error) => {
