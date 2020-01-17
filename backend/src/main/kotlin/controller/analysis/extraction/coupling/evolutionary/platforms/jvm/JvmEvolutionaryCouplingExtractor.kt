@@ -42,7 +42,7 @@ class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private
             val (start: String, end: String, degree: String, _: String) = line.split(',')
 
             if (!start.endsWith(FileExtension) || !end.endsWith(FileExtension)) return null
-            if (basePackageIdentifier != WildcardBasePackageIdentifer && (!start.contains(pathBasedBasePackageIdentifier) || !end.contains(pathBasedBasePackageIdentifier))) return null
+            if (!start.contains(pathBasedBasePackageIdentifier) || !end.contains(pathBasedBasePackageIdentifier)) return null
 
             val startUnit: Unit = convertPathToUnit(stripAwayBasePath(start))
             val endUnit: Unit = convertPathToUnit(stripAwayBasePath(end))
@@ -61,7 +61,6 @@ class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private
     }
 
     private fun stripAwayBasePath(path: String): String {
-        if (basePackageIdentifier == WildcardBasePackageIdentifer) return path
         val basePath: String = path.substringBefore(pathBasedBasePackageIdentifier)
         return path.substringAfter(basePath)
     }
