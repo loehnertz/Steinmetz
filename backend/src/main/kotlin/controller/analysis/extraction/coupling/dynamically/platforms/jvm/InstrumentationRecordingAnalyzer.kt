@@ -1,6 +1,6 @@
 package controller.analysis.extraction.coupling.dynamically.platforms.jvm
 
-import controller.analysis.extraction.coupling.dynamically.DynamicAnalysisExtractor
+import controller.analysis.extraction.coupling.dynamically.AbstractDynamicAnalysisExtractor
 import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
@@ -11,7 +11,7 @@ import utility.Utilities
 import java.io.File
 
 
-class InstrumentationRecordingAnalyzer(private val instrumentationRecordingFile: File) : DynamicAnalysisExtractor() {
+class InstrumentationRecordingAnalyzer(private val instrumentationRecordingFile: File) : AbstractDynamicAnalysisExtractor() {
     private val logger: Logger = LoggerFactory.getLogger(InstrumentationRecordingAnalyzer::class.java)
 
     override fun extract(): Graph {

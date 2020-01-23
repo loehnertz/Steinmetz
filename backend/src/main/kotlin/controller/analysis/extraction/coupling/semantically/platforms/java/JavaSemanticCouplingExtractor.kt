@@ -5,7 +5,7 @@ import codes.jakob.semanticcoupling.model.NaturalLanguage
 import codes.jakob.semanticcoupling.model.ProgrammingLanguage
 import codes.jakob.semanticcoupling.model.SemanticCoupling
 import controller.analysis.extraction.AbstractExtractor
-import controller.analysis.extraction.coupling.semantically.SemanticCouplingExtractor
+import controller.analysis.extraction.coupling.semantically.AbstractSemanticCouplingExtractor
 import model.graph.Edge
 import model.graph.EdgeAttributes
 import model.graph.Graph
@@ -16,7 +16,7 @@ import utility.ArchiveExtractor
 import java.io.File
 
 
-class JavaSemanticCouplingExtractor(private val projectName: String, private val basePackageIdentifier: String, private val sourceCodeFilesArchive: File, private val edgesToConsider: Set<Edge>) : SemanticCouplingExtractor() {
+class JavaSemanticCouplingExtractor(private val projectName: String, private val basePackageIdentifier: String, private val sourceCodeFilesArchive: File, private val edgesToConsider: Set<Edge>) : AbstractSemanticCouplingExtractor() {
     private val logger: Logger = LoggerFactory.getLogger(JavaSemanticCouplingExtractor::class.java)
 
     private val unarchiverPath = "${getWorkingDirectory()}/sources/$projectName/"

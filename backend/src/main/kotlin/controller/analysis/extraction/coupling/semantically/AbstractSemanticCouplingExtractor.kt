@@ -4,7 +4,7 @@ import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.ExtractorCompanion
 
 
-abstract class SemanticCouplingExtractor : AbstractExtractor() {
+abstract class AbstractSemanticCouplingExtractor : AbstractExtractor() {
     companion object : ExtractorCompanion {
         private const val SemanticAnalysisDirectory = "semantic"
 

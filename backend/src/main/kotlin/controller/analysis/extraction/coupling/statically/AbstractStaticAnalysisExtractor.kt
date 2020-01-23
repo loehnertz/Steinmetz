@@ -4,7 +4,7 @@ import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.ExtractorCompanion
 
 
-abstract class StaticAnalysisExtractor : AbstractExtractor() {
+abstract class AbstractStaticAnalysisExtractor : AbstractExtractor() {
     companion object : ExtractorCompanion {
         const val StaticAnalysisDirectory = "static"
         const val DefaultUnitFootprintByteSize = 1024L

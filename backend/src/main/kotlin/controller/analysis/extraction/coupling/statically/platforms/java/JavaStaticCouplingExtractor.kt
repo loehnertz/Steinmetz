@@ -10,7 +10,7 @@ import com.github.javaparser.symbolsolver.utils.SymbolSolverCollectionStrategy
 import com.github.javaparser.utils.ProjectRoot
 import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.Platform
-import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
+import controller.analysis.extraction.coupling.statically.AbstractStaticAnalysisExtractor
 import model.graph.*
 import model.graph.Unit
 import org.slf4j.Logger
@@ -23,7 +23,7 @@ import java.util.*
 import com.github.javaparser.ast.Node as AstNode
 
 
-class JavaStaticCouplingExtractor(projectName: String, private val basePackageIdentifier: String, private val archive: File) : StaticAnalysisExtractor() {
+class JavaStaticCouplingExtractor(projectName: String, private val basePackageIdentifier: String, private val archive: File) : AbstractStaticAnalysisExtractor() {
     private val logger: Logger = LoggerFactory.getLogger(JavaStaticCouplingExtractor::class.java)
 
     private val basePath: String = buildBasePath(PlatformIdentifier, projectName)

@@ -1,7 +1,7 @@
 package controller.analysis.extraction.coupling.dynamically.platforms.jvm
 
 import controller.analysis.extraction.Platform
-import controller.analysis.extraction.coupling.dynamically.DynamicAnalysisExtractor
+import controller.analysis.extraction.coupling.dynamically.AbstractDynamicAnalysisExtractor
 import jdk.jfr.consumer.RecordedEvent
 import jdk.jfr.consumer.RecordedFrame
 import jdk.jfr.consumer.RecordedStackTrace
@@ -16,7 +16,7 @@ import java.io.File
 import java.nio.file.Paths
 
 
-class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifier: String, private val jfrRecording: File) : DynamicAnalysisExtractor() {
+class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifier: String, private val jfrRecording: File) : AbstractDynamicAnalysisExtractor() {
     private val logger: Logger = LoggerFactory.getLogger(JfrRecordingAnalyzer::class.java)
 
     private val basePath: String = buildBasePath(PlatformIdentifier, projectName)

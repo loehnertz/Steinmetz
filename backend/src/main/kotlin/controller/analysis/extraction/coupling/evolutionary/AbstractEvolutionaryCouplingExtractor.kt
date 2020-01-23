@@ -4,7 +4,7 @@ import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.ExtractorCompanion
 
 
-abstract class EvolutionaryCouplingExtractor : AbstractExtractor() {
+abstract class AbstractEvolutionaryCouplingExtractor : AbstractExtractor() {
     companion object : ExtractorCompanion {
         private const val EvolutionaryAnalysisDirectory = "evolutionary"
 

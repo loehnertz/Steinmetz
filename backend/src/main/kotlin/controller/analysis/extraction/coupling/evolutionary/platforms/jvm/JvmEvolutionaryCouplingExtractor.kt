@@ -2,7 +2,7 @@ package controller.analysis.extraction.coupling.evolutionary.platforms.jvm
 
 import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.Platform
-import controller.analysis.extraction.coupling.evolutionary.EvolutionaryCouplingExtractor
+import controller.analysis.extraction.coupling.evolutionary.AbstractEvolutionaryCouplingExtractor
 import controller.analysis.extraction.coupling.evolutionary.VcsSystem
 import model.graph.Edge
 import model.graph.EdgeAttributes
@@ -15,7 +15,7 @@ import java.io.File
 import java.nio.charset.StandardCharsets.UTF_8
 
 
-class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private val basePackageIdentifier: String, private val vcsLogFile: File) : EvolutionaryCouplingExtractor() {
+class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private val basePackageIdentifier: String, private val vcsLogFile: File) : AbstractEvolutionaryCouplingExtractor() {
     private val logger: Logger = LoggerFactory.getLogger(JvmEvolutionaryCouplingExtractor::class.java)
 
     private val pathBasedBasePackageIdentifier: String = basePackageIdentifier.replace('.', '/')

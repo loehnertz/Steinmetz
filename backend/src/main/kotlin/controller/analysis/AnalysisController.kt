@@ -4,12 +4,12 @@ import controller.analysis.clustering.Clusterer
 import controller.analysis.clustering.ClusteringAlgorithm
 import controller.analysis.extraction.Platform
 import controller.analysis.extraction.Platform.Companion.getPlatformByName
-import controller.analysis.extraction.coupling.dynamically.DynamicAnalysisExtractor
-import controller.analysis.extraction.coupling.evolutionary.EvolutionaryCouplingExtractor
+import controller.analysis.extraction.coupling.dynamically.AbstractDynamicAnalysisExtractor
+import controller.analysis.extraction.coupling.evolutionary.AbstractEvolutionaryCouplingExtractor
 import controller.analysis.extraction.coupling.evolutionary.VcsSystem
 import controller.analysis.extraction.coupling.evolutionary.VcsSystem.Companion.getVcsSystemByName
-import controller.analysis.extraction.coupling.semantically.SemanticCouplingExtractor
-import controller.analysis.extraction.coupling.statically.StaticAnalysisExtractor
+import controller.analysis.extraction.coupling.semantically.AbstractSemanticCouplingExtractor
+import controller.analysis.extraction.coupling.statically.AbstractStaticAnalysisExtractor
 import controller.analysis.extraction.graph.GraphConverter
 import controller.analysis.extraction.graph.GraphInserter
 import controller.analysis.metrics.clustering.ClusteringQualityAnalyzer
@@ -169,25 +169,25 @@ class AnalysisController {
                     val file: File
                     when (part.name) {
                         ProjectRequest::staticAnalysisFile.name       -> {
-                            file = File("${StaticAnalysisExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
+                            file = File("${AbstractStaticAnalysisExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
                             withContext(Dispatchers.IO) { file.createNewFile() }
                             staticAnalysisFile = file
                         }
                         ProjectRequest::dynamicAnalysisFile.name      -> {
-                            file = File("${DynamicAnalysisExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
+                            file = File("${AbstractDynamicAnalysisExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
                             withContext(Dispatchers.IO) { file.createNewFile() }
                             dynamicAnalysisFile = file
                         }
                         ProjectRequest::semanticAnalysisFile.name     -> {
-                            file = File("${SemanticCouplingExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
+                            file = File("${AbstractSemanticCouplingExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
                             withContext(Dispatchers.IO) { file.createNewFile() }
                             semanticAnalysisFile = file
                         }
                         ProjectRequest::evolutionaryAnalysisFile.name -> {
-                            file = File("${EvolutionaryCouplingExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
+                            file = File("${AbstractEvolutionaryCouplingExtractor.getWorkingDirectory()}/$projectName.${part.originalFileName?.substringAfterLast('.')}")
                             file.parentFile.mkdirs()
                             withContext(Dispatchers.IO) { file.createNewFile() }
                             evolutionaryAnalysisFile = file
