@@ -49,12 +49,11 @@ class EvolutionManager(
         population.forEach { it.fitness = fitnessFunction(it) }
         updateBestSpecimen()
 
-        logger.info("Generation #$currentGeneration")
+        logger.info("\nGeneration #$currentGeneration")
         logger.info("Best in current generation: ${population.maxBy { it.fitness!! }!!.fitness}")
         logger.info("Average fitness: ${population.map { it.fitness!! }.average()}")
         logger.info("Generations without improvement: $generationsWithoutImprovement")
         logger.info("Current mutation chance: $mutationChance%")
-        logger.info("")
     }
 
     private fun select() {
