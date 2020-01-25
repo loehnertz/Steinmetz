@@ -16,7 +16,7 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
         val dynamicCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::dynamicCouplingScore)
         val semanticCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::semanticCouplingScore)
         val evolutionaryCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::evolutionaryCouplingScore)
-        val averageCouplingModularity: Double = listOf(dynamicCouplingModularity, semanticCouplingModularity, evolutionaryCouplingModularity).filter { !it.isNaN() }.average()
+        val averageCouplingModularity: Double = listOf(dynamicCouplingModularity, semanticCouplingModularity, evolutionaryCouplingModularity).filter { !it.isNaN() && it != 0.0 }.average()
         val totalCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::couplingScore)
         val dynamicModularizationQuality: Double = calculateGraphModularizationQuality(EdgeAttributes::dynamicCouplingScore)
         val semanticModularizationQuality: Double = calculateGraphModularizationQuality(EdgeAttributes::semanticCouplingScore)
