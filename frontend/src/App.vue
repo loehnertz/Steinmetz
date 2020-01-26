@@ -581,11 +581,11 @@
                         :evolutionary-coupling-modularity="clusteringQuality['evolutionaryCouplingModularity']"
                         :average-coupling-modularity="clusteringQuality['averageCouplingModularity']"
                         :total-coupling-modularity="clusteringQuality['totalCouplingModularity']"
-                        :dynamic-modularization-quality="clusteringQuality['dynamicModularizationQuality']"
-                        :semantic-modularization-quality="clusteringQuality['semanticModularizationQuality']"
-                        :evolutionary-modularization-quality="clusteringQuality['evolutionaryModularizationQuality']"
-                        :average-modularization-quality="clusteringQuality['averageModularizationQuality']"
-                        :total-modularization-quality="clusteringQuality['totalModularizationQuality']"
+                        :dynamic-mean-cluster-factor="clusteringQuality['dynamicMeanClusterFactor']"
+                        :semantic-mean-cluster-factor="clusteringQuality['semanticMeanClusterFactor']"
+                        :evolutionary-mean-cluster-factor="clusteringQuality['evolutionaryMeanClusterFactor']"
+                        :average-mean-cluster-factor="clusteringQuality['averageMeanClusterFactor']"
+                        :total-mean-cluster-factor="clusteringQuality['totalMeanClusterFactor']"
                 />
                 <div class="box level">
                     <div
@@ -607,11 +607,11 @@
                                 :evolutionary-coupling-modularity="metrics['clusteringQuality']['evolutionaryCouplingModularity']"
                                 :average-coupling-modularity="metrics['clusteringQuality']['averageCouplingModularity']"
                                 :total-coupling-modularity="metrics['clusteringQuality']['totalCouplingModularity']"
-                                :dynamic-modularization-quality="metrics['clusteringQuality']['dynamicModularizationQuality']"
-                                :semantic-modularization-quality="metrics['clusteringQuality']['semanticModularizationQuality']"
-                                :evolutionary-modularization-quality="metrics['clusteringQuality']['evolutionaryModularizationQuality']"
-                                :average-modularization-quality="metrics['clusteringQuality']['averageModularizationQuality']"
-                                :total-modularization-quality="metrics['clusteringQuality']['totalModularizationQuality']"
+                                :dynamic-mean-cluster-factor="metrics['clusteringQuality']['dynamicMeanClusterFactor']"
+                                :semantic-mean-cluster-factor="metrics['clusteringQuality']['semanticMeanClusterFactor']"
+                                :evolutionary-mean-cluster-factor="metrics['clusteringQuality']['evolutionaryMeanClusterFactor']"
+                                :average-mean-cluster-factor="metrics['clusteringQuality']['averageMeanClusterFactor']"
+                                :total-mean-cluster-factor="metrics['clusteringQuality']['totalMeanClusterFactor']"
                         />
                     </div>
                 </div>
@@ -647,12 +647,12 @@
     const MetricDynamicCouplingModularity = 'dynamicCouplingModularity';
     const MetricSemanticCouplingModularity = 'semanticCouplingModularity';
     const MetricEvolutionaryCouplingModularity = 'evolutionaryCouplingModularity';
-    const MetricTotalModularizationQuality = 'totalModularizationQuality';
-    const MetricAverageModularizationQuality = 'averageModularizationQuality';
-    const MetricDynamicModularizationQuality = 'dynamicModularizationQuality';
-    const MetricSemanticModularizationQuality = 'semanticModularizationQuality';
-    const MetricEvolutionaryModularizationQuality = 'evolutionaryModularizationQuality';
-    const GraphClusteringMetrics = [MetricTotalCouplingModularity, MetricAverageCouplingModularity, MetricDynamicCouplingModularity, MetricSemanticCouplingModularity, MetricEvolutionaryCouplingModularity, MetricTotalModularizationQuality, MetricAverageModularizationQuality, MetricDynamicModularizationQuality, MetricSemanticModularizationQuality, MetricEvolutionaryModularizationQuality];
+    const MetricTotalMeanClusterFactor = 'totalMeanClusterFactor';
+    const MetricAverageMeanClusterFactor = 'averageMeanClusterFactor';
+    const MetricDynamicMeanClusterFactor = 'dynamicMeanClusterFactor';
+    const MetricSemanticMeanClusterFactor = 'semanticMeanClusterFactor';
+    const MetricEvolutionaryMeanClusterFactor = 'evolutionaryMeanClusterFactor';
+    const GraphClusteringMetrics = [MetricTotalCouplingModularity, MetricAverageCouplingModularity, MetricDynamicCouplingModularity, MetricSemanticCouplingModularity, MetricEvolutionaryCouplingModularity, MetricTotalMeanClusterFactor, MetricAverageMeanClusterFactor, MetricDynamicMeanClusterFactor, MetricSemanticMeanClusterFactor, MetricEvolutionaryMeanClusterFactor];
     const DefaultMaxClusteringIterations = 100;
     const DefaultIterationsClusteringParameterMin = 1;
     const DefaultIterationsClusteringParameterMax = 100;
@@ -1020,16 +1020,16 @@
                         return 'Semantic Coupling Modularity';
                     case MetricEvolutionaryCouplingModularity:
                         return 'Evolutionary Coupling Modularity';
-                    case MetricTotalModularizationQuality:
-                        return 'Total Modularization Quality';
-                    case MetricAverageModularizationQuality:
-                        return 'Average Modularization Quality';
-                    case MetricDynamicModularizationQuality:
-                        return 'Dynamic Modularization Quality';
-                    case MetricSemanticModularizationQuality:
-                        return 'Semantic Modularization Quality';
-                    case MetricEvolutionaryModularizationQuality:
-                        return 'Evolutionary Modularization Quality';
+                    case MetricTotalMeanClusterFactor:
+                        return 'Total Mean Cluster Factor';
+                    case MetricAverageMeanClusterFactor:
+                        return 'Average Mean Cluster Factor';
+                    case MetricDynamicMeanClusterFactor:
+                        return 'Dynamic Mean Cluster Factor';
+                    case MetricSemanticMeanClusterFactor:
+                        return 'Semantic Mean Cluster Factor';
+                    case MetricEvolutionaryMeanClusterFactor:
+                        return 'Evolutionary Mean Cluster Factor';
                     default:
                         return undefined
                 }

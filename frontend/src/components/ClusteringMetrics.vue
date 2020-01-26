@@ -32,19 +32,19 @@
         </p>
         <br>
         <p :style="{ fontSize: fontSize + 'em' }">
-            Total Modularization Quality: {{ nonNullTotalModularizationQuality }}
+            Total Mean Cluster Factor: {{ nonNullTotalMeanClusterFactor }}
         </p>
         <p :style="{ fontSize: fontSize + 'em' }">
-            Average Modularization Quality: {{ nonNullAverageModularizationQuality }}
+            Average Mean Cluster Factor: {{ nonNullAverageMeanClusterFactor }}
         </p>
         <p :style="{ fontSize: fontSize + 'em' }">
-            Dynamic Modularization Quality: {{ nonNullDynamicModularizationQuality }}
+            Dynamic Mean Cluster Factor: {{ nonNullDynamicMeanClusterFactor }}
         </p>
         <p :style="{ fontSize: fontSize + 'em' }">
-            Semantic Modularization Quality: {{ nonNullSemanticModularizationQuality }}
+            Semantic Mean Cluster Factor: {{ nonNullSemanticMeanClusterFactor }}
         </p>
         <p :style="{ fontSize: fontSize + 'em' }">
-            Evolutionary Modularization Quality: {{ nonNullEvolutionaryModularizationQuality }}
+            Evolutionary Mean Cluster Factor: {{ nonNullEvolutionaryMeanClusterFactor }}
         </p>
     </div>
 </template>
@@ -71,25 +71,25 @@
                 if (!this.percentageInterClusterEdgeWeights) return NotAvailableLabel;
                 return this.percentageInterClusterEdgeWeights;
             },
-            nonNullDynamicModularizationQuality: function () {
-                if (!this.dynamicModularizationQuality) return NotAvailableLabel;
-                return Number(this.dynamicModularizationQuality).toFixed(2);
+            nonNullDynamicMeanClusterFactor: function () {
+                if (!this.dynamicMeanClusterFactor) return NotAvailableLabel;
+                return Number(this.dynamicMeanClusterFactor).toFixed(2);
             },
-            nonNullSemanticModularizationQuality: function () {
-                if (!this.semanticModularizationQuality) return NotAvailableLabel;
-                return Number(this.semanticModularizationQuality).toFixed(2);
+            nonNullSemanticMeanClusterFactor: function () {
+                if (!this.semanticMeanClusterFactor) return NotAvailableLabel;
+                return Number(this.semanticMeanClusterFactor).toFixed(2);
             },
-            nonNullEvolutionaryModularizationQuality: function () {
-                if (!this.evolutionaryModularizationQuality) return NotAvailableLabel;
-                return Number(this.evolutionaryModularizationQuality).toFixed(2);
+            nonNullEvolutionaryMeanClusterFactor: function () {
+                if (!this.evolutionaryMeanClusterFactor) return NotAvailableLabel;
+                return Number(this.evolutionaryMeanClusterFactor).toFixed(2);
             },
-            nonNullAverageModularizationQuality: function () {
-                if (!this.averageModularizationQuality) return NotAvailableLabel;
-                return Number(this.averageModularizationQuality).toFixed(2);
+            nonNullAverageMeanClusterFactor: function () {
+                if (!this.averageMeanClusterFactor) return NotAvailableLabel;
+                return Number(this.averageMeanClusterFactor).toFixed(2);
             },
-            nonNullTotalModularizationQuality: function () {
-                if (!this.totalModularizationQuality) return NotAvailableLabel;
-                return Number(this.totalModularizationQuality).toFixed(2);
+            nonNullTotalMeanClusterFactor: function () {
+                if (!this.totalMeanClusterFactor) return NotAvailableLabel;
+                return Number(this.totalMeanClusterFactor).toFixed(2);
             },
             nonNullTotalCouplingModularity: function () {
                 if (!this.totalCouplingModularity) return NotAvailableLabel;
@@ -125,11 +125,11 @@
             evolutionaryCouplingModularity: Number,
             averageCouplingModularity: Number,
             totalCouplingModularity: Number,
-            dynamicModularizationQuality: Number,
-            semanticModularizationQuality: Number,
-            evolutionaryModularizationQuality: Number,
-            averageModularizationQuality: Number,
-            totalModularizationQuality: Number,
+            dynamicMeanClusterFactor: Number,
+            semanticMeanClusterFactor: Number,
+            evolutionaryMeanClusterFactor: Number,
+            averageMeanClusterFactor: Number,
+            totalMeanClusterFactor: Number,
         },
     }
 </script>

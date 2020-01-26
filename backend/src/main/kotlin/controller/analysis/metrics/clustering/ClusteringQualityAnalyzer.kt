@@ -18,11 +18,11 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
         val evolutionaryCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::evolutionaryCouplingScore)
         val averageCouplingModularity: Double = listOf(dynamicCouplingModularity, semanticCouplingModularity, evolutionaryCouplingModularity).filter { !it.isNaN() && it != 0.0 }.average()
         val totalCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::couplingScore)
-        val dynamicModularizationQuality: Double = calculateGraphModularizationQuality(EdgeAttributes::dynamicCouplingScore)
-        val semanticModularizationQuality: Double = calculateGraphModularizationQuality(EdgeAttributes::semanticCouplingScore)
-        val evolutionaryModularizationQuality: Double = calculateGraphModularizationQuality(EdgeAttributes::evolutionaryCouplingScore)
-        val averageModularizationQuality: Double = listOf(dynamicModularizationQuality, semanticModularizationQuality, evolutionaryModularizationQuality).filter { !it.isNaN() && it != 0.0 }.average()
-        val totalModularizationQuality: Double = calculateGraphModularizationQuality(EdgeAttributes::couplingScore)
+        val dynamicMeanClusterFactor: Double = calculateGraphMeanClusterFactor(EdgeAttributes::dynamicCouplingScore)
+        val semanticMeanClusterFactor: Double = calculateGraphMeanClusterFactor(EdgeAttributes::semanticCouplingScore)
+        val evolutionaryMeanClusterFactor: Double = calculateGraphMeanClusterFactor(EdgeAttributes::evolutionaryCouplingScore)
+        val averageMeanClusterFactor: Double = listOf(dynamicMeanClusterFactor, semanticMeanClusterFactor, evolutionaryMeanClusterFactor).filter { !it.isNaN() && it != 0.0 }.average()
+        val totalMeanClusterFactor: Double = calculateGraphMeanClusterFactor(EdgeAttributes::couplingScore)
 
         return ClusteringQuality(
             accumulatedEdgeWeights = accumulatedEdgeWeights,
@@ -34,11 +34,11 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
             evolutionaryCouplingModularity = evolutionaryCouplingModularity,
             averageCouplingModularity = averageCouplingModularity,
             totalCouplingModularity = totalCouplingModularity,
-            dynamicModularizationQuality = dynamicModularizationQuality,
-            semanticModularizationQuality = semanticModularizationQuality,
-            evolutionaryModularizationQuality = evolutionaryModularizationQuality,
-            averageModularizationQuality = averageModularizationQuality,
-            totalModularizationQuality = totalModularizationQuality
+            dynamicMeanClusterFactor = dynamicMeanClusterFactor,
+            semanticMeanClusterFactor = semanticMeanClusterFactor,
+            evolutionaryMeanClusterFactor = evolutionaryMeanClusterFactor,
+            averageMeanClusterFactor = averageMeanClusterFactor,
+            totalMeanClusterFactor = totalMeanClusterFactor
         )
     }
 
@@ -62,7 +62,7 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
         return modularitySummands.sum()
     }
 
-    private fun calculateGraphModularizationQuality(couplingScoreType: KMutableProperty1<EdgeAttributes, Int>): Double {
+    private fun calculateGraphMeanClusterFactor(couplingScoreType: KMutableProperty1<EdgeAttributes, Int>): Double {
         val clusterFactorSummands: ArrayList<Double> = arrayListOf()
 
         val clusterMap: Map<Int, List<Node>> = buildClusterMap(clusteredGraph)

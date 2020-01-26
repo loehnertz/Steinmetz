@@ -14,11 +14,11 @@ data class ClusteringQuality(
     val evolutionaryCouplingModularity: Double,
     val averageCouplingModularity: Double,
     val totalCouplingModularity: Double,
-    val dynamicModularizationQuality: Double,
-    val semanticModularizationQuality: Double,
-    val evolutionaryModularizationQuality: Double,
-    val averageModularizationQuality: Double,
-    val totalModularizationQuality: Double
+    val dynamicMeanClusterFactor: Double,
+    val semanticMeanClusterFactor: Double,
+    val evolutionaryMeanClusterFactor: Double,
+    val averageMeanClusterFactor: Double,
+    val totalMeanClusterFactor: Double
 ) {
     companion object {
         fun getClusteringMetricByName(name: String): KProperty1<ClusteringQuality, *> {
