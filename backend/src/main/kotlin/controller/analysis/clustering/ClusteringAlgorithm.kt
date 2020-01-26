@@ -7,7 +7,9 @@ enum class ClusteringAlgorithm {
     LOUVAIN,
     CLAUSET_NEWMAN_MOORE,
     WALKTRAP,
-    CHINESE_WHISPERS;
+    CHINESE_WHISPERS,
+    LABEL_PROPAGATION,
+    WEAKLY_CONNECTED_COMPONENTS;
 
     companion object {
         fun getClusteringAlgorithmByName(name: String): ClusteringAlgorithm = valueOf(name.toUpperCase())
