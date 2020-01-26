@@ -75,7 +75,11 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
             val interEdges: List<Edge> = clusteredGraph.edges.filter { unitsOfCurrentCluster.contains(it.start) xor unitsOfCurrentCluster.contains(it.end) }
             val interEdgesWeight: Double = interEdges.sumBy { couplingScoreType.get(it.attributes) }.toDouble()
 
-            clusterFactorSummands.add((intraEdgesWeight / (intraEdgesWeight + 0.5 * interEdgesWeight)))
+            if (intraEdgesWeight == 0.0) {
+                clusterFactorSummands.add(0.0)
+            } else {
+                clusterFactorSummands.add((intraEdgesWeight / (intraEdgesWeight + 0.5 * interEdgesWeight)))
+            }
         }
 
         return clusterFactorSummands.average()
