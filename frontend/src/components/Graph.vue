@@ -334,10 +334,6 @@
                 type: Boolean,
                 default: () => (false),
             },
-            liveRerenderModeActive: {
-                type: Boolean,
-                default: () => (false),
-            },
         },
     }
 </script>

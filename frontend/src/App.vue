@@ -1,7 +1,7 @@
 <template>
     <div id="app">
         <notifications/>
-        <div id="throbber" v-show="isLoading && !liveRerenderModeActive">
+        <div id="throbber" v-show="isLoading">
             <Throbber :is-loading="isLoading"/>
         </div>
         <section class="section">
@@ -548,7 +548,6 @@
                         :cluster-ids="clusterIds"
                         :is-clustered="clusteredViewEnabled"
                         :show-cluster-nodes="showClusterNodes"
-                        :live-rerender-mode-active="liveRerenderModeActive"
                 />
             </div>
         </section>
@@ -775,7 +774,6 @@
                 maxClusteringIterations: DefaultMaxClusteringIterations,
                 iterationsClusteringParameterMin: DefaultIterationsClusteringParameterMin,
                 iterationsClusteringParameterMax: DefaultIterationsClusteringParameterMax,
-                liveRerenderModeActive: false,
                 isLoading: false,
             }
         },
@@ -785,32 +783,7 @@
             },
             clusteredViewEnabled: function (clusteredViewEnabled) {
                 if (!clusteredViewEnabled) {
-                    this.liveRerenderModeActive = false;
                     this.showClusterNodes = false;
-                }
-            },
-            dynamicCouplingScoreWeightAsInteger: function (dynamicCouplingScoreWeightAsInteger) {
-                if (dynamicCouplingScoreWeightAsInteger) {
-                    this.liveRerenderModeActive = true;
-                    this.fetchClusteredGraph();
-                }
-            },
-            semanticCouplingScoreWeightAsInteger: function (semanticCouplingScoreWeightAsInteger) {
-                if (semanticCouplingScoreWeightAsInteger) {
-                    this.liveRerenderModeActive = true;
-                    this.fetchClusteredGraph();
-                }
-            },
-            evolutionaryCouplingScoreWeightAsInteger: function (evolutionaryCouplingScoreWeightAsInteger) {
-                if (evolutionaryCouplingScoreWeightAsInteger) {
-                    this.liveRerenderModeActive = true;
-                    this.fetchClusteredGraph();
-                }
-            },
-            maxClusteringIterations: function (maxClusteringIterations) {
-                if (maxClusteringIterations) {
-                    this.liveRerenderModeActive = true;
-                    this.fetchClusteredGraph();
                 }
             },
         },
@@ -880,7 +853,6 @@
                     })
                     .catch((error) => {
                         console.error(error.response);
-                        this.liveRerenderModeActive = false;
                         this.isLoading = false;
                         this.notifyError(error.response.data);
                     });
@@ -921,7 +893,6 @@
                     })
                     .catch((error) => {
                         console.error(error.response);
-                        this.liveRerenderModeActive = false;
                         this.isLoading = false;
                         this.$notify({title: `Clustering with '${this.convertClusteringAlgorithmIdentifierToLabel(this.selectedClusteringAlgorithm)}' failed`});
                     });
@@ -960,7 +931,6 @@
                         })
                         .catch((error) => {
                             console.error(error.response);
-                            this.liveRerenderModeActive = false;
                             this.isLoading = false;
                             this.$notify({title: `Clustering with '${this.convertClusteringAlgorithmIdentifierToLabel(clusteringAlgorithm)}' failed`});
                         });
@@ -992,7 +962,6 @@
                     })
                     .catch((error) => {
                         console.error(error);
-                        this.liveRerenderModeActive = false;
                         this.isLoading = false;
                     });
             },
