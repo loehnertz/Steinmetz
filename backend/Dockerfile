@@ -6,8 +6,10 @@ RUN apt update && apt install -y maven build-essential libgomp1
 # Building the JAR
 RUN mkdir /build
 WORKDIR /build
-COPY . .
+COPY lib-repo lib-repo
+COPY pom.xml pom.xml
 RUN mvn dependency:resolve
+COPY src src
 RUN mvn clean package
 
 # Create working directory
@@ -16,10 +18,10 @@ WORKDIR /app
 
 # Copy the external executables into the image
 RUN mkdir executables
-RUN cp -R /build/lib/executables/* executables/
+COPY lib/executables/* executables/
 
-# Copy the latest build into the image
-RUN cp /build/target/steinmetz-1.0-SNAPSHOT-jar-with-dependencies.jar backend.jar
+# Move the latest build to the correct location
+RUN mv /build/target/steinmetz-1.0-SNAPSHOT-jar-with-dependencies.jar backend.jar
 
 # Boot up the server
 EXPOSE 5656
