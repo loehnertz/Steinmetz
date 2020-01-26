@@ -628,7 +628,9 @@
     const ClausetNewmanMooreIdentifier = 'clauset_newman_moore';
     const WalktrapIdentifier = 'walktrap';
     const ChineseWhispersIdentifier = 'chinese_whispers';
-    const GraphClusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier, WalktrapIdentifier, ChineseWhispersIdentifier];
+    const LabelPropagationIdentifier = 'label_propagation';
+    const WeaklyConnectedComponentsIdentifier = 'weakly_connected_components';
+    const GraphClusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier, WalktrapIdentifier, ChineseWhispersIdentifier, LabelPropagationIdentifier];
     const MetricAmountClusters = 'amountClusters';
     const MetricInterClusterEdges = 'amountInterfaceEdges';
     const MetricTotalCouplingModularity = 'totalCouplingModularity';
@@ -1010,6 +1012,10 @@
                         return 'Walktrap';
                     case ChineseWhispersIdentifier:
                         return 'Chinese Whispers';
+                    case LabelPropagationIdentifier:
+                        return 'Label Propagation';
+                    case WeaklyConnectedComponentsIdentifier:
+                        return 'WCC';
                     default:
                         return undefined
                 }
@@ -1172,5 +1178,13 @@
         background-color: transparent !important;
         border: none !important;
         padding: 0 !important;
+    }
+
+    #metrics-container .level {
+        flex-wrap: wrap;
+    }
+
+    #metrics-container .level > .level-item {
+        margin: 1em;
     }
 </style>
