@@ -14,6 +14,7 @@
             Ratio Inter-Cluster Edge Weights: {{ nonNullPercentageInterClusterEdgeWeights }}%
         </p>
         <br>
+        <br>
         <p :style="{ fontSize: fontSize + 'em' }">
             Total Coupling Modularity: {{ nonNullTotalCouplingModularity }}
         </p>
@@ -28,6 +29,22 @@
         </p>
         <p :style="{ fontSize: fontSize + 'em' }">
             Evolutionary Coupling Modularity: {{ nonNullEvolutionaryCouplingModularity }}
+        </p>
+        <br>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Total Modularization Quality: {{ nonNullTotalModularizationQuality }}
+        </p>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Average Modularization Quality: {{ nonNullAverageModularizationQuality }}
+        </p>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Dynamic Modularization Quality: {{ nonNullDynamicModularizationQuality }}
+        </p>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Semantic Modularization Quality: {{ nonNullSemanticModularizationQuality }}
+        </p>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Evolutionary Modularization Quality: {{ nonNullEvolutionaryModularizationQuality }}
         </p>
     </div>
 </template>
@@ -53,6 +70,26 @@
             nonNullPercentageInterClusterEdgeWeights: function () {
                 if (!this.percentageInterClusterEdgeWeights) return NotAvailableLabel;
                 return this.percentageInterClusterEdgeWeights;
+            },
+            nonNullDynamicModularizationQuality: function () {
+                if (!this.dynamicModularizationQuality) return NotAvailableLabel;
+                return Number(this.dynamicModularizationQuality).toFixed(2);
+            },
+            nonNullSemanticModularizationQuality: function () {
+                if (!this.semanticModularizationQuality) return NotAvailableLabel;
+                return Number(this.semanticModularizationQuality).toFixed(2);
+            },
+            nonNullEvolutionaryModularizationQuality: function () {
+                if (!this.evolutionaryModularizationQuality) return NotAvailableLabel;
+                return Number(this.evolutionaryModularizationQuality).toFixed(2);
+            },
+            nonNullAverageModularizationQuality: function () {
+                if (!this.averageModularizationQuality) return NotAvailableLabel;
+                return Number(this.averageModularizationQuality).toFixed(2);
+            },
+            nonNullTotalModularizationQuality: function () {
+                if (!this.totalModularizationQuality) return NotAvailableLabel;
+                return Number(this.totalModularizationQuality).toFixed(2);
             },
             nonNullTotalCouplingModularity: function () {
                 if (!this.totalCouplingModularity) return NotAvailableLabel;
@@ -88,6 +125,11 @@
             evolutionaryCouplingModularity: Number,
             averageCouplingModularity: Number,
             totalCouplingModularity: Number,
+            dynamicModularizationQuality: Number,
+            semanticModularizationQuality: Number,
+            evolutionaryModularizationQuality: Number,
+            averageModularizationQuality: Number,
+            totalModularizationQuality: Number,
         },
     }
 </script>

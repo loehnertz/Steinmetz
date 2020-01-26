@@ -16,8 +16,13 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
         val dynamicCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::dynamicCouplingScore)
         val semanticCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::semanticCouplingScore)
         val evolutionaryCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::evolutionaryCouplingScore)
-        val averageCouplingModularity: Double = listOf(dynamicCouplingModularity, semanticCouplingModularity, evolutionaryCouplingModularity).filter { !it.isNaN() }.average()
+        val averageCouplingModularity: Double = listOf(dynamicCouplingModularity, semanticCouplingModularity, evolutionaryCouplingModularity).filter { !it.isNaN() && it != 0.0 }.average()
         val totalCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::couplingScore)
+        val dynamicModularizationQuality: Double = calculateGraphModularizationQuality(EdgeAttributes::dynamicCouplingScore)
+        val semanticModularizationQuality: Double = calculateGraphModularizationQuality(EdgeAttributes::semanticCouplingScore)
+        val evolutionaryModularizationQuality: Double = calculateGraphModularizationQuality(EdgeAttributes::evolutionaryCouplingScore)
+        val averageModularizationQuality: Double = listOf(dynamicModularizationQuality, semanticModularizationQuality, evolutionaryModularizationQuality).filter { !it.isNaN() && it != 0.0 }.average()
+        val totalModularizationQuality: Double = calculateGraphModularizationQuality(EdgeAttributes::couplingScore)
 
         return ClusteringQuality(
             accumulatedEdgeWeights = accumulatedEdgeWeights,
@@ -28,15 +33,20 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
             semanticCouplingModularity = semanticCouplingModularity,
             evolutionaryCouplingModularity = evolutionaryCouplingModularity,
             averageCouplingModularity = averageCouplingModularity,
-            totalCouplingModularity = totalCouplingModularity
+            totalCouplingModularity = totalCouplingModularity,
+            dynamicModularizationQuality = dynamicModularizationQuality,
+            semanticModularizationQuality = semanticModularizationQuality,
+            evolutionaryModularizationQuality = evolutionaryModularizationQuality,
+            averageModularizationQuality = averageModularizationQuality,
+            totalModularizationQuality = totalModularizationQuality
         )
     }
 
     private fun calculateGraphCouplingModularity(couplingScoreType: KMutableProperty1<EdgeAttributes, Int>): Double {
         val modularitySummands: ArrayList<Double> = arrayListOf()
         val totalCouplingScoreTypeAmount: Double = clusteredGraph.edges.sumBy { couplingScoreType.get(it.attributes) }.toDouble()
-        val clusterMap: Map<Int, List<Node>> = buildClusterMap(clusteredGraph)
 
+        val clusterMap: Map<Int, List<Node>> = buildClusterMap(clusteredGraph)
         for ((_, nodes: List<Node>) in clusterMap) {
             val unitsOfCurrentCluster: List<Unit> = nodes.map { it.unit }
 
@@ -50,6 +60,25 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
         }
 
         return modularitySummands.sum()
+    }
+
+    private fun calculateGraphModularizationQuality(couplingScoreType: KMutableProperty1<EdgeAttributes, Int>): Double {
+        val clusterFactorSummands: ArrayList<Double> = arrayListOf()
+
+        val clusterMap: Map<Int, List<Node>> = buildClusterMap(clusteredGraph)
+        for ((_, nodes: List<Node>) in clusterMap) {
+            val unitsOfCurrentCluster: List<Unit> = nodes.map { it.unit }
+
+            val intraEdges: List<Edge> = clusteredGraph.edges.filter { unitsOfCurrentCluster.contains(it.start) and unitsOfCurrentCluster.contains(it.end) }
+            val intraEdgesWeight: Double = intraEdges.sumBy { couplingScoreType.get(it.attributes) }.toDouble()
+
+            val interEdges: List<Edge> = clusteredGraph.edges.filter { unitsOfCurrentCluster.contains(it.start) xor unitsOfCurrentCluster.contains(it.end) }
+            val interEdgesWeight: Double = interEdges.sumBy { couplingScoreType.get(it.attributes) }.toDouble()
+
+            clusterFactorSummands.add((intraEdgesWeight / (intraEdgesWeight + 0.5 * interEdgesWeight)))
+        }
+
+        return clusterFactorSummands.average()
     }
 
     private fun buildClusterMap(clusteredGraph: Graph): Map<Int, List<Node>> {
