@@ -630,7 +630,7 @@
     const ChineseWhispersIdentifier = 'chinese_whispers';
     const LabelPropagationIdentifier = 'label_propagation';
     const WeaklyConnectedComponentsIdentifier = 'weakly_connected_components';
-    const GraphClusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier, WalktrapIdentifier, ChineseWhispersIdentifier, LabelPropagationIdentifier, WeaklyConnectedComponentsIdentifier];
+    const GraphClusteringAlgorithms = [MclIdentifier, InfomapIdentifier, LouvainIdentifier, ClausetNewmanMooreIdentifier, WalktrapIdentifier, ChineseWhispersIdentifier, LabelPropagationIdentifier];
     const MetricAmountClusters = 'amountClusters';
     const MetricInterClusterEdges = 'amountInterfaceEdges';
     const MetricTotalCouplingModularity = 'totalCouplingModularity';
