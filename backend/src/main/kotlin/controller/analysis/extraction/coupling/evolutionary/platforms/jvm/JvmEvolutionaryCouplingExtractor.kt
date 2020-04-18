@@ -1,7 +1,6 @@
 package controller.analysis.extraction.coupling.evolutionary.platforms.jvm
 
 import controller.analysis.extraction.AbstractExtractor
-import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.evolutionary.AbstractEvolutionaryCouplingExtractor
 import controller.analysis.extraction.coupling.evolutionary.VcsSystem
 import model.graph.Edge
@@ -23,9 +22,9 @@ class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private
     override fun extract(): Graph {
         val processBuilder: ProcessBuilder = ProcessBuilder("java", "-jar", Utilities.getExternalExecutableAsFile(ExecutableName).absolutePath, "-l", vcsLogFile.absolutePath, "-c", vcsSystem.toString().toLowerCase(), "-a", "coupling", "-n", MinRevisions.toString(), "-m", MinSharedRevisions.toString(), "-i", MinCouplingScore.toString(), "-t", DaysToCombineCommits.toString()).also { it.redirectErrorStream(true) }
         val process: Process = processBuilder.start()
-        val output: List<String> = String(process.inputStream.readAllBytes(), UTF_8).split("\n").drop(1).also { logger.info("Calculated evolutionary coupling") }
+        val output: List<String> = String(process.inputStream.readAllBytes(), UTF_8).split("\n").drop(1).also { process.inputStream.close() }.also { logger.info("Calculated evolutionary coupling") }
 
-        cleanup(vcsLogFile.absolutePath)
+        cleanup(vcsLogFile.absolutePath).also { process.destroy() }
 
         return convertOutputToGraph(output).also { logger.info("Constructed evolutionary coupling graph") }
     }
@@ -56,7 +55,7 @@ class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private
     }
 
     private fun convertPathToUnit(path: String): Unit {
-        val identifier: String = path.replace('/', '.').removeSuffix(FileExtension).substringAfterLast("$PlatformIdentifier.")
+        val identifier: String = basePackageIdentifier + path.removeSuffix(FileExtension).replace('/', '.').substringAfter(basePackageIdentifier)
         return Unit(identifier = identifier.substringAfterLast('.'), packageIdentifier = identifier.substringBeforeLast('.'))
     }
 
@@ -66,7 +65,6 @@ class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private
     }
 
     companion object {
-        private val PlatformIdentifier: String = Platform.JAVA.toString().toLowerCase()
         private const val ExecutableName = "code-maat.jar"
         private const val FileExtension = ".java"
         private const val MinRevisions = 1
