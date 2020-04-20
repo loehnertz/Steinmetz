@@ -30,7 +30,6 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
     private val basePath: String = buildBasePath(PlatformIdentifier, projectName)
     private val staticAnalysisBasePath = "$basePath/$StaticAnalysisDirectory"
     private val unarchiver = ArchiveExtractor(".$JavaFileExtension", staticAnalysisBasePath)
-    private val potentialUnitFiles: List<File> = File(staticAnalysisBasePath).walk().filter { it.isFile }.filter { it.extension == JavaFileExtension }.toList()
 
     override fun extract(): Graph {
         val unarchivedDirectory: File = unarchiver.unpackAnalysisArchive(archive)
