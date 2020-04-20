@@ -35,7 +35,7 @@ class Unit(var identifier: String, var packageIdentifier: String, var projectNam
     fun calls(callee: Unit, dynamicCouplingScore: Int = 0, semanticCouplingScore: Int = 0, evolutionaryCouplingScore: Int = 0): CallsRelationship {
         val existingRelationship: CallsRelationship? = retrieveExistingRelationship(callee)
         if (existingRelationship != null) {
-            val newDynamicCouplingScore: Int = existingRelationship.dynamiCouplingScore + dynamicCouplingScore
+            val newDynamicCouplingScore: Int = existingRelationship.dynamicCouplingScore + dynamicCouplingScore
             val newSemanticCouplingScore: Int = existingRelationship.semanticCouplingScore + semanticCouplingScore
             val newEvolutionaryCouplingScore: Int = existingRelationship.evolutionaryCouplingScore + evolutionaryCouplingScore
             updateCouplingScores(existingRelationship, newDynamicCouplingScore = newDynamicCouplingScore, newSemanticCouplingScore = newSemanticCouplingScore, newEvolutionaryCouplingScore = newEvolutionaryCouplingScore)
@@ -60,16 +60,16 @@ class Unit(var identifier: String, var packageIdentifier: String, var projectNam
 
     private fun updateSemanticCouplingScore(existingRelationship: CallsRelationship, newSemanticCouplingScore: Int) {
         removeRelationship(existingRelationship)
-        insertRelationship(buildRelationship(existingRelationship.callee, semanticCouplingScore = newSemanticCouplingScore, dynamicCouplingScore = existingRelationship.dynamiCouplingScore, evolutionaryCouplingScore = existingRelationship.evolutionaryCouplingScore))
+        insertRelationship(buildRelationship(existingRelationship.callee, semanticCouplingScore = newSemanticCouplingScore, dynamicCouplingScore = existingRelationship.dynamicCouplingScore, evolutionaryCouplingScore = existingRelationship.evolutionaryCouplingScore))
     }
 
     private fun updateEvolutionaryCouplingScore(existingRelationship: CallsRelationship, newEvolutionaryCouplingScore: Int) {
         removeRelationship(existingRelationship)
-        insertRelationship(buildRelationship(existingRelationship.callee, evolutionaryCouplingScore = newEvolutionaryCouplingScore, dynamicCouplingScore = existingRelationship.dynamiCouplingScore, semanticCouplingScore = existingRelationship.semanticCouplingScore))
+        insertRelationship(buildRelationship(existingRelationship.callee, evolutionaryCouplingScore = newEvolutionaryCouplingScore, dynamicCouplingScore = existingRelationship.dynamicCouplingScore, semanticCouplingScore = existingRelationship.semanticCouplingScore))
     }
 
     private fun buildRelationship(callee: Unit, dynamicCouplingScore: Int, semanticCouplingScore: Int, evolutionaryCouplingScore: Int): CallsRelationship {
-        return CallsRelationship(caller = this, callee = callee, dynamiCouplingScore = dynamicCouplingScore, semanticCouplingScore = semanticCouplingScore, evolutionaryCouplingScore = evolutionaryCouplingScore)
+        return CallsRelationship(caller = this, callee = callee, dynamicCouplingScore = dynamicCouplingScore, semanticCouplingScore = semanticCouplingScore, evolutionaryCouplingScore = evolutionaryCouplingScore)
     }
 
     private fun retrieveExistingRelationship(callee: Unit): CallsRelationship? {
