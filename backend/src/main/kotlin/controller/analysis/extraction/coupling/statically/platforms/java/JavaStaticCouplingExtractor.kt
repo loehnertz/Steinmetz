@@ -132,7 +132,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
 
     private fun attachUnitFootprint(node: Node, classDeclarations: Set<ClassDeclaration>): Node {
         val size: Long? = classDeclarations.find { it.identifier == node.unit.toString() }?.characters?.toLong()
-        if (size != null) node.attributes.footprint = UnitFootprint(byteSize = size)
+        if (size != null) node.attributes.footprint = UnitFootprint(characters = size)
         return node
     }
 

@@ -140,13 +140,13 @@ class GraphInserter(
                 identifier = edge.start.identifier,
                 packageIdentifier = edge.start.packageIdentifier,
                 projectName = projectName,
-                size = graph.findNodeByUnit(edge.start)?.attributes?.footprint?.byteSize ?: -1
+                size = graph.findNodeByUnit(edge.start)?.attributes?.footprint?.characters ?: -1
             )
             val endUnit = model.neo4j.node.Unit.create(
                 identifier = edge.end.identifier,
                 packageIdentifier = edge.end.packageIdentifier,
                 projectName = projectName,
-                size = graph.findNodeByUnit(edge.end)?.attributes?.footprint?.byteSize ?: -1
+                size = graph.findNodeByUnit(edge.end)?.attributes?.footprint?.characters ?: -1
             )
 
             startUnit.calls(

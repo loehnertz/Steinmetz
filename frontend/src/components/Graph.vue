@@ -103,7 +103,7 @@
                     let unitNode = this.buildUnitNode(
                         node["unit"]["identifier"],
                         node["unit"]["packageIdentifier"],
-                        this.unnullifyUnitByteSize(node["attributes"]),
+                        this.unnullifyUnitSize(node["attributes"]),
                         node["attributes"]["cluster"],
                         this.clusterIds.size,
                     );
@@ -152,7 +152,7 @@
                 return {
                     id: this.constructUnitNodeId(identifier, packageIdentifier),
                     cid: clusterId,
-                    title: this.generateGraphPopup(`${packageIdentifier}.${identifier}<br>Size: ${size} Bytes`),
+                    title: this.generateGraphPopup(`${packageIdentifier}.${identifier}<br>Size: ${size} Characters`),
                     label: identifier,
                     borderWidth: 5,
                     color: {
@@ -263,9 +263,9 @@
                     }
                 }
             },
-            unnullifyUnitByteSize(unitAttributes) {
-                if (!unitAttributes["footprint"] || !unitAttributes["footprint"]["byteSize"]) return 1024;
-                return unitAttributes["footprint"]["byteSize"];
+            unnullifyUnitSize(unitAttributes) {
+                if (!unitAttributes["footprint"] || !unitAttributes["footprint"]["characters"]) return 1024;
+                return unitAttributes["footprint"]["characters"];
             },
             watchStabilization() {
                 const stabilizationWatcher = setInterval(() => {

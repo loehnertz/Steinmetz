@@ -39,8 +39,8 @@ class GraphConverter(private val units: List<Unit>) {
     }
 
     private fun attachUnitFootprints(node: Node): Node {
-        val unitByteSize: Long = units.first { it.identifier == node.unit.identifier && it.packageIdentifier == node.unit.packageIdentifier }.size
-        node.attributes.footprint = UnitFootprint(byteSize = unitByteSize)
+        val unitCharacterCount: Long = units.first { it.identifier == node.unit.identifier && it.packageIdentifier == node.unit.packageIdentifier }.size
+        node.attributes.footprint = UnitFootprint(characters = unitCharacterCount)
         return node
     }
 
