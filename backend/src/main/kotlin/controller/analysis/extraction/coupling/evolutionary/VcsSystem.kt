@@ -1,6 +1,7 @@
 package controller.analysis.extraction.coupling.evolutionary
 
 
+@Suppress("unused")
 enum class VcsSystem {
     GIT2,
     HG,

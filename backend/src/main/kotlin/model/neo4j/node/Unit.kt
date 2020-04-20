@@ -17,6 +17,7 @@ import org.neo4j.ogm.cypher.Filters
 import utility.Neo4jConnector
 
 
+@Suppress("unused")
 @NodeEntity
 class Unit(var identifier: String, var packageIdentifier: String, var projectName: String, var size: Long) : GraphEntity {
     @Id

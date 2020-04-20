@@ -1,6 +1,7 @@
 package utility
 
 import java.io.File
+import kotlin.math.pow
 
 
 object Utilities {
@@ -22,7 +23,7 @@ object Utilities {
         while (num.toInt() != 0) {
             remainder = num % 10
             num /= 10
-            decimalNumber += (remainder * Math.pow(2.0, i.toDouble())).toInt()
+            decimalNumber += (remainder * 2.0.pow(i.toDouble())).toInt()
             ++i
         }
         return decimalNumber

@@ -9,6 +9,7 @@ import org.neo4j.ogm.session.Session
 import org.neo4j.ogm.session.SessionFactory
 
 
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 object Neo4jConnector {
     private const val Neo4JHostEnvironmentVariableKey = "NEO4J_HOST"
     private const val Neo4JPortEnvironmentVariableKey = "NEO4J_PORT"

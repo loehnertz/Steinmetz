@@ -5,6 +5,7 @@ import model.neo4j.node.Unit
 import model.neo4j.relationship.CallsRelationship
 
 
+@Suppress("RemoveRedundantQualifierName")
 class GraphConverter(private val units: List<Unit>) {
     fun convertUnitListToGraph(): Graph {
         val relationships: MutableSet<CallsRelationship> = retrieveRelationships()
