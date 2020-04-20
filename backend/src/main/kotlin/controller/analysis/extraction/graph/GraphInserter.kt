@@ -122,6 +122,8 @@ class GraphInserter(
     }
 
     private fun mergeStaticAndDynamicCouplingGraphs(): Graph {
+        // Since dynamic analysis might reveal method invocations that are not found with static analysis,
+        // edges out of the `dynamicCouplingGraph` are added or updated on the base graph.
         dynamicCouplingGraph.edges.forEach { staticAnalysisGraph.addOrUpdateEdge(it) }
         return staticAnalysisGraph
     }
