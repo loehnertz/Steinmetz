@@ -54,9 +54,7 @@ class JfrRecordingAnalyzer(projectName: String, private val basePackageIdentifie
                             val callerUnit = Unit(identifier = callerIdentifier, packageIdentifier = callerPackageIdentifier)
                             val calleeUnit = Unit(identifier = calleeIdentifier, packageIdentifier = calleePackageIdentifier)
 
-                            val edge = Edge(start = callerUnit, end = calleeUnit, attributes = EdgeAttributes(dynamicCouplingScore = 1))
-
-                            if (callerUnit != calleeUnit) graph.addOrUpdateEdge(edge)
+                            graph.addOrIncrementEdgeAttribute(Edge(start = callerUnit, end = calleeUnit, attributes = EdgeAttributes()), EdgeAttributes::dynamicCouplingScore)
                         }
                     }
                 }

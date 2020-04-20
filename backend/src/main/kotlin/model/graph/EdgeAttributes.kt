@@ -10,10 +10,18 @@ data class EdgeAttributes(
     companion object {
         fun mergeEdgeAttributes(vararg edgeAttributes: EdgeAttributes): EdgeAttributes {
             return EdgeAttributes(
-                dynamicCouplingScore = edgeAttributes.sumBy { it.dynamicCouplingScore },
-                semanticCouplingScore = edgeAttributes.sumBy { it.semanticCouplingScore },
-                evolutionaryCouplingScore = edgeAttributes.sumBy { it.evolutionaryCouplingScore }
-            )
+                dynamicCouplingScore = edgeAttributes.map { it.dynamicCouplingScore }.filter { it != 0 }.average().toInt(),
+                semanticCouplingScore = edgeAttributes.map { it.semanticCouplingScore }.filter { it != 0 }.average().toInt(),
+                evolutionaryCouplingScore = edgeAttributes.map { it.evolutionaryCouplingScore }.filter { it != 0 }.average().toInt()
+            ).also { check(scoresAreLegal(it)) { "The edge attributes $it are not legal" } }
+        }
+
+        private fun scoresAreLegal(edgeAttributes: EdgeAttributes): Boolean {
+            if (edgeAttributes.couplingScore < 0 || edgeAttributes.couplingScore > 100) return false
+            if (edgeAttributes.dynamicCouplingScore < 0 || edgeAttributes.dynamicCouplingScore > 100) return false
+            if (edgeAttributes.semanticCouplingScore < 0 || edgeAttributes.semanticCouplingScore > 100) return false
+            if (edgeAttributes.evolutionaryCouplingScore < 0 || edgeAttributes.evolutionaryCouplingScore > 100) return false
+            return true
         }
     }
 }

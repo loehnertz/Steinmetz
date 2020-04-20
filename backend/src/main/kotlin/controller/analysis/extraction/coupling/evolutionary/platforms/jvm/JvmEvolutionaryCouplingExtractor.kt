@@ -32,8 +32,8 @@ class JvmEvolutionaryCouplingExtractor(private val vcsSystem: VcsSystem, private
     override fun normalizeUnit(unit: Unit): Unit = AbstractExtractor.normalizeUnit(unit)
 
     private fun convertOutputToGraph(output: List<String>): Graph {
-        val edges: MutableSet<Edge> = output.mapNotNull { parseOutputLine(it) }.toMutableSet().also { logger.info("Extracted ${it.size} evolutionary coupling pairs") }
-        return Graph(edges = edges)
+        val edges: List<Edge> = output.mapNotNull { parseOutputLine(it) }.also { logger.info("Extracted ${it.size} evolutionary coupling pairs") }
+        return Graph().also { graph -> edges.forEach { graph.addOrUpdateEdge(it) } }
     }
 
     private fun parseOutputLine(line: String): Edge? {

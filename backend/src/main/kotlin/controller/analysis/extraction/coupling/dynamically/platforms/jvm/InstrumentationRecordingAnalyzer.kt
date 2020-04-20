@@ -26,13 +26,12 @@ class InstrumentationRecordingAnalyzer(private val instrumentationRecordingFile:
         val graph = Graph()
 
         for (invocation in invocations) {
-            val startUnit = Unit(identifier = invocation.first.substringAfterLast('.'), packageIdentifier = invocation.first.substringBeforeLast('.'))
-            val endUnit = Unit(identifier = invocation.second.substringAfterLast('.'), packageIdentifier = invocation.second.substringBeforeLast('.'))
-            val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(dynamicCouplingScore = 1))
+            val callerUnit = Unit(identifier = invocation.first.substringAfterLast('.'), packageIdentifier = invocation.first.substringBeforeLast('.'))
+            val calleeUnit = Unit(identifier = invocation.second.substringAfterLast('.'), packageIdentifier = invocation.second.substringBeforeLast('.'))
 
-            if (startUnit == endUnit) continue
+            if (callerUnit == calleeUnit) continue
 
-            graph.addOrUpdateEdge(edge)
+            graph.addOrIncrementEdgeAttribute(Edge(start = callerUnit, end = calleeUnit, attributes = EdgeAttributes()), EdgeAttributes::dynamicCouplingScore)
         }
 
         return graph

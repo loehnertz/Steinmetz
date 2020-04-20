@@ -2,6 +2,7 @@ package model.graph
 
 import model.graph.EdgeAttributes.Companion.mergeEdgeAttributes
 import model.graph.UnitFootprint.Companion.mergeUnitFootprints
+import kotlin.reflect.KMutableProperty1
 
 
 data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: MutableSet<Edge> = mutableSetOf()) {
@@ -42,6 +43,11 @@ data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: Mutabl
             edges.add(edge)
             inferNodesOutOfEdge(edge)
         }
+    }
+
+    fun addOrIncrementEdgeAttribute(edge: Edge, edgeAttributesType: KMutableProperty1<EdgeAttributes, Int>) {
+        val existingEdge: Edge = edges.find { it == edge } ?: edge.also { edges.add(it) }
+        edgeAttributesType.get(existingEdge.attributes).inc()
     }
 
     fun updateEdge(edge: Edge) {
