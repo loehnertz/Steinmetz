@@ -758,7 +758,7 @@
                 graphClusteringAlgorithms: GraphClusteringAlgorithms,
                 graphClusteringMetrics: GraphClusteringMetrics,
                 selectedClusteringAlgorithm: ClausetNewmanMooreIdentifier,
-                selectedClusteringMetric: MetricTotalCouplingModularity,
+                selectedClusteringMetric: MetricAverageMeanClusterFactor,
                 bestScoringClusteringAlgorithm: null,
                 clusteringAlgorithmMetrics: {},
                 clusteringAvailable: false,
