@@ -2,8 +2,8 @@ package controller.analysis.extraction.coupling.statically.platforms.java
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 import com.github.javaparser.ast.body.TypeDeclaration
-import com.github.javaparser.ast.type.ClassOrInterfaceType
-import com.github.javaparser.resolution.Resolvable
+import com.github.javaparser.ast.expr.Expression
+import com.github.javaparser.ast.expr.MethodCallExpr
 import com.github.javaparser.resolution.types.ResolvedType
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade
 import com.github.javaparser.symbolsolver.utils.SymbolSolverCollectionStrategy
@@ -61,7 +61,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .flatMap { it.types }
             .mapNotNull { it as? ClassOrInterfaceDeclaration }  // TODO: Should Enum's also be included?
             .filter { isLegalUnit(it.fullyQualifiedName.get()) }
-            .map { it to retrieveCallClasses(it) }
+            .map { it to retrieveReferencedTypes(it) }
             .flatMap { retrieveCallPairs(it) }
             .also { logger.info("Retrieved call pairs") }
             .toSet()
@@ -88,36 +88,28 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         return graph
     }
 
-    private fun retrieveCallClasses(declaration: ClassOrInterfaceDeclaration): List<Resolvable<ResolvedType>> {
-        return (retrieveSuperTypes(declaration) + retrieveReferencedTypes(declaration)).mapNotNull { it as? Resolvable<ResolvedType> }
-    }
-
-    private fun retrieveCallPairs(classReferences: Pair<TypeDeclaration<*>, List<Resolvable<ResolvedType>>>): List<Pair<String, String>> {
+    private fun retrieveCallPairs(classReferences: Pair<TypeDeclaration<*>, List<ResolvedType>>): List<Pair<String, String>> {
         val classIdentifier: String = classReferences.first.fullyQualifiedName.get()
-        val referencedTypes: List<String> = classReferences.second.mapNotNull { resolveType(it) }.map { it.describe() }
+        val referencedTypes: List<String> = classReferences.second.map { it.describe() }
         return referencedTypes.filter { isLegalUnit(it) }.filter { it != classIdentifier }.map { classIdentifier to it }.also { checkToFreeMemory() }
     }
 
-    private fun retrieveSuperTypes(declaration: ClassOrInterfaceDeclaration): Set<ClassOrInterfaceType> {
-        return (declaration.extendedTypes + declaration.implementedTypes).toSet()
-    }
-
-    private fun retrieveReferencedTypes(node: AstNode): Set<ClassOrInterfaceType> {
-        val types: HashSet<ClassOrInterfaceType> = hashSetOf()
+    private fun retrieveReferencedTypes(node: AstNode): List<ResolvedType> {
+        val methodCalls: MutableSet<MethodCallExpr> = mutableSetOf()
         val queue: ArrayDeque<AstNode> = ArrayDeque<AstNode>().also { it.add(node) }
 
         while (queue.isNotEmpty()) {
             val element: AstNode = queue.pop()
-            if (element is ClassOrInterfaceType) types.add(element)
+            if (element is MethodCallExpr) methodCalls.add(element)
             element.childNodes.forEach { queue.add(it) }
         }
 
-        return types
+        return methodCalls.mapNotNull { it.scope.toNullable() }.mapNotNull { resolveType(it) }
     }
 
-    private fun resolveType(type: Resolvable<ResolvedType>): ResolvedType? {
+    private fun resolveType(scope: Expression): ResolvedType? {
         return try {
-            type.resolve()
+            scope.calculateResolvedType()
         } catch (e: Exception) {
             null
         }
