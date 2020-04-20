@@ -59,7 +59,7 @@ class MclManager(private val graph: Graph, private val projectName: String, priv
     }
 
     private fun buildClusteringInflationValuesList(iterations: Int = 100): List<Double> {
-        var currentClusteringInflationValue = 1.2  // Lowest recommended value by the MCL author
+        var currentClusteringInflationValue = 1.2  // The lowest recommended value by the MCL author
         val clusteringInflationValues: ArrayList<Double> = arrayListOf()
 
         for (iteration: Int in (1..iterations)) {

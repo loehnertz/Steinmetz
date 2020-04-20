@@ -204,7 +204,7 @@ class AnalysisController {
                 }
             }
 
-            // Dispose of the part after use to prevent leaks
+            // Dispose of the part after use, to prevent leaks
             part.dispose()
         }
 
