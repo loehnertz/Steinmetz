@@ -1,9 +1,9 @@
 package controller.analysis.extraction.coupling.statically.platforms.java
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
-import com.github.javaparser.ast.body.TypeDeclaration
 import com.github.javaparser.ast.expr.Expression
 import com.github.javaparser.ast.expr.MethodCallExpr
+import com.github.javaparser.ast.expr.ObjectCreationExpr
 import com.github.javaparser.resolution.types.ResolvedType
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade
 import com.github.javaparser.symbolsolver.utils.SymbolSolverCollectionStrategy
@@ -17,6 +17,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import utility.ArchiveExtractor
 import utility.Utilities
+import utility.countJavaSourceCharacters
 import utility.toNullable
 import java.io.File
 import java.util.*
@@ -34,7 +35,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
     override fun extract(): Graph {
         val unarchivedDirectory: File = unarchiver.unpackAnalysisArchive(archive)
 
-        val referencePairs: Set<Pair<String, String>> = extractReferencePairs(unarchivedDirectory).also { logger.info("Extracted ${it.size} static coupling pairs") }
+        val referencePairs: Set<Pair<ClassDeclaration, ClassDeclaration>> = extractReferencePairs(unarchivedDirectory).also { logger.info("Extracted ${it.size} static coupling pairs") }
 
         val graph: Graph = convertReferencePairsToGraph(referencePairs)
 
@@ -45,7 +46,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
 
     override fun normalizeUnit(unit: Unit): Unit = AbstractExtractor.normalizeUnit(unit)
 
-    private fun extractReferencePairs(unarchivedDirectory: File): Set<Pair<String, String>> {
+    private fun extractReferencePairs(unarchivedDirectory: File): Set<Pair<ClassDeclaration, ClassDeclaration>> {
         val projectRoot: ProjectRoot = SymbolSolverCollectionStrategy().collect(unarchivedDirectory.toPath())
         projectRoot.sourceRoots.forEach { sourceRoot ->
             sourceRoot.parserConfiguration.isStoreTokens = false
@@ -61,7 +62,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .flatMap { it.types }
             .mapNotNull { it as? ClassOrInterfaceDeclaration }  // TODO: Should Enum's also be included?
             .filter { isLegalUnit(it.fullyQualifiedName.get()) }
-            .map { it to retrieveReferencedTypes(it) }
+            .map { ClassDeclaration(it) to retrieveReferencedTypes(it) }
             .flatMap { retrieveCallPairs(it) }
             .also { logger.info("Retrieved call pairs") }
             .toSet()
@@ -70,12 +71,12 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .also { logger.info("Cleared parsing caches") }
     }
 
-    private fun convertReferencePairsToGraph(referencePairs: Set<Pair<String, String>>): Graph {
+    private fun convertReferencePairsToGraph(referencePairs: Set<Pair<ClassDeclaration, ClassDeclaration>>): Graph {
         val graph = Graph()
 
         for (referencePair in referencePairs) {
-            val startUnit = Unit(identifier = referencePair.first.substringAfterLast('.'), packageIdentifier = referencePair.first.substringBeforeLast('.'))
-            val endUnit = Unit(identifier = referencePair.second.substringAfterLast('.'), packageIdentifier = referencePair.second.substringBeforeLast('.'))
+            val startUnit = Unit(identifier = referencePair.first.identifier.substringAfterLast('.'), packageIdentifier = referencePair.first.identifier.substringBeforeLast('.'))
+            val endUnit = Unit(identifier = referencePair.second.identifier.substringAfterLast('.'), packageIdentifier = referencePair.second.identifier.substringBeforeLast('.'))
             val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes())
 
             if (startUnit == endUnit) continue
@@ -83,28 +84,36 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             graph.addOrUpdateEdge(edge)
         }
 
-        graph.nodes.map { attachUnitFootprint(it) }.forEach { graph.addOrUpdateNode(it) }
+        val classDeclarations: Set<ClassDeclaration> = referencePairs.flatMap { listOf(it.first, it.second) }.filter { it.characters != null }.toSet()
+        graph.nodes.map { attachUnitFootprint(it, classDeclarations) }.forEach { graph.addOrUpdateNode(it) }
 
         return graph
     }
 
-    private fun retrieveCallPairs(classReferences: Pair<TypeDeclaration<*>, List<ResolvedType>>): List<Pair<String, String>> {
-        val classIdentifier: String = classReferences.first.fullyQualifiedName.get()
+    private fun retrieveCallPairs(classReferences: Pair<ClassDeclaration, List<ResolvedType>>): List<Pair<ClassDeclaration, ClassDeclaration>> {
+        val classIdentifier: String = classReferences.first.identifier
         val referencedTypes: List<String> = classReferences.second.map { it.describe() }
-        return referencedTypes.filter { isLegalUnit(it) }.filter { it != classIdentifier }.map { classIdentifier to it }.also { checkToFreeMemory() }
+        return referencedTypes.filter { isLegalUnit(it) }.filter { it != classIdentifier }.map { classReferences.first to ClassDeclaration(it) }.also { checkToFreeMemory() }
     }
 
     private fun retrieveReferencedTypes(node: AstNode): List<ResolvedType> {
+        val objectCreations: MutableSet<ObjectCreationExpr> = mutableSetOf()
         val methodCalls: MutableSet<MethodCallExpr> = mutableSetOf()
         val queue: ArrayDeque<AstNode> = ArrayDeque<AstNode>().also { it.add(node) }
 
         while (queue.isNotEmpty()) {
             val element: AstNode = queue.pop()
-            if (element is MethodCallExpr) methodCalls.add(element)
+            when (element) {
+                is ObjectCreationExpr -> objectCreations.add(element)
+                is MethodCallExpr     -> methodCalls.add(element)
+            }
             element.childNodes.forEach { queue.add(it) }
         }
 
-        return methodCalls.mapNotNull { it.scope.toNullable() }.mapNotNull { resolveType(it) }
+        val objectCreationTypes: List<ResolvedType> = objectCreations.mapNotNull { resolveType(it) }
+        val methodCallTypes: List<ResolvedType> = methodCalls.mapNotNull { it.scope.toNullable() }.mapNotNull { resolveType(it) }
+
+        return objectCreationTypes + methodCallTypes
     }
 
     private fun resolveType(scope: Expression): ResolvedType? {
@@ -145,5 +154,12 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         private const val JavaTestDirectory = "/test/"
         private val JavaGenericsStatement = Regex("[<>]")
         private const val LowMemoryPercentageThreshold = 15
+    }
+
+    internal data class ClassDeclaration(
+        val identifier: String,
+        val characters: Int? = null
+    ) {
+        constructor(declaration: ClassOrInterfaceDeclaration) : this(identifier = declaration.fullyQualifiedName.get(), characters = declaration.toString().countJavaSourceCharacters())
     }
 }
