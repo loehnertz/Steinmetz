@@ -9,6 +9,7 @@ WORKDIR /build
 COPY lib-repo lib-repo
 COPY pom.xml pom.xml
 RUN mvn dependency:resolve
+RUN mvn dependency:resolve-plugins
 COPY src src
 RUN mvn clean package
 
