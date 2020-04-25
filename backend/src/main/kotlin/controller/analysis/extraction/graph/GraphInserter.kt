@@ -151,6 +151,7 @@ class GraphInserter(
 
             startUnit.calls(
                 callee = endUnit,
+                staticCouplingScore = edge.attributes.staticCouplingScore,
                 dynamicCouplingScore = edge.attributes.dynamicCouplingScore,
                 semanticCouplingScore = edge.attributes.semanticCouplingScore,
                 evolutionaryCouplingScore = edge.attributes.evolutionaryCouplingScore

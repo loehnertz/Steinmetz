@@ -9,6 +9,7 @@ import org.neo4j.ogm.annotation.*
 class CallsRelationship(
     @StartNode var caller: Unit,
     @EndNode var callee: Unit,
+    @Property var staticCouplingScore: Int = 0,
     @Property var dynamicCouplingScore: Int = 0,
     @Property var semanticCouplingScore: Int = 0,
     @Property var evolutionaryCouplingScore: Int = 0
