@@ -1,16 +1,23 @@
 package controller.analysis.extraction.coupling.statically.platforms.java
 
+import com.github.javaparser.ast.AccessSpecifier.*
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
-import com.github.javaparser.ast.expr.Expression
 import com.github.javaparser.ast.expr.MethodCallExpr
 import com.github.javaparser.ast.expr.ObjectCreationExpr
-import com.github.javaparser.resolution.types.ResolvedType
+import com.github.javaparser.resolution.Resolvable
+import com.github.javaparser.resolution.UnsolvedSymbolException
+import com.github.javaparser.resolution.declarations.ResolvedMethodLikeDeclaration
+import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade
 import com.github.javaparser.symbolsolver.utils.SymbolSolverCollectionStrategy
 import com.github.javaparser.utils.ProjectRoot
 import controller.analysis.extraction.AbstractExtractor
 import controller.analysis.extraction.Platform
 import controller.analysis.extraction.coupling.statically.AbstractStaticAnalysisExtractor
+import controller.analysis.extraction.coupling.statically.ResponseForAClassIdentifiers
+import controller.analysis.extraction.coupling.statically.ResponseForAClassMetrics
+import controller.analysis.extraction.coupling.statically.ResponseForAClassPair
+import kotlinx.coroutines.runBlocking
 import model.graph.*
 import model.graph.Unit
 import org.slf4j.Logger
@@ -25,6 +32,7 @@ import com.github.javaparser.ast.Node as AstNode
 
 
 class JavaStaticCouplingExtractor(projectName: String, private val basePackageIdentifier: String, private val archive: File) : AbstractStaticAnalysisExtractor() {
+
     private val logger: Logger = LoggerFactory.getLogger(JavaStaticCouplingExtractor::class.java)
 
     private val basePath: String = buildBasePath(PlatformIdentifier, projectName)
@@ -45,7 +53,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
 
     override fun normalizeUnit(unit: Unit): Unit = AbstractExtractor.normalizeUnit(unit)
 
-    private fun extractReferencePairs(unarchivedDirectory: File): Set<Pair<ClassDeclaration, ClassDeclaration>> {
+    private fun extractReferencePairs(unarchivedDirectory: File): Set<Pair<ClassDeclaration, ClassDeclaration>> = runBlocking {
         val projectRoot: ProjectRoot = SymbolSolverCollectionStrategy().collect(unarchivedDirectory.toPath())
         projectRoot.sourceRoots.forEach { sourceRoot ->
             sourceRoot.parserConfiguration.isStoreTokens = false
@@ -53,18 +61,20 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             sourceRoot.parserConfiguration.isIgnoreAnnotationsWhenAttributingComments = false
         }
 
-        return projectRoot.sourceRoots
+        return@runBlocking projectRoot.sourceRoots
             .filter { !it.root.toString().contains(JavaTestDirectory) }
             .flatMap { it.tryToParse() }
             .mapNotNull { it.result.toNullable() }
             .also { logger.info("Parsed ASTs") }
             .flatMap { it.types }
-            .mapNotNull { it as? ClassOrInterfaceDeclaration }  // TODO: Should Enum's also be included?
+            .asSequence()
+            .mapNotNull { it as? ClassOrInterfaceDeclaration }
             .filter { isLegalUnit(it.fullyQualifiedName.get()) }
             .map { ClassDeclaration(it) to retrieveReferencedTypes(it) }
-            .flatMap { retrieveCallPairs(it) }
-            .also { logger.info("Retrieved call pairs") }
+            .map { retrieveCallPairs(it) }
+            .flatten()
             .toSet()
+            .also { logger.info("Retrieved call pairs") }
             .also { JavaParserFacade.clearInstances() }
             .also { System.gc() }
             .also { logger.info("Cleared parsing caches") }
@@ -73,12 +83,15 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
     private fun convertReferencePairsToGraph(referencePairs: Set<Pair<ClassDeclaration, ClassDeclaration>>): Graph {
         val graph = Graph()
 
-        for (referencePair in referencePairs) {
+        for (referencePair: Pair<ClassDeclaration, ClassDeclaration> in referencePairs) {
+            val responseForAClassIdentifiers = ResponseForAClassIdentifiers(referencePair.first.identifier, referencePair.second.identifier)
+            val responseForAClassCouplingScore: Int = responseForAClassPairMap[responseForAClassIdentifiers]?.calculateCouplingPercentage() ?: 0
+
             val startUnit = Unit(identifier = referencePair.first.identifier.substringAfterLast('.'), packageIdentifier = referencePair.first.identifier.substringBeforeLast('.'))
             val endUnit = Unit(identifier = referencePair.second.identifier.substringAfterLast('.'), packageIdentifier = referencePair.second.identifier.substringBeforeLast('.'))
-            val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes())
+            val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(staticCouplingScore = responseForAClassCouplingScore))
 
-            if (startUnit == endUnit) continue
+            if (!isLegalPair(startUnit, endUnit)) continue
 
             graph.addOrUpdateEdge(edge)
         }
@@ -89,37 +102,103 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         return graph
     }
 
-    private fun retrieveCallPairs(classReferences: Pair<ClassDeclaration, List<ResolvedType>>): List<Pair<ClassDeclaration, ClassDeclaration>> {
+    private fun retrieveCallPairs(classReferences: Pair<ClassDeclaration, List<Pair<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>>>): List<Pair<ClassDeclaration, ClassDeclaration>> {
         val classIdentifier: String = classReferences.first.identifier
-        val referencedTypes: List<String> = classReferences.second.map { it.describe() }
-        return referencedTypes.filter { isLegalUnit(it) }.filter { it != classIdentifier }.map { classReferences.first to ClassDeclaration(it) }.also { checkToFreeMemory() }
-    }
 
-    private fun retrieveReferencedTypes(node: AstNode): List<ResolvedType> {
-        val objectCreations: MutableSet<ObjectCreationExpr> = mutableSetOf()
-        val methodCalls: MutableSet<MethodCallExpr> = mutableSetOf()
-        val queue: ArrayDeque<AstNode> = ArrayDeque<AstNode>().also { it.add(node) }
+        for (referencedType: Pair<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics> in classReferences.second) {
+            val referencedTypeIdentifier: String = referencedType.first.qualifiedName
 
-        while (queue.isNotEmpty()) {
-            val element: AstNode = queue.pop()
-            when (element) {
-                is ObjectCreationExpr -> objectCreations.add(element)
-                is MethodCallExpr     -> methodCalls.add(element)
+            if (classIdentifier == referencedTypeIdentifier) continue
+
+            val responseForAClassIdentifiers = ResponseForAClassIdentifiers(classAIdentifier = classIdentifier, classBIdentifier = referencedTypeIdentifier)
+            val responseForAClassPair: ResponseForAClassPair? = responseForAClassPairMap[responseForAClassIdentifiers]
+            if (responseForAClassPair == null) {
+                val classAMetrics = ResponseForAClassMetrics(accessibleMethods = countAccessibleMethodLikeDeclarations(referencedType.first, classReferences.first.declaration!!))
+                val classBMetrics: ResponseForAClassMetrics = referencedType.second
+                responseForAClassPairMap[responseForAClassIdentifiers] = ResponseForAClassPair(classIdentifiers = responseForAClassIdentifiers, classAMetrics = classAMetrics, classBMetrics = classBMetrics)
+            } else {
+                responseForAClassPair.updateClassMetrics(referencedTypeIdentifier, referencedType.second)
             }
-            element.childNodes.forEach { queue.add(it) }
         }
 
-        val objectCreationTypes: List<ResolvedType> = objectCreations.mapNotNull { resolveType(it) }
-        val methodCallTypes: List<ResolvedType> = methodCalls.mapNotNull { it.scope.toNullable() }.mapNotNull { resolveType(it) }
-
-        return objectCreationTypes + methodCallTypes
+        return classReferences.second.map { it.first.qualifiedName }.filter { it != classIdentifier }.map { classReferences.first to ClassDeclaration(identifier = it) }.also { checkToFreeMemory() }
     }
 
-    private fun resolveType(scope: Expression): ResolvedType? {
+    private fun retrieveReferencedTypes(caller: ClassOrInterfaceDeclaration): List<Pair<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>> {
+        val callerType: ResolvedReferenceTypeDeclaration = caller.resolve()!!
+        val objectCreations: MutableSet<ObjectCreationExpr> = mutableSetOf()
+        val methodCalls: MutableSet<MethodCallExpr> = mutableSetOf()
+        val queue: ArrayDeque<AstNode> = ArrayDeque<AstNode>().also { it.add(caller) }
+
+        while (queue.isNotEmpty()) {
+            val node: AstNode = queue.pop()
+            when (node) {
+                is ObjectCreationExpr -> objectCreations.add(node)
+                is MethodCallExpr     -> methodCalls.add(node)
+            }
+            node.childNodes.forEach { queue.add(it) }
+        }
+
+        val objectCreationMap: Map<ResolvedReferenceTypeDeclaration, List<ResolvedMethodLikeDeclaration>> = objectCreations
+            .mapNotNull { resolveType(it) }
+            .distinct()
+            .groupBy({ it.declaringType() }, { it })
+            .filter { isLegalUnit(it.key.qualifiedName) }
+        val methodCallMap: Map<ResolvedReferenceTypeDeclaration, List<ResolvedMethodLikeDeclaration>> = methodCalls
+            .mapNotNull { resolveType(it) }
+            .distinct()
+            .groupBy({ it.declaringType() }, { it })
+            .filter { isLegalUnit(it.key.qualifiedName) }
+
+        return (objectCreationMap.keys + methodCallMap.keys).associateWith {
+            setOf(objectCreationMap[it], methodCallMap[it]).filterNotNull().flatten()
+        }
+            .map {
+                Pair(
+                    it.key,
+                    ResponseForAClassMetrics(
+                        invokedMethods = it.value.count(),
+                        accessibleMethods = countAccessibleMethodLikeDeclarations(callerType, it.key)
+                    )
+                )
+            }
+    }
+
+    private fun <T> resolveType(resolvable: Resolvable<T>): ResolvedMethodLikeDeclaration? {
         return try {
-            scope.calculateResolvedType()
+            resolvable.resolve() as? ResolvedMethodLikeDeclaration
         } catch (e: Exception) {
             null
+        }
+    }
+
+    private fun countAccessibleMethodLikeDeclarations(caller: ResolvedReferenceTypeDeclaration, callee: ResolvedReferenceTypeDeclaration): Int {
+        return callee.allMethods
+            .map { it.declaration as ResolvedMethodLikeDeclaration }
+            .plus(callee.constructors.map { it as ResolvedMethodLikeDeclaration })
+            .filter { !JavaObjectClassMethodsSignatures.contains(it.signature) }
+            .count { methodIsAccessibleByCaller(it, caller) }
+    }
+
+    private fun methodIsAccessibleByCaller(method: ResolvedMethodLikeDeclaration, caller: ResolvedReferenceTypeDeclaration): Boolean {
+        return when (method.accessSpecifier()!!) {
+            PUBLIC          -> true
+            PACKAGE_PRIVATE -> packagePrivateMethodIsAccessibleByCaller(method, caller)
+            PROTECTED       -> protectedMethodIsAccessibleByCaller(method, caller)
+            PRIVATE         -> false
+        }
+    }
+
+    private fun packagePrivateMethodIsAccessibleByCaller(method: ResolvedMethodLikeDeclaration, caller: ResolvedReferenceTypeDeclaration): Boolean {
+        return method.packageName == caller.packageName
+    }
+
+    private fun protectedMethodIsAccessibleByCaller(method: ResolvedMethodLikeDeclaration, caller: ResolvedReferenceTypeDeclaration): Boolean {
+        if (packagePrivateMethodIsAccessibleByCaller(method, caller)) return true
+        return try {
+            method.declaringType().isAssignableBy(caller)
+        } catch (e: UnsolvedSymbolException) {
+            false
         }
     }
 
@@ -137,7 +216,14 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
     }
 
     private fun isLegalUnit(identifier: String): Boolean {
-        return isLegalUnit(identifier, basePackageIdentifier) && !identifier.substringAfterLast('.').contains(JavaGenericsStatement)
+        return isLegalUnit(identifier, basePackageIdentifier) && !identifier.substringAfterLast('.').contains(JavaGenericsStatement) && !identifier.contains('-')
+    }
+
+    private fun isLegalPair(unitA: Unit, unitB: Unit): Boolean {
+        if (unitA == unitB) return false
+        if (unitA.toString().substringBeforeLast('.') == unitB.toString()) return false
+        if (unitB.toString().substringBeforeLast('.') == unitA.toString()) return false
+        return true
     }
 
     companion object {
@@ -145,13 +231,15 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         private const val JavaFileExtension = "java"
         private const val JavaTestDirectory = "/test/"
         private val JavaGenericsStatement = Regex("[<>]")
+        private val JavaObjectClassMethodsSignatures: Set<String> = setOf("clone()", "equals(java.lang.Object)", "finalize()", "getClass()", "hashCode()", "notify()", "notifyAll()", "toString()", "wait()", "wait(long)", "wait(long, int)")
         private const val LowMemoryPercentageThreshold = 15
     }
 
     internal data class ClassDeclaration(
         val identifier: String,
-        val characters: Int? = null
+        val characters: Int? = null,
+        val declaration: ResolvedReferenceTypeDeclaration? = null
     ) {
-        constructor(declaration: ClassOrInterfaceDeclaration) : this(identifier = declaration.fullyQualifiedName.get(), characters = declaration.toString().countJavaSourceCharacters())
+        constructor(declaration: ClassOrInterfaceDeclaration) : this(identifier = declaration.fullyQualifiedName.get(), characters = declaration.toString().countJavaSourceCharacters(), declaration = declaration.resolve())
     }
 }

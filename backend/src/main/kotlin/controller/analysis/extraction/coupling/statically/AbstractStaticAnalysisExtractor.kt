@@ -5,6 +5,9 @@ import controller.analysis.extraction.ExtractorCompanion
 
 
 abstract class AbstractStaticAnalysisExtractor : AbstractExtractor() {
+
+    internal val responseForAClassPairMap: MutableMap<ResponseForAClassIdentifiers, ResponseForAClassPair> = mutableMapOf()
+
     companion object : ExtractorCompanion {
         const val StaticAnalysisDirectory = "static"
 
