@@ -1,7 +1,8 @@
 FROM openjdk:11
 
 # Install dependencies
-RUN apt update && apt install -y maven build-essential libgomp1
+RUN apt update
+RUN apt install -y maven build-essential libgomp1
 
 # Building the JAR
 RUN mkdir /build
