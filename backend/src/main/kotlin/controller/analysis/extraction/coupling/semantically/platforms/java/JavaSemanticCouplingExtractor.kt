@@ -83,7 +83,7 @@ class JavaSemanticCouplingExtractor(private val projectName: String, private val
     }
 
     private fun convertFileNameToIdentifier(filePath: String): String {
-        var identifer: String = filePath.replace('/', '.').substringAfterLast("$projectName.").substringAfterLast(basePackageIdentifier).replace(".$JavaFileExtension", "")
+        var identifer: String = filePath.replace('/', '.').substringAfter("$projectName.").substringAfterLast(basePackageIdentifier).replace(".$JavaFileExtension", "")
         if (!identifer.startsWith('.')) identifer = ".$identifer"
         identifer = basePackageIdentifier + identifer
         return identifer
