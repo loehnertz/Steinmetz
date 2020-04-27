@@ -73,6 +73,11 @@ class AnalysisController {
         return ProjectResponse(graph = retrieveGraph(projectName), metrics = retrieveMetrics(projectName))
     }
 
+    fun deleteProject(projectName: String): String {
+        val result: Result = Neo4jConnector.executeCypher("MATCH (n { projectName: '$projectName' }) DETACH DELETE n")
+        return result.firstOrNull()?.values?.first().toString()
+    }
+
     fun clusterGraph(projectName: String, clusteringAlgorithm: ClusteringAlgorithm, chosenClusteringMetric: KProperty1<ClusteringQuality, *>, edgeAttributeWeights: EdgeAttributeWeights, maxIterations: Int): ProjectResponse {
         val projectGraph: Graph = retrieveGraph(projectName)
         val clusterer: Clusterer = Clusterer(projectGraph, projectName, chosenClusteringMetric, edgeAttributeWeights).also { it.applyEdgeWeighting() }

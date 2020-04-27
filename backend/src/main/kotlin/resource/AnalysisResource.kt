@@ -20,10 +20,14 @@ import model.graph.EdgeAttributeWeights.Companion.retrieveEdgeAttributeWeightsFr
 import model.metrics.ClusteringQuality
 import model.metrics.ClusteringQuality.Companion.getClusteringMetricByName
 import model.resource.ProjectRequest
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import kotlin.reflect.KProperty1
 
 
 fun Route.analysis(controller: AnalysisController) {
+    val logger: Logger = LoggerFactory.getLogger(Route::class.java)
+
     route("/analysis") {
         post("/") {
             val request: ProjectRequest = controller.handleNewProjectUploads(call.receiveMultipart())
@@ -33,6 +37,7 @@ fun Route.analysis(controller: AnalysisController) {
             } catch (e: ProjectAlreadyExistsException) {
                 call.respond(HttpStatusCode.Conflict, e.message)
             } catch (e: Exception) {
+                logger.error(e.localizedMessage)
                 call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
             }
         }
@@ -41,6 +46,7 @@ fun Route.analysis(controller: AnalysisController) {
             try {
                 call.respond(controller.retrieveAllProjectNames())
             } catch (e: Exception) {
+                logger.error(e.localizedMessage)
                 call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
             }
         }
@@ -53,6 +59,7 @@ fun Route.analysis(controller: AnalysisController) {
             } catch (e: ProjectDoesNotExistException) {
                 call.respond(HttpStatusCode.NotFound, e.message)
             } catch (e: Exception) {
+                logger.error(e.localizedMessage)
                 call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
             }
         }
@@ -69,6 +76,7 @@ fun Route.analysis(controller: AnalysisController) {
             } catch (e: ProjectDoesNotExistException) {
                 call.respond(HttpStatusCode.NotFound, e.message)
             } catch (e: Exception) {
+                logger.error(e.localizedMessage)
                 call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
             }
         }
