@@ -1,6 +1,9 @@
 package utility
 
+import kotlinx.coroutines.ExecutorCoroutineDispatcher
+import kotlinx.coroutines.asCoroutineDispatcher
 import java.io.File
+import java.util.concurrent.Executors
 import kotlin.math.pow
 
 
@@ -28,6 +31,8 @@ object Utilities {
         }
         return decimalNumber
     }
+
+    fun createCoroutineDispatcher(): ExecutorCoroutineDispatcher = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()).asCoroutineDispatcher()
 
     fun heapSizeInMb(): Int = (Runtime.getRuntime().totalMemory() / 1e+6).toInt()
 

@@ -1,15 +1,15 @@
 package utility
 
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import java.util.*
 
 
 fun <T : Any> Optional<T>.toNullable(): T? = this.orElse(null)
 
-suspend fun <A, B> Iterable<A>.mapConcurrently(transform: suspend (A) -> B): List<B> = coroutineScope {
-    map { async { transform(it) } }.awaitAll()
+suspend fun <A, B> Iterable<A>.mapConcurrently(dispatcher: CoroutineDispatcher = Dispatchers.Default, transform: suspend (A) -> B): List<B> {
+    return coroutineScope {
+        map { async(dispatcher) { transform(it) } }.awaitAll()
+    }
 }
 
 fun String.isSingleLineJavaCommentLine(): Boolean = this.trim().startsWith(SinglelineCommentToken)

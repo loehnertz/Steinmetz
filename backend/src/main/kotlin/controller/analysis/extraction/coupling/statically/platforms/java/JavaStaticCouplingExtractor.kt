@@ -17,27 +17,25 @@ import controller.analysis.extraction.coupling.statically.AbstractStaticAnalysis
 import controller.analysis.extraction.coupling.statically.ResponseForAClassIdentifiers
 import controller.analysis.extraction.coupling.statically.ResponseForAClassMetrics
 import controller.analysis.extraction.coupling.statically.ResponseForAClassPair
+import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import model.graph.*
 import model.graph.Unit
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import utility.ArchiveExtractor
-import utility.Utilities
-import utility.countJavaSourceCharacters
-import utility.toNullable
+import utility.*
 import java.io.File
 import java.util.*
 import com.github.javaparser.ast.Node as AstNode
 
 
 class JavaStaticCouplingExtractor(projectName: String, private val basePackageIdentifier: String, private val archive: File) : AbstractStaticAnalysisExtractor() {
-
     private val logger: Logger = LoggerFactory.getLogger(JavaStaticCouplingExtractor::class.java)
 
     private val basePath: String = buildBasePath(PlatformIdentifier, projectName)
     private val staticAnalysisBasePath = "$basePath/$StaticAnalysisDirectory"
     private val unarchiver = ArchiveExtractor(".$JavaFileExtension", staticAnalysisBasePath)
+    private val dispatcher: ExecutorCoroutineDispatcher = Utilities.createCoroutineDispatcher()
 
     override fun extract(): Graph {
         val unarchivedDirectory: File = unarchiver.unpackAnalysisArchive(archive)
@@ -67,11 +65,10 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .mapNotNull { it.result.toNullable() }
             .also { logger.info("Parsed ASTs") }
             .flatMap { it.types }
-            .asSequence()
             .mapNotNull { it as? ClassOrInterfaceDeclaration }
             .filter { isLegalUnit(it.fullyQualifiedName.get()) }
-            .map { ClassDeclaration(it) to retrieveReferencedTypes(it) }
-            .map { retrieveCallPairs(it) }
+            .mapConcurrently(dispatcher) { ClassDeclaration(it) to retrieveReferencedTypes(it) }
+            .mapConcurrently(dispatcher) { retrieveCallPairs(it) }
             .flatten()
             .toSet()
             .also { logger.info("Retrieved call pairs") }
