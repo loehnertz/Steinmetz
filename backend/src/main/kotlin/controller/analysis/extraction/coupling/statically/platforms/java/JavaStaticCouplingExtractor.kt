@@ -167,7 +167,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
     private fun <T> resolveType(resolvable: Resolvable<T>): ResolvedMethodLikeDeclaration? {
         return try {
             resolvable.resolve() as? ResolvedMethodLikeDeclaration
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             null
         }
     }
