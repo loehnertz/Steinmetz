@@ -37,7 +37,7 @@ fun Route.analysis(controller: AnalysisController) {
             } catch (e: ProjectAlreadyExistsException) {
                 call.respond(HttpStatusCode.Conflict, e.message)
             } catch (e: Exception) {
-                logger.error(e.localizedMessage)
+                logger.error(e.localizedMessage, e.stackTrace)
                 call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
             }
         }
@@ -46,7 +46,7 @@ fun Route.analysis(controller: AnalysisController) {
             try {
                 call.respond(controller.retrieveAllProjectNames())
             } catch (e: Exception) {
-                logger.error(e.localizedMessage)
+                logger.error(e.localizedMessage, e.stackTrace)
                 call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
             }
         }
@@ -59,7 +59,7 @@ fun Route.analysis(controller: AnalysisController) {
             } catch (e: ProjectDoesNotExistException) {
                 call.respond(HttpStatusCode.NotFound, e.message)
             } catch (e: Exception) {
-                logger.error(e.localizedMessage)
+                logger.error(e.localizedMessage, e.stackTrace)
                 call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
             }
         }
@@ -76,7 +76,7 @@ fun Route.analysis(controller: AnalysisController) {
             } catch (e: ProjectDoesNotExistException) {
                 call.respond(HttpStatusCode.NotFound, e.message)
             } catch (e: Exception) {
-                logger.error(e.localizedMessage)
+                logger.error(e.localizedMessage, e.stackTrace)
                 call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
             }
         }
