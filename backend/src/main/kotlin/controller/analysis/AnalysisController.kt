@@ -33,10 +33,11 @@ import org.neo4j.ogm.cypher.Filter
 import org.neo4j.ogm.model.Result
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import utility.HeapSizeRecorder
 import utility.Neo4jConnector
 import utility.Utilities
-import utility.Utilities.heapSizeInMb
 import java.io.File
+import java.time.Duration
 import kotlin.math.ceil
 import kotlin.math.sqrt
 import kotlin.reflect.KProperty1
@@ -48,6 +49,7 @@ class AnalysisController {
 
     fun insertProject(projectRequest: ProjectRequest): ProjectResponse {
         val startTime: Long = System.currentTimeMillis()
+        val heapSizeRecorder: HeapSizeRecorder = HeapSizeRecorder(Duration.ofSeconds(15)).apply { start() }
         return GraphInserter(
             projectName = projectRequest.projectName,
             projectPlatform = projectRequest.projectPlatform,
@@ -58,7 +60,7 @@ class AnalysisController {
             semanticAnalysisFile = projectRequest.semanticAnalysisFile,
             evolutionaryAnalysisFile = projectRequest.evolutionaryAnalysisFile
         ).insert().also {
-            logger.info("The analysis of project '${projectRequest.projectName}' took ${Utilities.calculateRuntimeDuration(startTime)} seconds and allocated ${heapSizeInMb()} megabytes of heap space.")
+            logger.info("The analysis of project '${projectRequest.projectName}' took ${Utilities.calculateRuntimeDuration(startTime)} seconds and allocated a maximum of ${heapSizeRecorder.stopAndRetrieveMax()} megabytes of heap space.")
         }
     }
 
