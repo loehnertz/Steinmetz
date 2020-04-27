@@ -18,6 +18,7 @@ import org.neo4j.ogm.cypher.Filter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import utility.Neo4jConnector
+import utility.Utilities.calculateRuntimeDuration
 import java.io.File
 
 
@@ -45,23 +46,28 @@ class GraphInserter(
     fun insert(): ProjectResponse {
         logger.info("Started analysis of project '$projectName'")
 
-        staticAnalysisGraph = processStaticAnalysisData()
+        val staticStartTime: Long = System.currentTimeMillis()
+        staticAnalysisGraph = processStaticAnalysisData().also { logger.info("The static analysis of project '$projectName' took ${calculateRuntimeDuration(staticStartTime)} seconds") }
 
+        val dynamicStartTime: Long = System.currentTimeMillis()
         dynamicCouplingGraph = if (dynamicAnalysisFile != null) {
-            processDynamicCouplingData()
+            processDynamicCouplingData().also { logger.info("The dynamic analysis of project '$projectName' took ${calculateRuntimeDuration(dynamicStartTime)} seconds") }
         } else {
             Graph()
         }
 
         val baseGraph: Graph = mergeStaticAndDynamicCouplingGraphs()
 
+        val semanticStartTime: Long = System.currentTimeMillis()
         semanticCouplingGraph = if (semanticAnalysisFile != null) {
-            processSemanticCouplingData(baseGraph.edges)
+            processSemanticCouplingData(baseGraph.edges).also { logger.info("The semantic analysis of project '$projectName' took ${calculateRuntimeDuration(semanticStartTime)} seconds") }
         } else {
             Graph()
         }
+
+        val evolutionaryStartTime: Long = System.currentTimeMillis()
         evolutionaryCouplingGraph = if (evolutionaryAnalysisFile != null) {
-            processEvolutionaryCouplingData()
+            processEvolutionaryCouplingData().also { logger.info("The evolutionary analysis of project '$projectName' took ${calculateRuntimeDuration(evolutionaryStartTime)} seconds") }
         } else {
             Graph()
         }
@@ -71,12 +77,12 @@ class GraphInserter(
 
         logger.info("Inserting analysis data into database").also { System.gc() }
 
+        val databaseStartTime: Long = System.currentTimeMillis()
         insertMetricsIntoDatabase(metrics).also { logger.info("Inserted metrics into the database") }
         insertGraphIntoDatabase(finalGraph).also { logger.info("Inserted coupling graph into the database") }
+        logger.info("The database insertion of project '$projectName' took ${calculateRuntimeDuration(databaseStartTime)} seconds")
 
-        logger.info("Finished analysis of project '$projectName'")
-
-        return ProjectResponse(graph = finalGraph, metrics = metrics)
+        return ProjectResponse(graph = finalGraph, metrics = metrics).also { logger.info("Finished analysis of project '$projectName'") }
     }
 
     private fun processStaticAnalysisData(): Graph {

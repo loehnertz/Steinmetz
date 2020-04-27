@@ -34,6 +34,8 @@ import org.neo4j.ogm.model.Result
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import utility.Neo4jConnector
+import utility.Utilities
+import utility.Utilities.heapSizeInMb
 import java.io.File
 import kotlin.math.ceil
 import kotlin.math.sqrt
@@ -56,7 +58,7 @@ class AnalysisController {
             semanticAnalysisFile = projectRequest.semanticAnalysisFile,
             evolutionaryAnalysisFile = projectRequest.evolutionaryAnalysisFile
         ).insert().also {
-            logger.info("The analysis of project '${projectRequest.projectName}' took ${(System.currentTimeMillis() - startTime) / 1000} seconds")
+            logger.info("The analysis of project '${projectRequest.projectName}' took ${Utilities.calculateRuntimeDuration(startTime)} seconds and allocated ${heapSizeInMb()} megabytes of heap space.")
         }
     }
 

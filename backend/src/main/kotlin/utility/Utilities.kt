@@ -29,5 +29,9 @@ object Utilities {
         return decimalNumber
     }
 
+    fun heapSizeInMb(): Int = (Runtime.getRuntime().totalMemory() / 1e+6).toInt()
+
     fun freeMemoryPercentage(): Int = ((Runtime.getRuntime().freeMemory().toDouble() / Runtime.getRuntime().maxMemory().toDouble()) * 100).toInt()
+
+    fun calculateRuntimeDuration(startTime: Long): Int = ((System.currentTimeMillis() - startTime) / 1000).toInt()
 }
