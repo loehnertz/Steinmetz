@@ -67,17 +67,15 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .mapNotNull { it.result.toNullable() }
             .also { logger.info("Parsed ASTs") }
             .flatMap { it.types }
+            .asSequence()
             .mapNotNull { it as? ClassOrInterfaceDeclaration }
             .filter { isLegalUnit(it.fullyQualifiedName.get()) }
             .map { ClassDeclaration(it) to retrieveReferencedTypes(it) }
-            .also { logger.info("Retrieved referenced types") }
             .map { retrieveCallPairs(it) }
-            .also { logger.info("Retrieved call pairs") }
+            .also { checkToFreeMemory() }
             .flatten()
             .toSet()
             .also { dispatcher.close() }
-            .also { JavaParserFacade.clearInstances() }
-            .also { System.gc() }
     }
 
     private fun convertReferencePairsToGraph(referencePairs: Set<Pair<ClassDeclaration, ClassDeclaration>>): Graph {
@@ -102,29 +100,28 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         return graph
     }
 
-    private fun retrieveCallPairs(classReferences: Pair<ClassDeclaration, List<Pair<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>>>): List<Pair<ClassDeclaration, ClassDeclaration>> {
-        val classIdentifier: String = classReferences.first.identifier
-
-        for (referencedType: Pair<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics> in classReferences.second) {
-            val referencedTypeIdentifier: String = referencedType.first.qualifiedName
-
-            if (classIdentifier == referencedTypeIdentifier) continue
-
-            val responseForAClassIdentifiers = ResponseForAClassIdentifiers(classAIdentifier = classIdentifier, classBIdentifier = referencedTypeIdentifier)
-            val responseForAClassPair: ResponseForAClassPair? = responseForAClassPairMap[responseForAClassIdentifiers]
-            if (responseForAClassPair == null) {
-                val classAMetrics = ResponseForAClassMetrics(accessibleMethods = countAccessibleMethodLikeDeclarations(referencedType.first, classReferences.first.declaration!!))
-                val classBMetrics: ResponseForAClassMetrics = referencedType.second
-                responseForAClassPairMap[responseForAClassIdentifiers] = ResponseForAClassPair(classIdentifiers = responseForAClassIdentifiers, classAMetrics = classAMetrics, classBMetrics = classBMetrics)
-            } else {
-                responseForAClassPair.updateClassMetrics(referencedTypeIdentifier, referencedType.second)
-            }
-        }
-
-        return classReferences.second.map { it.first.qualifiedName }.filter { it != classIdentifier }.map { classReferences.first to ClassDeclaration(identifier = it) }.also { checkToFreeMemory() }
+    private fun retrieveCallPairs(classReferences: Pair<ClassDeclaration, Map<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>>): List<Pair<ClassDeclaration, ClassDeclaration>> = runBlocking {
+        classReferences.second.forEachConcurrently { updateResponseForClassMetrics(classReferences.first, it) }
+        return@runBlocking classReferences.second.map { it.key.qualifiedName }.filter { it != classReferences.first.identifier }.map { classReferences.first to ClassDeclaration(identifier = it) }
     }
 
-    private fun retrieveReferencedTypes(caller: ClassOrInterfaceDeclaration): List<Pair<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>> = runBlocking {
+    private fun updateResponseForClassMetrics(caller: ClassDeclaration, callee: Map.Entry<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>) {
+        val referencedTypeIdentifier: String = callee.key.qualifiedName
+
+        if (caller.identifier == referencedTypeIdentifier) return
+
+        val responseForAClassIdentifiers = ResponseForAClassIdentifiers(classAIdentifier = caller.identifier, classBIdentifier = referencedTypeIdentifier)
+        val responseForAClassPair: ResponseForAClassPair? = responseForAClassPairMap[responseForAClassIdentifiers]
+        if (responseForAClassPair == null) {
+            val classAMetrics = ResponseForAClassMetrics(accessibleMethods = countAccessibleMethodLikeDeclarations(callee.key, caller.declaration!!))
+            val classBMetrics: ResponseForAClassMetrics = callee.value
+            responseForAClassPairMap[responseForAClassIdentifiers] = ResponseForAClassPair(classIdentifiers = responseForAClassIdentifiers, classAMetrics = classAMetrics, classBMetrics = classBMetrics)
+        } else {
+            responseForAClassPair.updateClassMetrics(referencedTypeIdentifier, callee.value)
+        }
+    }
+
+    private fun retrieveReferencedTypes(caller: ClassOrInterfaceDeclaration): Map<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics> = runBlocking {
         val callerType: ResolvedReferenceTypeDeclaration = caller.resolve()!!
         val objectCreations: MutableSet<ObjectCreationExpr> = mutableSetOf()
         val methodCalls: MutableSet<MethodCallExpr> = mutableSetOf()
@@ -142,15 +139,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         return@runBlocking retrieveInvocations(objectCreations, methodCalls)
             .groupBy({ it.declaringType() }, { it })
             .filter { isLegalUnit(it.key.qualifiedName) }
-            .map {
-                Pair(
-                    it.key,
-                    ResponseForAClassMetrics(
-                        invokedMethods = it.value.count(),
-                        accessibleMethods = countAccessibleMethodLikeDeclarations(callerType, it.key)
-                    )
-                )
-            }
+            .mapConcurrently(dispatcher) { it.key to ResponseForAClassMetrics(invokedMethods = it.value.count(), accessibleMethods = countAccessibleMethodLikeDeclarations(callerType, it.key)) }
     }
 
     private fun <T> resolveType(resolvable: Resolvable<T>): ResolvedMethodLikeDeclaration? {
@@ -198,7 +187,9 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
     }
 
     private fun checkToFreeMemory() {
-        if (Utilities.freeMemoryPercentage() <= LowMemoryPercentageThreshold) {
+        val freeMemoryPercentage: Int = Utilities.freeMemoryPercentage()
+        if (freeMemoryPercentage <= LowMemoryPercentageThreshold) {
+            logger.info("Low free heap space percentage ($freeMemoryPercentage%) triggered forced garbage collection")
             JavaParserFacade.clearInstances()
             System.gc()
         }
