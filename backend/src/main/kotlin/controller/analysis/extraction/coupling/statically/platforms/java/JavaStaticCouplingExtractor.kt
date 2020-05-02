@@ -18,6 +18,8 @@ import controller.analysis.extraction.coupling.statically.ResponseForAClassIdent
 import controller.analysis.extraction.coupling.statically.ResponseForAClassMetrics
 import controller.analysis.extraction.coupling.statically.ResponseForAClassPair
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import model.graph.*
 import model.graph.Unit
@@ -51,7 +53,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
 
     override fun normalizeUnit(unit: Unit): Unit = AbstractExtractor.normalizeUnit(unit)
 
-    private fun extractReferencePairs(unarchivedDirectory: File): Set<Pair<ClassDeclaration, ClassDeclaration>> = runBlocking {
+    private fun extractReferencePairs(unarchivedDirectory: File): Set<Pair<ClassDeclaration, ClassDeclaration>> {
         val projectRoot: ProjectRoot = SymbolSolverCollectionStrategy().collect(unarchivedDirectory.toPath())
         projectRoot.sourceRoots.forEach { sourceRoot ->
             sourceRoot.parserConfiguration.isStoreTokens = false
@@ -59,7 +61,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             sourceRoot.parserConfiguration.isIgnoreAnnotationsWhenAttributingComments = false
         }
 
-        return@runBlocking projectRoot.sourceRoots
+        return projectRoot.sourceRoots
             .filter { !it.root.toString().contains(JavaTestDirectory) }
             .flatMap { it.tryToParse() }
             .mapNotNull { it.result.toNullable() }
@@ -67,14 +69,15 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .flatMap { it.types }
             .mapNotNull { it as? ClassOrInterfaceDeclaration }
             .filter { isLegalUnit(it.fullyQualifiedName.get()) }
-            .mapConcurrently(dispatcher) { ClassDeclaration(it) to retrieveReferencedTypes(it) }
-            .mapConcurrently(dispatcher) { retrieveCallPairs(it) }
+            .map { ClassDeclaration(it) to retrieveReferencedTypes(it) }
+            .also { logger.info("Retrieved referenced types") }
+            .map { retrieveCallPairs(it) }
+            .also { logger.info("Retrieved call pairs") }
             .flatten()
             .toSet()
-            .also { logger.info("Retrieved call pairs") }
+            .also { dispatcher.close() }
             .also { JavaParserFacade.clearInstances() }
             .also { System.gc() }
-            .also { logger.info("Cleared parsing caches") }
     }
 
     private fun convertReferencePairsToGraph(referencePairs: Set<Pair<ClassDeclaration, ClassDeclaration>>): Graph {
@@ -121,7 +124,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         return classReferences.second.map { it.first.qualifiedName }.filter { it != classIdentifier }.map { classReferences.first to ClassDeclaration(identifier = it) }.also { checkToFreeMemory() }
     }
 
-    private fun retrieveReferencedTypes(caller: ClassOrInterfaceDeclaration): List<Pair<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>> {
+    private fun retrieveReferencedTypes(caller: ClassOrInterfaceDeclaration): List<Pair<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>> = runBlocking {
         val callerType: ResolvedReferenceTypeDeclaration = caller.resolve()!!
         val objectCreations: MutableSet<ObjectCreationExpr> = mutableSetOf()
         val methodCalls: MutableSet<MethodCallExpr> = mutableSetOf()
@@ -136,20 +139,9 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             node.childNodes.forEach { queue.add(it) }
         }
 
-        val objectCreationMap: Map<ResolvedReferenceTypeDeclaration, List<ResolvedMethodLikeDeclaration>> = objectCreations
-            .mapNotNull { resolveType(it) }
-            .distinct()
+        return@runBlocking retrieveInvocations(objectCreations, methodCalls)
             .groupBy({ it.declaringType() }, { it })
             .filter { isLegalUnit(it.key.qualifiedName) }
-        val methodCallMap: Map<ResolvedReferenceTypeDeclaration, List<ResolvedMethodLikeDeclaration>> = methodCalls
-            .mapNotNull { resolveType(it) }
-            .distinct()
-            .groupBy({ it.declaringType() }, { it })
-            .filter { isLegalUnit(it.key.qualifiedName) }
-
-        return (objectCreationMap.keys + methodCallMap.keys).associateWith {
-            setOf(objectCreationMap[it], methodCallMap[it]).filterNotNull().flatten()
-        }
             .map {
                 Pair(
                     it.key,
@@ -167,6 +159,12 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         } catch (e: Throwable) {
             null
         }
+    }
+
+    private suspend fun retrieveInvocations(objectCreations: Iterable<ObjectCreationExpr>, methodCalls: Iterable<MethodCallExpr>): Set<ResolvedMethodLikeDeclaration> {
+        val deferredObjectCretations = GlobalScope.async { objectCreations.mapConcurrently(dispatcher) { resolveType(it) } }
+        val deferredMethodCalls = GlobalScope.async { methodCalls.mapConcurrently(dispatcher) { resolveType(it) } }
+        return (deferredObjectCretations.await() + deferredMethodCalls.await()).filterNotNull().toSet()
     }
 
     private fun countAccessibleMethodLikeDeclarations(caller: ResolvedReferenceTypeDeclaration, callee: ResolvedReferenceTypeDeclaration): Int {
