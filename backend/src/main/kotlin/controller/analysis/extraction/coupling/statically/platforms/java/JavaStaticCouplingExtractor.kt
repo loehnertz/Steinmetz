@@ -46,7 +46,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
 
         val graph: Graph = convertReferencePairsToGraph(referencePairs)
 
-        cleanup(staticAnalysisBasePath)
+        cleanup(staticAnalysisBasePath).also { checkToFreeMemory() }
 
         return graph.also { logger.info("Constructed static coupling graph") }
     }
@@ -66,13 +66,14 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .flatMap { it.tryToParse() }
             .mapNotNull { it.result.toNullable() }
             .also { logger.info("Parsed ASTs") }
+            .also { checkToFreeMemory() }
             .flatMap { it.types }
-            .asSequence()
             .mapNotNull { it as? ClassOrInterfaceDeclaration }
             .filter { isLegalUnit(it.fullyQualifiedName.get()) }
             .map { ClassDeclaration(it) to retrieveReferencedTypes(it) }
+            .also { logger.info("Retrieved referenced types") }
             .map { retrieveCallPairs(it) }
-            .also { checkToFreeMemory() }
+            .also { logger.info("Retrieved call pairs") }
             .flatten()
             .toSet()
             .also { dispatcher.close() }
