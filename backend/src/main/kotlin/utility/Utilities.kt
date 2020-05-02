@@ -3,6 +3,8 @@ package utility
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.util.concurrent.Executors
 import kotlin.math.pow
 
@@ -31,6 +33,8 @@ object Utilities {
         }
         return decimalNumber
     }
+
+    fun retrieveFormattedStacktrace(e: Exception): String = StringWriter().also { e.printStackTrace(PrintWriter(it)) }.toString()
 
     fun createCoroutineDispatcher(): ExecutorCoroutineDispatcher = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()).asCoroutineDispatcher()
 

@@ -22,6 +22,7 @@ import model.metrics.ClusteringQuality.Companion.getClusteringMetricByName
 import model.resource.ProjectRequest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import utility.Utilities.retrieveFormattedStacktrace
 import kotlin.reflect.KProperty1
 
 
@@ -37,7 +38,7 @@ fun Route.analysis(controller: AnalysisController) {
             } catch (e: ProjectAlreadyExistsException) {
                 call.respond(HttpStatusCode.Conflict, e.message)
             } catch (e: Exception) {
-                logger.error("${e.localizedMessage}: ${e.stackTrace}")
+                logger.error("${e.message}:\n${retrieveFormattedStacktrace(e)}")
                 call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
             }
         }
@@ -46,7 +47,7 @@ fun Route.analysis(controller: AnalysisController) {
             try {
                 call.respond(controller.retrieveAllProjectNames())
             } catch (e: Exception) {
-                logger.error("${e.localizedMessage}: ${e.stackTrace}")
+                logger.error("${e.message}:\n${retrieveFormattedStacktrace(e)}")
                 call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
             }
         }
@@ -59,7 +60,7 @@ fun Route.analysis(controller: AnalysisController) {
             } catch (e: ProjectDoesNotExistException) {
                 call.respond(HttpStatusCode.NotFound, e.message)
             } catch (e: Exception) {
-                logger.error("${e.localizedMessage}: ${e.stackTrace}")
+                logger.error("${e.message}:\n${retrieveFormattedStacktrace(e)}")
                 call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
             }
         }
@@ -76,7 +77,7 @@ fun Route.analysis(controller: AnalysisController) {
             } catch (e: ProjectDoesNotExistException) {
                 call.respond(HttpStatusCode.NotFound, e.message)
             } catch (e: Exception) {
-                logger.error("${e.localizedMessage}: ${e.stackTrace}")
+                logger.error("${e.message}:\n${retrieveFormattedStacktrace(e)}")
                 call.respond(HttpStatusCode.InternalServerError, "An unidentified error occurred: ${e.message}")
             }
         }
