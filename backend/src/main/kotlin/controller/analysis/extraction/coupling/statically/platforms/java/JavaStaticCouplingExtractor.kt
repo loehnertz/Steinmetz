@@ -143,18 +143,18 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .mapConcurrently(dispatcher) { it.key to ResponseForAClassMetrics(invokedMethods = it.value.count(), accessibleMethods = countAccessibleMethodLikeDeclarations(callerType, it.key)) }
     }
 
+    private suspend fun retrieveInvocations(objectCreations: Iterable<ObjectCreationExpr>, methodCalls: Iterable<MethodCallExpr>): Set<ResolvedMethodLikeDeclaration> {
+        val deferredObjectCretations = GlobalScope.async { objectCreations.mapConcurrently(dispatcher) { resolveType(it) } }
+        val deferredMethodCalls = GlobalScope.async { methodCalls.mapConcurrently(dispatcher) { resolveType(it) } }
+        return (deferredObjectCretations.await() + deferredMethodCalls.await()).filterNotNull().toSet()
+    }
+
     private fun <T> resolveType(resolvable: Resolvable<T>): ResolvedMethodLikeDeclaration? {
         return try {
             resolvable.resolve() as? ResolvedMethodLikeDeclaration
         } catch (e: Throwable) {
             null
         }
-    }
-
-    private suspend fun retrieveInvocations(objectCreations: Iterable<ObjectCreationExpr>, methodCalls: Iterable<MethodCallExpr>): Set<ResolvedMethodLikeDeclaration> {
-        val deferredObjectCretations = GlobalScope.async { objectCreations.mapConcurrently(dispatcher) { resolveType(it) } }
-        val deferredMethodCalls = GlobalScope.async { methodCalls.mapConcurrently(dispatcher) { resolveType(it) } }
-        return (deferredObjectCretations.await() + deferredMethodCalls.await()).filterNotNull().toSet()
     }
 
     private fun countAccessibleMethodLikeDeclarations(caller: ResolvedReferenceTypeDeclaration, callee: ResolvedReferenceTypeDeclaration): Int {
