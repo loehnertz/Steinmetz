@@ -22,6 +22,9 @@
             Average Coupling Modularity: {{ nonNullAverageCouplingModularity }}
         </p>
         <p :style="{ fontSize: fontSize + 'em' }">
+            Static Coupling Modularity: {{ nonNullStaticCouplingModularity }}
+        </p>
+        <p :style="{ fontSize: fontSize + 'em' }">
             Dynamic Coupling Modularity: {{ nonNullDynamicCouplingModularity }}
         </p>
         <p :style="{ fontSize: fontSize + 'em' }">
@@ -36,6 +39,9 @@
         </p>
         <p :style="{ fontSize: fontSize + 'em' }">
             Average Mean Cluster Factor: {{ nonNullAverageMeanClusterFactor }}
+        </p>
+        <p :style="{ fontSize: fontSize + 'em' }">
+            Static Mean Cluster Factor: {{ nonNullStaticMeanClusterFactor }}
         </p>
         <p :style="{ fontSize: fontSize + 'em' }">
             Dynamic Mean Cluster Factor: {{ nonNullDynamicMeanClusterFactor }}
@@ -71,6 +77,34 @@
                 if (!this.percentageInterClusterEdgeWeights) return NotAvailableLabel;
                 return this.percentageInterClusterEdgeWeights;
             },
+            nonNullStaticCouplingModularity: function () {
+                if (!this.staticCouplingModularity) return NotAvailableLabel;
+                return Number(this.staticCouplingModularity).toFixed(2);
+            },
+            nonNullDynamicCouplingModularity: function () {
+                if (!this.dynamicCouplingModularity) return NotAvailableLabel;
+                return Number(this.dynamicCouplingModularity).toFixed(2);
+            },
+            nonNullSemanticCouplingModularity: function () {
+                if (!this.semanticCouplingModularity) return NotAvailableLabel;
+                return Number(this.semanticCouplingModularity).toFixed(2);
+            },
+            nonNullEvolutionaryCouplingModularity: function () {
+                if (!this.evolutionaryCouplingModularity) return NotAvailableLabel;
+                return Number(this.evolutionaryCouplingModularity).toFixed(2);
+            },
+            nonNullTotalCouplingModularity: function () {
+                if (!this.totalCouplingModularity) return NotAvailableLabel;
+                return Number(this.totalCouplingModularity).toFixed(2);
+            },
+            nonNullAverageCouplingModularity: function () {
+                if (!this.averageCouplingModularity) return NotAvailableLabel;
+                return Number(this.averageCouplingModularity).toFixed(2);
+            },
+            nonNullStaticMeanClusterFactor: function () {
+                if (!this.staticMeanClusterFactor) return NotAvailableLabel;
+                return Number(this.staticMeanClusterFactor).toFixed(2);
+            },
             nonNullDynamicMeanClusterFactor: function () {
                 if (!this.dynamicMeanClusterFactor) return NotAvailableLabel;
                 return Number(this.dynamicMeanClusterFactor).toFixed(2);
@@ -91,26 +125,6 @@
                 if (!this.totalMeanClusterFactor) return NotAvailableLabel;
                 return Number(this.totalMeanClusterFactor).toFixed(2);
             },
-            nonNullTotalCouplingModularity: function () {
-                if (!this.totalCouplingModularity) return NotAvailableLabel;
-                return Number(this.totalCouplingModularity).toFixed(2);
-            },
-            nonNullAverageCouplingModularity: function () {
-                if (!this.averageCouplingModularity) return NotAvailableLabel;
-                return Number(this.averageCouplingModularity).toFixed(2);
-            },
-            nonNullDynamicCouplingModularity: function () {
-                if (!this.totalCouplingModularity) return NotAvailableLabel;
-                return Number(this.dynamicCouplingModularity).toFixed(2);
-            },
-            nonNullSemanticCouplingModularity: function () {
-                if (!this.totalCouplingModularity) return NotAvailableLabel;
-                return Number(this.semanticCouplingModularity).toFixed(2);
-            },
-            nonNullEvolutionaryCouplingModularity: function () {
-                if (!this.totalCouplingModularity) return NotAvailableLabel;
-                return Number(this.evolutionaryCouplingModularity).toFixed(2);
-            },
         },
         props: {
             fontSize: Number,
@@ -120,11 +134,13 @@
             amountOfInterClusterEdges: Number,
             accumulatedInterClusterEdgeWeights: Number,
             percentageInterClusterEdgeWeights: Number,
+            staticCouplingModularity: Number,
             dynamicCouplingModularity: Number,
             semanticCouplingModularity: Number,
             evolutionaryCouplingModularity: Number,
             averageCouplingModularity: Number,
             totalCouplingModularity: Number,
+            staticMeanClusterFactor: Number,
             dynamicMeanClusterFactor: Number,
             semanticMeanClusterFactor: Number,
             evolutionaryMeanClusterFactor: Number,

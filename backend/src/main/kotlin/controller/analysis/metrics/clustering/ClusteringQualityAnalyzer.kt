@@ -13,15 +13,17 @@ class ClusteringQualityAnalyzer(private val clusteredGraph: Graph) {
         val amountOfClusters: Int = clusteredGraph.nodes.map { it.attributes.cluster }.toSet().size
         val interClusterEdges: Set<Edge> = clusteredGraph.edges.filter { isInterClusterEdge(clusteredGraph, it) }.toSet()
         val accumulatedInterfaceEdgeWeights: Int = interClusterEdges.sumBy { it.attributes.couplingScore }
+        val staticCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::staticCouplingScore)
         val dynamicCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::dynamicCouplingScore)
         val semanticCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::semanticCouplingScore)
         val evolutionaryCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::evolutionaryCouplingScore)
-        val averageCouplingModularity: Double = listOf(dynamicCouplingModularity, semanticCouplingModularity, evolutionaryCouplingModularity).filter { !it.isNaN() && it != 0.0 }.average()
+        val averageCouplingModularity: Double = listOf(staticCouplingModularity, dynamicCouplingModularity, semanticCouplingModularity, evolutionaryCouplingModularity).filter { !it.isNaN() && it != 0.0 }.average()
         val totalCouplingModularity: Double = calculateGraphCouplingModularity(EdgeAttributes::couplingScore)
+        val staticMeanClusterFactor: Double = calculateGraphMeanClusterFactor(EdgeAttributes::staticCouplingScore)
         val dynamicMeanClusterFactor: Double = calculateGraphMeanClusterFactor(EdgeAttributes::dynamicCouplingScore)
         val semanticMeanClusterFactor: Double = calculateGraphMeanClusterFactor(EdgeAttributes::semanticCouplingScore)
         val evolutionaryMeanClusterFactor: Double = calculateGraphMeanClusterFactor(EdgeAttributes::evolutionaryCouplingScore)
-        val averageMeanClusterFactor: Double = listOf(dynamicMeanClusterFactor, semanticMeanClusterFactor, evolutionaryMeanClusterFactor).filter { !it.isNaN() && it != 0.0 }.average()
+        val averageMeanClusterFactor: Double = listOf(staticMeanClusterFactor, dynamicMeanClusterFactor, semanticMeanClusterFactor, evolutionaryMeanClusterFactor).filter { !it.isNaN() && it != 0.0 }.average()
         val totalMeanClusterFactor: Double = calculateGraphMeanClusterFactor(EdgeAttributes::couplingScore)
 
         return ClusteringQuality(
