@@ -103,7 +103,11 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
 
     private fun retrieveCallPairs(classReferences: Pair<ClassDeclaration, Map<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>>): List<Pair<ClassDeclaration, ClassDeclaration>> {
         classReferences.second.forEach { updateResponseForClassMetrics(classReferences.first, it) }
-        return classReferences.second.map { it.key.qualifiedName }.filter { it != classReferences.first.identifier }.map { classReferences.first to ClassDeclaration(identifier = it) }
+        return classReferences.second
+            .map { it.key.qualifiedName }
+            .filter { it != classReferences.first.identifier }
+            .map { classReferences.first to ClassDeclaration(identifier = it) }
+            .also { logger.debug("Retrieved the call pairs of class ${classReferences.first.identifier}") }
     }
 
     private fun updateResponseForClassMetrics(caller: ClassDeclaration, callee: Map.Entry<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>) {
@@ -123,8 +127,6 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
     }
 
     private fun retrieveReferencedTypes(caller: ClassOrInterfaceDeclaration): Map<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics> {
-        logger.info("Now resolving the referenced types of class ${caller.nameAsString}")
-
         val callerType: ResolvedReferenceTypeDeclaration = caller.resolve()!!
         val objectCreations: MutableSet<ObjectCreationExpr> = mutableSetOf()
         val methodCalls: MutableSet<MethodCallExpr> = mutableSetOf()
@@ -147,6 +149,7 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .filter { isLegalUnit(it.key.qualifiedName) }
             .map { it.key to ResponseForAClassMetrics(invokedMethods = it.value.count(), accessibleMethods = countAccessibleMethodLikeDeclarations(callerType, it.key)) }
             .toMap()
+            .also { logger.debug("Resolved the referenced types of class ${caller.nameAsString}") }
     }
 
     private fun <T> resolveType(resolvable: Resolvable<T>): ResolvedMethodLikeDeclaration? {
