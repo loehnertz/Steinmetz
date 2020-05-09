@@ -18,14 +18,14 @@ import controller.analysis.extraction.coupling.statically.ResponseForAClassIdent
 import controller.analysis.extraction.coupling.statically.ResponseForAClassMetrics
 import controller.analysis.extraction.coupling.statically.ResponseForAClassPair
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
 import model.graph.*
 import model.graph.Unit
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import utility.*
+import utility.ArchiveExtractor
+import utility.Utilities
+import utility.countJavaSourceCharacters
+import utility.toNullable
 import java.io.File
 import java.util.*
 import com.github.javaparser.ast.Node as AstNode
@@ -101,9 +101,9 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         return graph
     }
 
-    private fun retrieveCallPairs(classReferences: Pair<ClassDeclaration, Map<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>>): List<Pair<ClassDeclaration, ClassDeclaration>> = runBlocking {
-        classReferences.second.forEachConcurrently { updateResponseForClassMetrics(classReferences.first, it) }
-        return@runBlocking classReferences.second.map { it.key.qualifiedName }.filter { it != classReferences.first.identifier }.map { classReferences.first to ClassDeclaration(identifier = it) }
+    private fun retrieveCallPairs(classReferences: Pair<ClassDeclaration, Map<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>>): List<Pair<ClassDeclaration, ClassDeclaration>> {
+        classReferences.second.forEach { updateResponseForClassMetrics(classReferences.first, it) }
+        return classReferences.second.map { it.key.qualifiedName }.filter { it != classReferences.first.identifier }.map { classReferences.first to ClassDeclaration(identifier = it) }
     }
 
     private fun updateResponseForClassMetrics(caller: ClassDeclaration, callee: Map.Entry<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>) {
@@ -122,7 +122,9 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         }
     }
 
-    private fun retrieveReferencedTypes(caller: ClassOrInterfaceDeclaration): Map<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics> = runBlocking {
+    private fun retrieveReferencedTypes(caller: ClassOrInterfaceDeclaration): Map<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics> {
+        logger.info("Now resolving the referenced types of class ${caller.nameAsString}")
+
         val callerType: ResolvedReferenceTypeDeclaration = caller.resolve()!!
         val objectCreations: MutableSet<ObjectCreationExpr> = mutableSetOf()
         val methodCalls: MutableSet<MethodCallExpr> = mutableSetOf()
@@ -137,16 +139,14 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             node.childNodes.forEach { queue.add(it) }
         }
 
-        return@runBlocking retrieveInvocations(objectCreations, methodCalls)
+        return (objectCreations.map { resolveType(it) } + methodCalls.map { resolveType(it) })
+            .asSequence()
+            .filterNotNull()
+            .distinct()
             .groupBy({ it.declaringType() }, { it })
             .filter { isLegalUnit(it.key.qualifiedName) }
-            .mapConcurrently(dispatcher) { it.key to ResponseForAClassMetrics(invokedMethods = it.value.count(), accessibleMethods = countAccessibleMethodLikeDeclarations(callerType, it.key)) }
-    }
-
-    private suspend fun retrieveInvocations(objectCreations: Iterable<ObjectCreationExpr>, methodCalls: Iterable<MethodCallExpr>): Set<ResolvedMethodLikeDeclaration> {
-        val deferredObjectCretations = GlobalScope.async { objectCreations.mapConcurrently(dispatcher) { resolveType(it) } }
-        val deferredMethodCalls = GlobalScope.async { methodCalls.mapConcurrently(dispatcher) { resolveType(it) } }
-        return (deferredObjectCretations.await() + deferredMethodCalls.await()).filterNotNull().toSet()
+            .map { it.key to ResponseForAClassMetrics(invokedMethods = it.value.count(), accessibleMethods = countAccessibleMethodLikeDeclarations(callerType, it.key)) }
+            .toMap()
     }
 
     private fun <T> resolveType(resolvable: Resolvable<T>): ResolvedMethodLikeDeclaration? {
