@@ -2,10 +2,14 @@ package model.graph
 
 import model.graph.EdgeAttributes.Companion.mergeEdgeAttributes
 import model.graph.UnitFootprint.Companion.mergeUnitFootprints
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import kotlin.reflect.KMutableProperty1
 
 
 data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: MutableSet<Edge> = mutableSetOf()) {
+    private val logger: Logger = LoggerFactory.getLogger(Graph::class.java)
+
     init {
         inferNodesOutOfEdges()
     }
@@ -81,8 +85,14 @@ data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: Mutabl
     }
 
     private fun ensureNodesAndEdgesIntegrity() {
-        val nodeUnits: Set<Unit> = nodes.map { it.unit }.toSet()
-        val edgeUnits: Set<Unit> = edges.map { it.start }.toSet().union(edges.map { it.end }.toSet())
-        check(nodeUnits.size == edgeUnits.size) { "The integrity check on the nodes and edges failed" }
+        val nodeUnits: Set<Unit> = retrieveNodeUnits()
+        val edgeUnits: Set<Unit> = retrieveEdgeUnits()
+        val removedNodes: Boolean = nodes.retainAll { it.unit in edgeUnits }
+        if (removedNodes) logger.info("Removed the nodes ${nodeUnits.minus(edgeUnits)} from the graph")
+        check(retrieveNodeUnits().size == edgeUnits.size) { "The integrity check on the nodes and edges failed" }
     }
+
+    private fun retrieveNodeUnits(): Set<Unit> = nodes.map { it.unit }.toSet()
+
+    private fun retrieveEdgeUnits(): Set<Unit> = edges.map { it.start }.toSet().union(edges.map { it.end }.toSet())
 }
