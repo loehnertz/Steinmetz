@@ -961,7 +961,7 @@
                     .then((response) => {
                         this.dynamicCouplingScoreFactor = response.data["edgeAttributeWeights"]["dynamicCouplingScoreWeight"];
                         this.semanticCouplingScoreFactor = response.data["edgeAttributeWeights"]["semanticCouplingScoreWeight"];
-                        this.logicalCouplingScoreFactor = response.data["edgeAttributeWeights"]["logicalCouplingScoreWeight"];
+                        this.evolutionaryCouplingScoreFactor = response.data["edgeAttributeWeights"]["evolutionaryCouplingScoreWeight"];
                         this.isLoading = false;
                     })
                     .catch((error) => {
