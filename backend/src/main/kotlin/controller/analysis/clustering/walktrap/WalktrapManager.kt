@@ -54,8 +54,7 @@ class WalktrapManager(private val graph: Graph, private val chosenClusteringMetr
             if (!line.startsWith(OutputLinePrefix) || !line.contains(" = ")) continue
 
             for (unitId: Int in convertOutputClusterLineToListOfUnitIds(line)) {
-                val clusteredUnit: Unit = id2UnitMap[unitId]
-                                          ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
+                val clusteredUnit: Unit = id2UnitMap[unitId] ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
                 graph.addOrUpdateNode(Node(unit = clusteredUnit, attributes = NodeAttributes(cluster = clusterId)))
             }
 

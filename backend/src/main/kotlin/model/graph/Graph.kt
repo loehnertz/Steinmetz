@@ -50,8 +50,7 @@ data class Graph(val nodes: MutableSet<Node> = mutableSetOf(), val edges: Mutabl
     }
 
     fun addOrIncrementEdgeAttribute(edge: Edge, edgeAttributesType: KMutableProperty1<EdgeAttributes, Int>) {
-        val existingEdge: Edge = edges.find { it == edge }
-                                 ?: edge.also { edges.add(it) }.also { inferNodesOutOfEdge(it) }
+        val existingEdge: Edge = edges.find { it == edge } ?: edge.also { edges.add(it) }.also { inferNodesOutOfEdge(it) }
         edgeAttributesType.set(existingEdge.attributes, edgeAttributesType.get(existingEdge.attributes).inc())
     }
 
