@@ -454,6 +454,28 @@
                             <div class="field">
                                 <div
                                         class="control tooltip is-tooltip-bottom edge-weighting-formula-factor"
+                                        data-tooltip="Sets the factor of the static coupling score for edge weighting"
+                                >
+                                    <label>
+                                        <input class="input" type="number" step="1"
+                                               v-model="staticCouplingScoreFactor">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item">
+                            <p>&times;</p>
+                        </div>
+                        <div class="level-item">
+                            <p>Static</p>
+                        </div>
+                        <div class="level-item">
+                            <p>+</p>
+                        </div>
+                        <div class="level-item">
+                            <div class="field">
+                                <div
+                                        class="control tooltip is-tooltip-bottom edge-weighting-formula-factor"
                                         data-tooltip="Sets the factor of the dynamic coupling score for edge weighting"
                                 >
                                     <label>
@@ -467,7 +489,7 @@
                             <p>&times;</p>
                         </div>
                         <div class="level-item">
-                            <p>Dynamic Coupling Score</p>
+                            <p>Dynamic</p>
                         </div>
                         <div class="level-item">
                             <p>+</p>
@@ -489,7 +511,7 @@
                             <p>&times;</p>
                         </div>
                         <div class="level-item">
-                            <p>Semantic Coupling Score</p>
+                            <p>Semantic</p>
                         </div>
                         <div class="level-item">
                             <p>+</p>
@@ -511,7 +533,7 @@
                             <p>&times;</p>
                         </div>
                         <div class="level-item">
-                            <p>Evolutionary Coupling Score</p>
+                            <p>Evolutionary</p>
                         </div>
                         <div class="level-item">
                             <p>)</p>
@@ -660,6 +682,7 @@
     const DefaultMaxClusteringIterations = 100;
     const DefaultIterationsClusteringParameterMin = 1;
     const DefaultIterationsClusteringParameterMax = 100;
+    const DefaultStaticCouplingScoreFactor = 1;
     const DefaultDynamicCouplingScoreFactor = 1;
     const DefaultSemanticCouplingScoreFactor = 1;
     const DefaultEvolutionaryCouplingScoreFactor = 1;
@@ -676,6 +699,15 @@
             Throbber,
         },
         computed: {
+            staticCouplingScoreFactor: {
+                get: function () {
+                    return this.staticCouplingScoreWeightAsInteger;
+                },
+                set: function (newValue) {
+                    if (!newValue) return;
+                    this.staticCouplingScoreWeightAsInteger = parseInt(newValue);
+                },
+            },
             dynamicCouplingScoreFactor: {
                 get: function () {
                     return this.dynamicCouplingScoreWeightAsInteger;
@@ -704,7 +736,7 @@
                 },
             },
             couplingScoreFactorSum: function () {
-                return (this.dynamicCouplingScoreFactor + this.semanticCouplingScoreFactor + this.evolutionaryCouplingScoreFactor);
+                return (this.staticCouplingScoreFactor + this.dynamicCouplingScoreFactor + this.semanticCouplingScoreFactor + this.evolutionaryCouplingScoreFactor);
             },
             clusterIds: function () {
                 if (!this.clusteringAvailable || !this.graphData["nodes"]) return new Set();
@@ -762,7 +794,7 @@
                 graphClusteringAlgorithms: GraphClusteringAlgorithms,
                 graphClusteringMetrics: GraphClusteringMetrics,
                 selectedClusteringAlgorithm: ClausetNewmanMooreIdentifier,
-                selectedClusteringMetric: MetricAverageMeanClusterFactor,
+                selectedClusteringMetric: MetricTotalCouplingModularity,
                 bestScoringClusteringAlgorithm: null,
                 clusteringAlgorithmMetrics: {},
                 clusteringAvailable: false,
@@ -772,6 +804,7 @@
                 graphEnabled: true,
                 overviewEnabled: false,
                 metricsEnabled: true,
+                staticCouplingScoreWeightAsInteger: DefaultStaticCouplingScoreFactor,
                 dynamicCouplingScoreWeightAsInteger: DefaultDynamicCouplingScoreFactor,
                 semanticCouplingScoreWeightAsInteger: DefaultSemanticCouplingScoreFactor,
                 evolutionaryCouplingScoreWeightAsInteger: DefaultEvolutionaryCouplingScoreFactor,
@@ -872,6 +905,7 @@
                 const parameters = {
                     'clusteringAlgorithm': this.selectedClusteringAlgorithm,
                     'clusteringMetric': this.selectedClusteringMetric,
+                    'staticCouplingScoreWeight': this.staticCouplingScoreWeightAsInteger,
                     'dynamicCouplingScoreWeight': this.dynamicCouplingScoreWeightAsInteger,
                     'semanticCouplingScoreWeight': this.semanticCouplingScoreWeightAsInteger,
                     'evolutionaryCouplingScoreWeight': this.evolutionaryCouplingScoreWeightAsInteger,
@@ -912,6 +946,7 @@
                     const parameters = {
                         'clusteringAlgorithm': clusteringAlgorithm,
                         'clusteringMetric': this.selectedClusteringMetric,
+                        'staticCouplingScoreWeight': this.staticCouplingScoreWeightAsInteger,
                         'dynamicCouplingScoreWeight': this.dynamicCouplingScoreWeightAsInteger,
                         'semanticCouplingScoreWeight': this.semanticCouplingScoreWeightAsInteger,
                         'evolutionaryCouplingScoreWeight': this.evolutionaryCouplingScoreWeightAsInteger,
@@ -959,6 +994,7 @@
                         },
                     )
                     .then((response) => {
+                        this.staticCouplingScoreFactor = response.data["edgeAttributeWeights"]["staticCouplingScoreWeight"];
                         this.dynamicCouplingScoreFactor = response.data["edgeAttributeWeights"]["dynamicCouplingScoreWeight"];
                         this.semanticCouplingScoreFactor = response.data["edgeAttributeWeights"]["semanticCouplingScoreWeight"];
                         this.evolutionaryCouplingScoreFactor = response.data["edgeAttributeWeights"]["evolutionaryCouplingScoreWeight"];
