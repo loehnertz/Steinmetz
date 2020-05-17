@@ -168,7 +168,7 @@ class AnalysisController {
             when (part) {
                 is PartData.FormItem -> {
                     when (part.name) {
-                        ProjectRequest::projectName.name           -> projectName = part.value
+                        ProjectRequest::projectName.name           -> projectName = formatProjectName(part.value)
                         ProjectRequest::projectPlatform.name       -> projectPlatform = getPlatformByName(part.value)
                         ProjectRequest::vcsSystem.name             -> vcsSystem = getVcsSystemByName(part.value)
                         ProjectRequest::basePackageIdentifier.name -> basePackageIdentifier = part.value
@@ -231,6 +231,8 @@ class AnalysisController {
             evolutionaryAnalysisFile = evolutionaryAnalysisFile
         )
     }
+
+    private fun formatProjectName(projectName: String): String = projectName.replace(Regex("[^\\x00-\\x7F]"), "").replace(Regex("\\s"), "-").toLowerCase()
 }
 
 class ProjectAlreadyExistsException(override val message: String = "A project with that name already exists") : Exception()
