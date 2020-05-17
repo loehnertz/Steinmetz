@@ -5,10 +5,10 @@ import kotlin.reflect.full.declaredMemberProperties
 
 
 data class ClusteringQuality(
-    val accumulatedEdgeWeights: Int,
+    val accumulatedEdgeWeights: Long,
     val amountClusters: Int,
     val amountInterfaceEdges: Int,
-    val accumulatedInterfaceEdgeWeights: Int,
+    val accumulatedInterfaceEdgeWeights: Long,
     val staticCouplingModularity: Double,
     val dynamicCouplingModularity: Double,
     val semanticCouplingModularity: Double,

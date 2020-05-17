@@ -6,17 +6,22 @@ import model.graph.EdgeAttributes
 
 object EdgeWeightingFormulaCalculator {
     fun applyFormula(edgeAttributes: EdgeAttributes, edgeAttributeWeights: EdgeAttributeWeights): Int {
+        val weightedStaticCouplingScore: Int = edgeAttributeWeights.staticCouplingScoreWeight * edgeAttributes.staticCouplingScore
         val weightedDynamicCouplingScore: Int = edgeAttributeWeights.dynamicCouplingScoreWeight * edgeAttributes.dynamicCouplingScore
         val weightedSemanticCouplingScore: Int = edgeAttributeWeights.semanticCouplingScoreWeight * edgeAttributes.semanticCouplingScore
         val weightedEvolutionaryCouplingScore: Int = edgeAttributeWeights.evolutionaryCouplingScoreWeight * edgeAttributes.evolutionaryCouplingScore
 
-        val weightedCouplingScores: List<Int> = listOf(weightedDynamicCouplingScore, weightedSemanticCouplingScore, weightedEvolutionaryCouplingScore)
+        val weightedCouplingScores: List<Int> = listOf(weightedStaticCouplingScore, weightedDynamicCouplingScore, weightedSemanticCouplingScore, weightedEvolutionaryCouplingScore)
 
-        // Add 1 to the final coupling score so that there are no edges that have a score of 0 which lets some graph clustering algorithms fail
-        return 1 + (weightedCouplingScores.sum().toDouble() / sumEdgeWeightAttributes(edgeAttributeWeights)).toInt()
+        val couplingScore: Int = (weightedCouplingScores.sum().toDouble() / sumEdgeWeightAttributes(edgeAttributeWeights)).toInt()
+        return if (couplingScore == 0) {
+            1  // Return 1 so that there are no edges that have a score of 0 which lets some graph clustering algorithms fail
+        } else {
+            couplingScore
+        }
     }
 
     private fun sumEdgeWeightAttributes(edgeAttributeWeights: EdgeAttributeWeights): Int {
-        return (edgeAttributeWeights.dynamicCouplingScoreWeight + edgeAttributeWeights.semanticCouplingScoreWeight + edgeAttributeWeights.evolutionaryCouplingScoreWeight)
+        return (edgeAttributeWeights.staticCouplingScoreWeight + edgeAttributeWeights.dynamicCouplingScoreWeight + edgeAttributeWeights.semanticCouplingScoreWeight + edgeAttributeWeights.evolutionaryCouplingScoreWeight)
     }
 }
