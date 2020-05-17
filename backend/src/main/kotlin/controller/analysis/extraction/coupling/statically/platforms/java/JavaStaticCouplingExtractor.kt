@@ -2,6 +2,7 @@ package controller.analysis.extraction.coupling.statically.platforms.java
 
 import com.github.javaparser.ast.AccessSpecifier.*
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
+import com.github.javaparser.ast.expr.Expression
 import com.github.javaparser.ast.expr.MethodCallExpr
 import com.github.javaparser.ast.expr.ObjectCreationExpr
 import com.github.javaparser.resolution.Resolvable
@@ -17,15 +18,11 @@ import controller.analysis.extraction.coupling.statically.AbstractStaticAnalysis
 import controller.analysis.extraction.coupling.statically.ResponseForAClassIdentifiers
 import controller.analysis.extraction.coupling.statically.ResponseForAClassMetrics
 import controller.analysis.extraction.coupling.statically.ResponseForAClassPair
-import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import model.graph.*
 import model.graph.Unit
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import utility.ArchiveExtractor
-import utility.Utilities
-import utility.countJavaSourceCharacters
-import utility.toNullable
+import utility.*
 import java.io.File
 import java.util.*
 import com.github.javaparser.ast.Node as AstNode
@@ -37,7 +34,6 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
     private val basePath: String = buildBasePath(PlatformIdentifier, projectName)
     private val staticAnalysisBasePath = "$basePath/$StaticAnalysisDirectory"
     private val unarchiver = ArchiveExtractor(".$JavaFileExtension", staticAnalysisBasePath)
-    private val dispatcher: ExecutorCoroutineDispatcher = Utilities.createCoroutineDispatcher()
 
     override fun extract(): Graph {
         val unarchivedDirectory: File = unarchiver.unpackAnalysisArchive(archive)
@@ -76,7 +72,6 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .also { logger.info("Retrieved call pairs") }
             .flatten()
             .toSet()
-            .also { dispatcher.close() }
     }
 
     private fun convertReferencePairsToGraph(referencePairs: Set<Pair<ClassDeclaration, ClassDeclaration>>): Graph {
@@ -88,11 +83,16 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
 
             val startUnit = Unit(identifier = referencePair.first.identifier.substringAfterLast('.'), packageIdentifier = referencePair.first.identifier.substringBeforeLast('.'))
             val endUnit = Unit(identifier = referencePair.second.identifier.substringAfterLast('.'), packageIdentifier = referencePair.second.identifier.substringBeforeLast('.'))
-            val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(staticCouplingScore = responseForAClassCouplingScore))
 
             if (!isLegalPair(startUnit, endUnit)) continue
 
-            graph.addOrUpdateEdge(edge)
+            try {
+                val edge = Edge(start = startUnit, end = endUnit, attributes = EdgeAttributes(staticCouplingScore = responseForAClassCouplingScore))
+                graph.addOrUpdateEdge(edge)
+            } catch (e: IllegalStateException) {
+                logger.info("Edge from '$startUnit' to '$endUnit' has illegal static coupling score '$responseForAClassCouplingScore' and will be excluded")
+                continue
+            }
         }
 
         val classDeclarations: Set<ClassDeclaration> = referencePairs.flatMap { listOf(it.first, it.second) }.filter { it.characters != null }.toSet()
@@ -104,9 +104,9 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
     private fun retrieveCallPairs(classReferences: Pair<ClassDeclaration, Map<ResolvedReferenceTypeDeclaration, ResponseForAClassMetrics>>): List<Pair<ClassDeclaration, ClassDeclaration>> {
         classReferences.second.forEach { updateResponseForClassMetrics(classReferences.first, it) }
         return classReferences.second
-            .map { it.key.qualifiedName }
-            .filter { it != classReferences.first.identifier }
-            .map { classReferences.first to ClassDeclaration(identifier = it) }
+            .map { it.key }
+            .filter { it.qualifiedName != classReferences.first.identifier }
+            .map { classReferences.first to ClassDeclaration(it) }
             .also { logger.debug("Retrieved the call pairs of class ${classReferences.first.identifier}") }
     }
 
@@ -135,26 +135,46 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         while (queue.isNotEmpty()) {
             val node: AstNode = queue.pop()
             when (node) {
-                is ObjectCreationExpr -> objectCreations.add(node)
-                is MethodCallExpr     -> methodCalls.add(node)
+                is ObjectCreationExpr -> objectCreations.add(node);
+                is MethodCallExpr     -> methodCalls.add(node);
             }
             node.childNodes.forEach { queue.add(it) }
         }
 
-        return (objectCreations.map { resolveType(it) } + methodCalls.map { resolveType(it) })
+        return (objectCreations.map { resolve(it to it.scope.toNullable()) } + methodCalls.map { resolve(it to it.scope.toNullable()) })
             .asSequence()
             .filterNotNull()
-            .distinct()
-            .groupBy({ it.declaringType() }, { it })
-            .filter { isLegalUnit(it.key.qualifiedName) }
+            .distinctBy { it.second.signature }
+            .filter { isLegalUnit(it.first.qualifiedName) }
+            .groupBy({ it.first }, { it.second })
             .map { it.key to ResponseForAClassMetrics(invokedMethods = it.value.count(), accessibleMethods = countAccessibleMethodLikeDeclarations(callerType, it.key)) }
             .toMap()
             .also { logger.debug("Resolved the referenced types of class ${caller.nameAsString}") }
     }
 
-    private fun <T> resolveType(resolvable: Resolvable<T>): ResolvedMethodLikeDeclaration? {
+    private fun <T : ResolvedMethodLikeDeclaration> resolve(resolvable: Pair<Resolvable<T>, Expression?>): Pair<ResolvedReferenceTypeDeclaration, ResolvedMethodLikeDeclaration>? {
+        val declaration: ResolvedMethodLikeDeclaration? = resolveDeclaration(resolvable.first)
+        val declaringType: ResolvedReferenceTypeDeclaration? = if (resolvable.second != null) {
+            resolveType(resolvable.second!!)
+        } else {
+            declaration?.declaringType()
+        }
+
+        if (declaration == null || declaringType == null) return null
+        return declaringType to declaration
+    }
+
+    private fun <T : ResolvedMethodLikeDeclaration> resolveDeclaration(resolvable: Resolvable<T>): ResolvedMethodLikeDeclaration? {
         return try {
-            resolvable.resolve() as? ResolvedMethodLikeDeclaration
+            resolvable.resolve()
+        } catch (e: Throwable) {
+            null
+        }
+    }
+
+    private fun resolveType(resolvable: Expression): ResolvedReferenceTypeDeclaration? {
+        return try {
+            resolvable.calculateResolvedType()?.asReferenceType()?.typeDeclaration
         } catch (e: Throwable) {
             null
         }
@@ -165,24 +185,25 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
             .map { it.declaration as ResolvedMethodLikeDeclaration }
             .plus(callee.constructors.map { it as ResolvedMethodLikeDeclaration })
             .filter { !JavaObjectClassMethodsSignatures.contains(it.signature) }
-            .count { methodIsAccessibleByCaller(it, caller) }
+            .count { methodIsAccessibleByCaller(it, caller, callee) }
     }
 
-    private fun methodIsAccessibleByCaller(method: ResolvedMethodLikeDeclaration, caller: ResolvedReferenceTypeDeclaration): Boolean {
+    private fun methodIsAccessibleByCaller(method: ResolvedMethodLikeDeclaration, caller: ResolvedReferenceTypeDeclaration, callee: ResolvedReferenceTypeDeclaration): Boolean {
         return when (method.accessSpecifier()!!) {
             PUBLIC          -> true
-            PACKAGE_PRIVATE -> packagePrivateMethodIsAccessibleByCaller(method, caller)
-            PROTECTED       -> protectedMethodIsAccessibleByCaller(method, caller)
+            PACKAGE_PRIVATE -> packagePrivateMethodIsAccessibleByCaller(method, caller, callee)
+            PROTECTED       -> protectedMethodIsAccessibleByCaller(method, caller, callee)
             PRIVATE         -> false
         }
     }
 
-    private fun packagePrivateMethodIsAccessibleByCaller(method: ResolvedMethodLikeDeclaration, caller: ResolvedReferenceTypeDeclaration): Boolean {
+    private fun packagePrivateMethodIsAccessibleByCaller(method: ResolvedMethodLikeDeclaration, caller: ResolvedReferenceTypeDeclaration, callee: ResolvedReferenceTypeDeclaration): Boolean {
+        if (callee.isInterface) return true
         return method.packageName == caller.packageName
     }
 
-    private fun protectedMethodIsAccessibleByCaller(method: ResolvedMethodLikeDeclaration, caller: ResolvedReferenceTypeDeclaration): Boolean {
-        if (packagePrivateMethodIsAccessibleByCaller(method, caller)) return true
+    private fun protectedMethodIsAccessibleByCaller(method: ResolvedMethodLikeDeclaration, caller: ResolvedReferenceTypeDeclaration, callee: ResolvedReferenceTypeDeclaration): Boolean {
+        if (packagePrivateMethodIsAccessibleByCaller(method, caller, callee)) return true
         return try {
             method.declaringType().isAssignableBy(caller)
         } catch (e: UnsolvedSymbolException) {
@@ -231,5 +252,6 @@ class JavaStaticCouplingExtractor(projectName: String, private val basePackageId
         val declaration: ResolvedReferenceTypeDeclaration? = null
     ) {
         constructor(declaration: ClassOrInterfaceDeclaration) : this(identifier = declaration.fullyQualifiedName.get(), characters = declaration.toString().countJavaSourceCharacters(), declaration = declaration.resolve())
+        constructor(declaration: ResolvedReferenceTypeDeclaration) : this(identifier = declaration.qualifiedName, characters = declaration.retrieveAstNode()?.toString()?.countJavaSourceCharacters(), declaration = declaration)
     }
 }
