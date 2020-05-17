@@ -27,4 +27,4 @@ RUN mv /build/target/steinmetz-1.0-SNAPSHOT-jar-with-dependencies.jar backend.ja
 
 # Boot up the server
 EXPOSE 5656
-CMD ["java", "-server", "-XX:+UnlockExperimentalVMOptions", "-Xms1G", "-Xmx4G", "-XX:+UseG1GC", "-XX:+UseStringDeduplication", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", "-jar", "backend.jar"]
+CMD ["java", "-server", "-XX:+UnlockExperimentalVMOptions", "-Xms1G", "-Xmx10G", "-XX:+UseG1GC", "-XX:+UseStringDeduplication", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", "-jar", "backend.jar"]
