@@ -8,7 +8,7 @@ import java.io.File
 import java.util.*
 
 
-class ClausetNewmanMooreManager(private val graph: Graph, private val projectName: String) : ClusteringAlgorithmManager {
+class ClausetNewmanMooreManager(private val graph: Graph, private val projectName: String) : ClusteringAlgorithmManager() {
     private val unit2IdMap: HashMap<Unit, Int> = hashMapOf()
     private val id2UnitMap: HashMap<Int, Unit> = hashMapOf()
 
@@ -20,7 +20,7 @@ class ClausetNewmanMooreManager(private val graph: Graph, private val projectNam
         Runtime.getRuntime().exec(buildSecondRunCommand(maximumModularity)).also { it.inputStream.readAllBytes() }
 
         val outputLines: List<String> = readOutputFileLines()
-        return convertOutputToGraph(outputLines)
+        return convertOutputToGraph(outputLines).also { cleanup(constructBaseFileLocation()) }
     }
 
     private fun createInputFile() {
@@ -43,7 +43,7 @@ class ClausetNewmanMooreManager(private val graph: Graph, private val projectNam
     }
 
     private fun retrieveMaxModularityAfterFirstRun(): Int {
-        val outputFile: List<String> = File("${constructBaseFileLocation()}-fc_$FirstRunIdentifier.info").bufferedReader().readLines()
+        val outputFile: List<String> = File("${constructBaseFileName()}-fc_$FirstRunIdentifier.info").bufferedReader().readLines()
         return outputFile.find { it.startsWith(InfoOutputFileMaxModularityPrefix) }!!.split("\t").last().toInt()
     }
 
@@ -56,7 +56,8 @@ class ClausetNewmanMooreManager(private val graph: Graph, private val projectNam
                 continue
             }
 
-            val clusteredUnit: Unit = id2UnitMap[line.toInt()] ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
+            val clusteredUnit: Unit = id2UnitMap[line.toInt()]
+                ?: throw InternalError("Mapping the nodes to IDs for clustering failed")
             graph.addOrUpdateNode(Node(unit = clusteredUnit, attributes = NodeAttributes(cluster = clusterId)))
         }
 
@@ -64,30 +65,34 @@ class ClausetNewmanMooreManager(private val graph: Graph, private val projectNam
     }
 
     private fun writeInputFile(inputFileString: String) {
-        val inputFile = File("${constructBaseFileLocation()}.$InputFileExtension")
+        val inputFile = File("${constructBaseFileName()}.$InputFileExtension")
         inputFile.parentFile.mkdirs()
         inputFile.createNewFile()
         inputFile.bufferedWriter().use { file -> file.write(inputFileString) }
     }
 
     private fun readOutputFileLines(): List<String> {
-        return File("${constructBaseFileLocation()}-fc_$SecondRunIdentifier.groups").bufferedReader().readLines()
+        return File("${constructBaseFileName()}-fc_$SecondRunIdentifier.groups").bufferedReader().readLines()
     }
 
     private fun buildFirstRunCommand(): String {
-        return "${retrieveExecutablePath()} -f ${constructBaseFileLocation()}.$InputFileExtension -l $FirstRunIdentifier"
+        return "${retrieveExecutablePath()} -f ${constructBaseFileName()}.$InputFileExtension -l $FirstRunIdentifier"
     }
 
     private fun buildSecondRunCommand(maxModularity: Int): String {
-        return "${retrieveExecutablePath()} -f ${constructBaseFileLocation()}.$InputFileExtension -l $SecondRunIdentifier -c $maxModularity"
+        return "${retrieveExecutablePath()} -f ${constructBaseFileName()}.$InputFileExtension -l $SecondRunIdentifier -c $maxModularity"
     }
 
     private fun buildInputLine(startUnit: Unit, endUnit: Unit, weight: Int): String {
         return "${unit2IdMap[startUnit]}\t${unit2IdMap[endUnit]}\t$weight"
     }
 
+    private fun constructBaseFileName(): String {
+        return "${constructBaseFileLocation()}/$InputFileName"
+    }
+
     private fun constructBaseFileLocation(): String {
-        return "$InputOutputPath/$projectName/$InputFileName"
+        return "$InputOutputPath/$projectName/${Thread.currentThread().id}"
     }
 
     private fun retrieveExecutablePath(): String {

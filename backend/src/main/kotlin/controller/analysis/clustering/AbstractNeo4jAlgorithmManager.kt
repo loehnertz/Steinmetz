@@ -8,7 +8,7 @@ import org.neo4j.ogm.model.Result
 import utility.Neo4jConnector
 
 
-abstract class AbstractNeo4jAlgorithmManager(private val graph: Graph, private val projectName: String) : ClusteringAlgorithmManager {
+abstract class AbstractNeo4jAlgorithmManager(private val graph: Graph, private val projectName: String) : ClusteringAlgorithmManager() {
     abstract val nodeLabel: String
 
     abstract val clusterIdentifer: String

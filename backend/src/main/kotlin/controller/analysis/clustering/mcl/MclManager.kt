@@ -14,7 +14,7 @@ import java.math.RoundingMode
 import kotlin.reflect.KProperty1
 
 
-class MclManager(private val graph: Graph, private val projectName: String, private val chosenClusteringMetric: KProperty1<ClusteringQuality, *>) : ClusteringAlgorithmManager {
+class MclManager(private val graph: Graph, private val projectName: String, private val chosenClusteringMetric: KProperty1<ClusteringQuality, *>) : ClusteringAlgorithmManager() {
     override fun apply(iterations: Int): Graph {
         return runBlocking {
             val clusteringInflationValues: List<Double> = buildClusteringInflationValuesList(iterations)

@@ -13,7 +13,7 @@ import java.io.StringWriter
 import java.util.*
 
 
-class ChineseWhispersManager(private val graph: Graph) : ClusteringAlgorithmManager {
+class ChineseWhispersManager(private val graph: Graph) : ClusteringAlgorithmManager() {
     override fun apply(iterations: Int): Graph {
         val inputReader = StringReader(convertGraphToInput())
         val outputWriter = StringWriter()

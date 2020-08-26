@@ -12,7 +12,7 @@ import java.util.*
 import kotlin.reflect.KProperty1
 
 
-class WalktrapManager(private val graph: Graph, private val chosenClusteringMetric: KProperty1<ClusteringQuality, *>, private val projectName: String) : ClusteringAlgorithmManager {
+class WalktrapManager(private val graph: Graph, private val chosenClusteringMetric: KProperty1<ClusteringQuality, *>, private val projectName: String) : ClusteringAlgorithmManager() {
     private val unit2IdMap: HashMap<Unit, Int> = hashMapOf()
     private val id2UnitMap: HashMap<Int, Unit> = hashMapOf()
 

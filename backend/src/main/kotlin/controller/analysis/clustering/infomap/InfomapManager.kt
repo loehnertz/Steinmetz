@@ -8,7 +8,7 @@ import java.io.File
 import java.util.*
 
 
-class InfomapManager(private val graph: Graph, private val projectName: String) : ClusteringAlgorithmManager {
+class InfomapManager(private val graph: Graph, private val projectName: String) : ClusteringAlgorithmManager() {
     private val unit2IdMap: HashMap<Unit, Int> = hashMapOf()
     private val id2UnitMap: HashMap<Int, Unit> = hashMapOf()
 
