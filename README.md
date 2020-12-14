@@ -52,7 +52,7 @@ services:
     depends_on:
       - database
   database:
-    image: loehnertz/steinmetz-database
+    image: loehnertz/neo4j-graph-algos
     ports:
       - 7474
       - 7687
