@@ -41,7 +41,7 @@ services:
     depends_on:
       - backend
   backend:
-    image: loehnertz/steinmetz-frontend
+    image: loehnertz/steinmetz-backend
     ports:
       - 5005:5005
       - 5656:5656
